@@ -11,7 +11,7 @@ class Timestep(Base):
     T_amb = Column("T_amb", Float, nullable=False)
     P_solar = Column("P_solar", Float, nullable=False)
     T_in = Column("T_in", Float, nullable=True)
-    T_env = Column("T_env", Float, nullable=True)
+    T_en = Column("T_en", Float, nullable=True)
     P_heat_th = Column("P_heat_th", Float, nullable=True)
     P_heat_el = Column("P_heat_el", Float, nullable=True)
     P_hgain = Column("P_hgain", Float, nullable=True)
