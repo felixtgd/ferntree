@@ -33,24 +33,6 @@ deadband = 1 # deadband around setpoint
 Ti, Te, Ph = np.zeros(timesteps), np.zeros(timesteps), np.zeros(timesteps)
 Ti[0], Te[0] = Ta[0], Ta[0] 
 
-timestamp = pd.date_range(start="2019-01-01", periods=len(Ti), freq="H")
-sim_data_df = pd.DataFrame(index = pd.to_datetime(timestamp, format="%Y%m%d:%H%M"),
-                           data = {"Ti": Ti,
-                                   "Te": Te,
-                                   "Ta": Ta,
-                                   "Ps": Ps,
-                                   "Ph": Ph,
-                                   "Pg": Pg})
-
-sim_data_df.resample("5min").interpolate()
-
-Te = sim_data_df["Te"]
-Ta = sim_data_df["Ta"]
-Ti = sim_data_df["Ti"]
-
-Ph = sim_data_df["Ph"]
-Pg = sim_data_df["Pg"]
-Ps = sim_data_df["Ps"]
 
 for t in range(timesteps-1):
     # Thermal RC-model of building 
@@ -67,26 +49,34 @@ for t in range(timesteps-1):
     elif Ti[t+1] > temp_setpoint + deadband:
         Ph[t+1] = 0.0
     else:
-        dPh = (temp_setpoint - Ti[t+1]) / Ti[t+1] * Ph[t]
-        Ph[t+1] = Ph[t] + dPh
+        dTi = (Ti[t] - Ti[t+1]) / Ti[t] # sweetspot: *100
+        Ph_hat = (1 + dTi) * Ph[t]
+        Ph[t+1] = min(max(0, Ph_hat), Pheat_max)
 
-sim_data_df["Te"] = Te
-sim_data_df["Ta"] = Ta
-sim_data_df["Ti"] = Ti
 
-sim_data_df["Ph"] = Ph
-sim_data_df["Pg"] = Pg
-sim_data_df["Ps"] = Ps
+
+timestamp = pd.date_range(start="2019-01-01", periods=len(Ti), freq="H")
+sim_data_df = pd.DataFrame(index = pd.to_datetime(timestamp, format="%Y%m%d:%H%M"),
+                           data = {"Ti": Ti,
+                                   "Te": Te,
+                                   "Ta": Ta,
+                                   "Ps": Ps,
+                                   "Ph": Ph,
+                                   "Pg": Pg})
+
+
+start = 200
+end = 224
 
 f, (ax1, ax2) = plt.subplots(2, 1)
-ax1.plot(sim_data_df["Ti"][100:200], label="Ti")
-ax1.plot(sim_data_df["Te"][100:200], label="Te")
-ax1.plot(sim_data_df["Ta"][100:200], label="Ta")
+ax1.plot(sim_data_df["Ti"][start:end]-273.15, label="Ti")
+ax1.plot(sim_data_df["Te"][start:end]-273.15, label="Te")
+ax1.plot(sim_data_df["Ta"][start:end]-273.15, label="Ta")
 ax1.legend()
 ax1.grid()
 
-ax2.plot(sim_data_df["Ps"][100:200], label="Ps")
-ax2.plot(sim_data_df["Ph"][100:200], label="Ph")
-ax2.plot(sim_data_df["Pg"][100:200], label="Pg")
+ax2.plot(sim_data_df["Ps"][start:end], label="Ps")
+ax2.plot(sim_data_df["Ph"][start:end], label="Ph")
+ax2.plot(sim_data_df["Pg"][start:end], label="Pg")
 ax2.legend()
 ax2.grid()
