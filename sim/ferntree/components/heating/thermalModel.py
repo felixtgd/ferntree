@@ -1,5 +1,5 @@
 import numpy as np 
-from component import Component
+from components.component import Component
 
 class ThermalModel(Component):
 

@@ -1,4 +1,4 @@
-from component import Component
+from components.component import Component
 
 class HeatingCtrl(Component):
 

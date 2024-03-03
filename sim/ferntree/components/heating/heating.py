@@ -1,18 +1,15 @@
-import json
-import pandas as pd
-import numpy as np
+# import json
+# import pandas as pd
+# import numpy as np
 
-from component import Component
-from heatingCtrl import HeatingCtrl
-from thermalModel import ThermalModel
-from heatingSys import HeatingSys
+from components.component import Component
+from components.heating.heatingCtrl import HeatingCtrl
+from components.heating.thermalModel import ThermalModel
+from components.heating.heatingSys import HeatingSys
 
 class Heating(Component):
     
-    def __init__(self, 
-                 heating_controller:        HeatingCtrl, 
-                 thermal_building_model:    ThermalModel, 
-                 heating_system:            HeatingSys) -> None:
+    def __init__(self) -> None:
         
         super().__init__()
         
@@ -24,15 +21,15 @@ class Heating(Component):
         self.P_hgain = 3/1e3 * self.heated_area # internal heat gains constant at 3 W/m2
 
         # Thermostat controller for heating system
-        self.heatingCtrl = heating_controller(self.temp_setpoint, self.deadband, self.P_heat_max)
+        self.heatingCtrl = HeatingCtrl(self.temp_setpoint, self.deadband, self.P_heat_max)
 
         # Thermal building model
-        self.thermalModel = thermal_building_model
+        self.thermalModel = ThermalModel()
         self.thermalModel.T_in = self.temp_setpoint
         self.thermalModel.T_en = self.temp_setpoint
 
         # Heating system
-        self.heatingSys = heating_system
+        self.heatingSys = HeatingSys()
 
         # Current state of the thermal model and heating system
         self.currentState = {"timestep": None,
@@ -41,7 +38,7 @@ class Heating(Component):
                              "T_en": self.temp_setpoint,
                              "P_solar": None,
                              "P_hgain": self.P_hgain,
-                             "P_heat": 0.0}
+                             "P_heat_th": 0.0}
 
     def updateState(self):
         self.currentState["timestep"] = self.host.env_state["t"]
@@ -57,7 +54,7 @@ class Heating(Component):
         P_hgain = self.currentState["P_hgain"]
 
         # State variables from previous timestep (not yet updated, but required for this timestep)
-        P_heat_prev = self.currentState["P_heat"]
+        P_heat_prev = self.currentState["P_heat_th"]
         T_in_prev = self.currentState["T_in"]
 
         T_in_next, T_en_next = self.thermalModel.compute_thermal_response(T_amb, P_solar, P_hgain, P_heat_prev)
@@ -65,5 +62,5 @@ class Heating(Component):
 
         self.currentState["T_in"] = T_in_next
         self.currentState["T_en"] = T_en_next
-        self.currentState["P_heat"] = P_heat_next
+        self.currentState["P_heat_th"] = P_heat_next
 
