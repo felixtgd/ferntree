@@ -9,16 +9,25 @@ class HeatingCtrl(Component):
         self.temp_setpoint = temp_setpoint
         self.deadband = deadband
         self.P_heat_max = P_heat_max
+
+        self.error_int = 0
         
-    def set_heating_power(self, T_in_prev, T_in_next, P_heat_prev):
+    def set_heating_power(self, T_in, P_heat_th):
         # Thermostat control of heating power
-        if T_in_next < self.temp_setpoint - self.deadband:
-            P_heat_next = self.P_heat_max
-        elif T_in_next > self.temp_setpoint + self.deadband:
-            P_heat_next = 0.0
+        if T_in < self.temp_setpoint - self.deadband:
+            P_heat_th_next = self.P_heat_max
+            self.error_int = 0
+        elif T_in > self.temp_setpoint + self.deadband:
+            P_heat_th_next = 0.0
+            self.error_int = 0
         else:
-            dTi = (T_in_prev - T_in_next) / T_in_prev # sweetspot: *100
-            Ph_hat = (1 + dTi) * P_heat_prev
-            P_heat_next = min(max(0, Ph_hat), self.P_heat_max)
+            # Variant of a PI-controller
+            # Proportional term
+            self.error_prop = (self.temp_setpoint - T_in) / self.temp_setpoint
+            # Integral term
+            self.error_int += self.error_prop
+            
+            Ph_hat = (1 + self.error_prop + self.error_int) * P_heat_th
+            P_heat_th_next = min(max(0, Ph_hat), self.P_heat_max)
         
-        return P_heat_next
+        return P_heat_th_next

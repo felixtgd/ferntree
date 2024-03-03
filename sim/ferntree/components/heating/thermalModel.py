@@ -23,10 +23,12 @@ class ThermalModel(Component):
         self.P_hgain = None # internal heat gains [kW]
         self.P_heat = None # heating power [kW]
 
+        self.timebase = 60*60
+
     def compute_thermal_response(self, T_amb, P_solar, P_hgain, P_heat):
         # Thermal RC-model of building 
-        dTi = (1.0/(self.Ci * self.Rie) * (self.T_en - self.T_in) + 1.0/(self.Ci * self.Ria) * (T_amb - self.T_in) + self.Ai / self.Ci * P_solar + 1.0/self.Ci * (P_heat + P_hgain)) # + si * dwi
-        dTe = (1.0/(self.Ce * self.Rie) * (self.T_in - self.T_en) + 1.0/(self.Ce * self.Rea) * (T_amb - self.T_en)) # + si * dwi
+        dTi = (1.0/(self.Ci * self.Rie) * (self.T_en - self.T_in) + 1.0/(self.Ci * self.Ria) * (T_amb - self.T_in) + self.Ai / self.Ci * P_solar + 1.0/self.Ci * (P_heat + P_hgain))  * self.timebase/3600 #+ np.random.normal()/np.sqrt(timesteps)
+        dTe = (1.0/(self.Ce * self.Rie) * (self.T_in - self.T_en) + 1.0/(self.Ce * self.Rea) * (T_amb - self.T_en))  * self.timebase/3600 #+ np.random.normal()/np.sqrt(timesteps)
         
         # Update temperatures
         self.T_in += dTi

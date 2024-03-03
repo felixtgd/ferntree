@@ -22,7 +22,7 @@ class Heating(Component):
 
         # Thermostat controller for heating system
         self.heatingCtrl = HeatingCtrl(self.temp_setpoint, self.deadband, self.P_heat_max)
-
+        
         # Thermal building model
         self.thermalModel = ThermalModel()
         self.thermalModel.T_in = self.temp_setpoint
@@ -30,7 +30,7 @@ class Heating(Component):
 
         # Heating system
         self.heatingSys = HeatingSys()
-
+        
         # Current state of the thermal model and heating system
         self.currentState = {"timestep": None,
                              "T_amb": None,
@@ -52,15 +52,13 @@ class Heating(Component):
         P_solar = self.currentState["P_solar"]
 
         P_hgain = self.currentState["P_hgain"]
+        P_heat_th = self.currentState["P_heat_th"]
+        T_in = self.currentState["T_in"]
 
-        # State variables from previous timestep (not yet updated, but required for this timestep)
-        P_heat_prev = self.currentState["P_heat_th"]
-        T_in_prev = self.currentState["T_in"]
-
-        T_in_next, T_en_next = self.thermalModel.compute_thermal_response(T_amb, P_solar, P_hgain, P_heat_prev)
-        P_heat_next = self.heatingCtrl.set_heating_power(T_in_prev, T_in_next, P_heat_prev)
-
-        self.currentState["T_in"] = T_in_next
-        self.currentState["T_en"] = T_en_next
-        self.currentState["P_heat_th"] = P_heat_next
+        P_heat_th_next = self.heatingCtrl.set_heating_power(T_in, P_heat_th)
+        T_in, T_en = self.thermalModel.compute_thermal_response(T_amb, P_solar, P_hgain, P_heat_th_next)
+        
+        self.currentState["T_in"] = T_in
+        self.currentState["T_en"] = T_en
+        self.currentState["P_heat_th"] = P_heat_th_next
 
