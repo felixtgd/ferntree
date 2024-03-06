@@ -1,5 +1,7 @@
+from core import entity
 
-class HeatingSys():
+class Device(entity.Entity):
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, host) -> None:
+        super().__init__(host)
+

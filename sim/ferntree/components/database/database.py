@@ -1,7 +1,7 @@
 from sqlalchemy import URL, create_engine
 from sqlalchemy.orm import Session
 
-from database.orm_models import Base
+from database import orm_models
 
 class Database():
 
@@ -17,15 +17,28 @@ class Database():
             database=self._db_name,
         )
 
+        self.batch_size = 1000
+        self.data_buffer = []
+
     def startup(self):
         self.engine = create_engine(self.db_url)
-        Base.metadata.drop_all(self.engine)
-        Base.metadata.create_all(self.engine)
+        orm_models.Base.metadata.drop_all(self.engine)
+        orm_models.Base.metadata.create_all(self.engine)
 
     def shutdown(self):
-        pass
+        if self.data_buffer:
+            self.write_batch(self.data_buffer)
+            self.data_buffer = []
 
-    def write_batch_to_db(self, data):
+
+    def write_data_to_db(self, data):
+        self.data_buffer.append(data)
+
+        if len(self.data_buffer) == self.batch_size:
+            self.write_batch(self.data_buffer)
+            self.data_buffer = []
+
+    def write_batch(self, batch):
         with Session(self.engine) as session:
-            session.add_all(data)
+            session.add_all(batch)
             session.commit()

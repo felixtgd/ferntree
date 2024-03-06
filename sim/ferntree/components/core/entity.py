@@ -1,5 +1,5 @@
 
-class Component():
-    def __init__(self) -> None:
+class Entity():
+    def __init__(self, host) -> None:
         
-        self.host = None
+        self.host = host
