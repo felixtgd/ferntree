@@ -1,21 +1,36 @@
-from sqlalchemy import Column, Integer, Float
+from sqlalchemy import Column, Integer, Float, CheckConstraint
 from sqlalchemy.orm import DeclarativeBase
 
 class Base(DeclarativeBase):
     pass
 
 class Timestep(Base):
+    """ Table for the simulation results.
+    Each row represents the results of one timestep in the simulation.
+    """
     __tablename__ = "ferntree_sim"
 
-    timestep = Column("timestep", Integer, primary_key=True, autoincrement=True)
-    T_amb = Column("T_amb", Float, nullable=False)
-    P_solar = Column("P_solar", Float, nullable=False)
-    T_in = Column("T_in", Float, nullable=True)
-    T_en = Column("T_en", Float, nullable=True)
-    P_heat_th = Column("P_heat_th", Float, nullable=True)
-    P_heat_el = Column("P_heat_el", Float, nullable=True)
-    P_hgain = Column("P_hgain", Float, nullable=True)
-    P_base = Column("P_base", Float, nullable=True)
-    P_pv = Column("P_pv", Float, nullable=True)
-    P_bat = Column("P_bat", Float, nullable=True)
+    time =      Column("time",      Integer,   primary_key=True, index=True, nullable=False)
+    T_amb =     Column("T_amb",     Float(24), nullable=False)
+    P_solar =   Column("P_solar",   Float(24), nullable=False)
+    T_in =      Column("T_in",      Float(24), nullable=False)
+    T_en =      Column("T_en",      Float(24), nullable=False)
+    P_heat_th = Column("P_heat_th", Float(24), nullable=False)
+    P_heat_el = Column("P_heat_el", Float(24), nullable=False)
+    P_hgain =   Column("P_hgain",   Float(24), nullable=False)
+    P_base =    Column("P_base",    Float(24), nullable=False)
+    P_pv =      Column("P_pv",      Float(24), nullable=False)
+    P_bat =     Column("P_bat",     Float(24), nullable=False)
 
+    __table_args__ = (
+        CheckConstraint('"ferntree_sim".time >= 0'),
+        CheckConstraint('"ferntree_sim"."T_amb" > 0'),
+        CheckConstraint('"ferntree_sim"."P_solar" >= 0'),
+        CheckConstraint('"ferntree_sim"."T_in" > 0'),
+        CheckConstraint('"ferntree_sim"."T_en" > 0'),
+        CheckConstraint('"ferntree_sim"."P_heat_th" >= 0'),
+        CheckConstraint('"ferntree_sim"."P_heat_el" >= 0'),
+        CheckConstraint('"ferntree_sim"."P_hgain" >= 0'),
+        CheckConstraint('"ferntree_sim"."P_base" >= 0'),
+        CheckConstraint('"ferntree_sim"."P_pv" <= 0'),
+    )

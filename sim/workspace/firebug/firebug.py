@@ -19,6 +19,8 @@ sim.timesteps = int(365 * 24 * 3600 / sim.timebase)
 timeZone = timezone(settings["sim"]["timezone"])
 sim.start_time = int(timeZone.localize(datetime(2019, 1, 1)).timestamp())
 
+sim.weather_data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "example_input_data.json")
+
 ## DEFINE MODEL
 
 # 1. Define a house
@@ -36,6 +38,7 @@ heating_sys.temp_setpoint = settings["thermal"]["temp_setpoint"] + 273.15 # in K
 heating_sys.deadband =      settings["thermal"]["deadband"]
 heating_sys.P_heat_max =    settings["thermal"]["P_heat_max"]
 heating_sys.heated_area =   settings["thermal"]["heated_area"]
+heating_sys.cop =           settings["thermal"]["cop"]
 
 house.heating_sys = heating_sys
 

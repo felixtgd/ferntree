@@ -3,61 +3,92 @@ import json
 from dev import sf_house
 from database import database
 
-class SimHost():
-    def __init__(self) -> None:
+class SimHost:
+    """ Main component of the simulation. Responsible for:
+    - Setting up the simulation environment
+    - Handling weather data
+    - Running the simulation
+    - Saving the results to the database
+    """
+    def __init__(self):
+        """
+        Initializes a new instance of the SimHost class.
+        """
         
-        self.timebase =     None
-        self.timesteps =    None
-        self.start_time =   None
-        self.current_time = None
+        self.timebase = None # Timebase in seconds
+        self.timesteps = None # Number of timesteps
+        self.start_time = None # Start time in seconds since epoch
+        self.current_time = None # Current time in seconds since epoch
 
-        self.house = None
+        self.house = None # House object being simulated
 
-        self.env_state = {
-            "time":     None,
-            "T_amb":    None,
-            "P_solar":  None,
+        self.env_state = { # Current state of simulation environment
+            "time": None, # Time of the simulation
+            "T_amb": None, # Ambient temperature [K]
+            "P_solar": None, # Solar irradiance [kW/m2]
             }
+        
+        self.weather_data_path = None # Path to the weather data file
 
     def startup(self):
+        """
+        Startup of the host:
+        - Initializes the current time
+        - Creates a database instance
+        - Starts up the database
+        - Starts up the house
+        - Loads weather data
+        """
         self.current_time = self.start_time
-
-        self.db = database.Database()
+        self.db = database.PostgresDatabase()
         self.db.startup()
-
         self.house.startup()
-
         self.load_weather_data()
     
     def shutdown(self):
+        """
+        Shutdown of the host:
+        - Shuts down the database
+        - Shuts down the house
+        """
         self.db.shutdown()
+        self.house.shutdown()
 
-    def add_house(self, house: sf_house.SfHouse) -> None:
+    def add_house(self, house: sf_house.SfHouse):
+        """ Adds a house to the simulation host. """
         if isinstance(house, sf_house.SfHouse):
             self.house = house
         else:
             raise TypeError("Can only add objects of class 'House' to simHost.")
 
     def run_simulation(self):
+        """ Runs the simulation.
+        - Starts up the host
+        - Perfroms timetick for each timestep in the simulation
+        - Shuts down the host
+        """
         self.startup()
-
         for t in range(self.timesteps):
             self.timetick(t)
             if t%100 == 0:
                 print(f"Timestep {t}: T_amb = {self.T_amb[t]:.2f}, P_solar = {self.P_solar[t]:.2f}")
-        
         self.shutdown()
-        
+
+
     def timetick(self, t):
+        """ Performs a timetick for the current timestep.
+        - Updates the state of the simulation environment, i.e. time, ambient temperature and solar irradiance
+        - Triggers the house to perform a timetick
+        - Saves the results of the house to the database
+        - Updates the current time
+        """
         self.updateState(t)
-        
         results = self.house.timetick()
-
         self.save_results(results)
-
         self.current_time += self.timebase
         
     def updateState(self, t):
+        """ Updates the state of the simulation environment. """
         self.env_state = {"time": self.current_time,
                           "T_amb": self.T_amb[t],
                           "P_solar": self.P_solar[t],
@@ -65,22 +96,17 @@ class SimHost():
 
 
     def save_results(self, results):
+        """ Saves the results of the house to the database. """
         self.db.write_data_to_db(results)
 
 
     # Only for prototyping, will be replaced by database access
     def load_weather_data(self):
-        with open("example_input_data.json") as json_file:
+        """ Loads the weather data from the weather data file. """
+        with open(self.weather_data_path) as json_file:
             input_data = json.load(json_file)
             hourly_data = input_data["outputs"]["hourly"]
-
-            self.T_amb = []
-            self.P_solar = []
-
-            for hd in hourly_data:
-                self.T_amb.append(hd["T2m"] + 273.15) # [K]
-                self.P_solar.append(hd["Gb(i)"] /1e3) # [kW/m2]
-            
-            self.timesteps = int(len(self.T_amb))
+            self.T_amb = [hd["T2m"] + 273.15 for hd in hourly_data]  # [K]
+            self.P_solar = [hd["Gb(i)"] / 1e3 for hd in hourly_data]  # [kW/m2]
 
     
