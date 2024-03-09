@@ -15,22 +15,24 @@ class SfHouse(device.Device):
         super().__init__(host)
 
         self.host.add_house(self)
+        self.components = []
 
-        self.baseload = None
-        self.heating_sys = None
-        self.pv = None
-        self.battery = None
+    def add_component(self, comp: device.Device):
+        """ Adds a components to the house. """
+        if isinstance(comp, device.Device):
+            self.components.append(comp)
+        else:
+            raise TypeError("Can only add objects of class 'Device' to house.")
 
     def startup(self):
         """Startup of the house and its components."""
-        # self.baseload.startup()
-        self.heating_sys.startup()
-        # self.pv.startup()
-        # self.battery.startup()
+        for comp in self.components:
+            comp.startup()
 
     def shutdown(self):
         """Shutdown of the house and its components."""
-        pass
+        for comp in self.components:
+            comp.shutdown()
 
     def timetick(self):
         """Simulates a single timestep of the house's components.
@@ -38,10 +40,8 @@ class SfHouse(device.Device):
         Then the PV system is simulated to determine the electricity generation.
         Finally the battery is simulated to balance supply and demand.
         """
-        # self.baseload.timetick()
-        self.heating_sys.timetick()
-        # self.pv.timetick()
-        # self.battery.timetick()
+        for comp in self.components:
+            comp.timetick()
 
         results = self.get_results()
 
@@ -56,11 +56,10 @@ class SfHouse(device.Device):
             time=self.host.env_state["time"],
             T_amb=self.host.env_state["T_amb"],
             P_solar=self.host.env_state["P_solar"],
-            T_in=self.heating_sys.current_state["T_in"],
-            T_en=self.heating_sys.current_state["T_en"],
-            P_heat_th=self.heating_sys.current_state["P_heat_th"],
-            P_heat_el=self.heating_sys.current_state["P_heat_el"],
-            P_hgain=self.heating_sys.current_state["P_hgain"],
+            T_in=self.components[0].current_state["T_in"],
+            T_en=self.components[0].current_state["T_en"],
+            P_heat_th=self.components[0].current_state["P_heat_th"],
+            P_heat_el=self.components[0].current_state["P_heat_el"],
             P_base=0.0,
             P_pv=0.0,
             P_bat=0.0,

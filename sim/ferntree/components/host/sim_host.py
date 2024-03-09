@@ -1,4 +1,6 @@
 import json
+from pytz import timezone
+from datetime import datetime
 
 from dev import sf_house
 from database import database
@@ -10,14 +12,15 @@ class SimHost:
     - Running the simulation
     - Saving the results to the database
     """
-    def __init__(self):
+    def __init__(self, sim_settings):
         """
         Initializes a new instance of the SimHost class.
         """
         
-        self.timebase = None # Timebase in seconds
-        self.timesteps = None # Number of timesteps
-        self.start_time = None # Start time in seconds since epoch
+        self.timebase = int(sim_settings["timebase"]) # Timebase in seconds
+        self.timesteps = int(365 * 24 * 3600 / self.timebase) # Number of timesteps
+        self.timezone = timezone(sim_settings["timezone"])
+        self.start_time = int(self.timezone.localize(datetime(2023, 1, 1)).timestamp()) # Start time in seconds since epoch
         self.current_time = None # Current time in seconds since epoch
 
         self.house = None # House object being simulated
@@ -70,7 +73,7 @@ class SimHost:
         self.startup()
         for t in range(self.timesteps):
             self.timetick(t)
-            if t%100 == 0:
+            if t%200 == 0:
                 print(f"Timestep {t}: T_amb = {self.T_amb[t]:.2f}, P_solar = {self.P_solar[t]:.2f}")
         self.shutdown()
 

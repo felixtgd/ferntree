@@ -7,39 +7,38 @@ class HeatingCtrl(device.Device):
     indoor temperature close to the setpoint.
     """
 
-    def __init__(self, host) -> None:
+    def __init__(self, host, ctrl_specs) -> None:
         """Initializes a new instance of the HeatingCtrl class."""
 
         super().__init__(host)
 
-        self.temp_setpoint = None
-        self.deadband = None
-        self.P_heat_max = None
+        self.temp_setpoint = ctrl_specs["temp_setpoint"]
+        self.deadband = ctrl_specs["deadband"]
 
+        self.lower_bound = self.temp_setpoint - self.deadband
+        self.upper_bound = self.temp_setpoint + self.deadband
+
+        self.ctrl_signal = 0.0
         self.integral = 0.0
         
-    def set_heating_power(self, T_in, P_heat_th):
-        """Determines the required thermal heating power based on the current indoor temperature and the previous heating power.
+    def set_ctrl_signal(self, T_in):
+        """Determines the control signal to set the required thermal heating power based on the current indoor temperature.
         
         Args:
             T_in (float): Indoor temperature [K]
-            P_heat_th (float): Previous thermal heating power [kW]
 
         Returns:
-            float: The updated thermal heating power [kW]
+            float: The updated control signal for the heating system.
         """
 
-        lower_bound = self.temp_setpoint - self.deadband
-        upper_bound = self.temp_setpoint + self.deadband
-        
         # Thermostat control of heating power
-        if T_in < lower_bound:
+        if T_in < self.lower_bound:
             # If indoor temperature is below setpoint, turn on heating to maximum
-            P_heat_th_next = self.P_heat_max
+            self.ctrl_signal = 1.0
             self.integral = 0.0
-        elif T_in > upper_bound:
+        elif T_in > self.upper_bound:
             # If indoor temperature is above setpoint, turn off heating
-            P_heat_th_next = 0.0
+            self.ctrl_signal = 0.0
             self.integral = 0.0
         else:
             # Apply variant of a PI-controller to adjust heating power
@@ -48,7 +47,7 @@ class HeatingCtrl(device.Device):
             # Integral term: sum of proportional errors over timesteps
             self.integral += proportional
             
-            Ph_hat = (1 + proportional + self.integral) * P_heat_th
-            P_heat_th_next = min(max(0, Ph_hat), self.P_heat_max)
+            # Set new control signal
+            self.ctrl_signal = min(max(0, (1 + proportional + self.integral)), 1)
         
-        return P_heat_th_next
+        return self.ctrl_signal

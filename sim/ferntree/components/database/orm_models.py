@@ -17,7 +17,6 @@ class Timestep(Base):
     T_en =      Column("T_en",      Float(24), nullable=False)
     P_heat_th = Column("P_heat_th", Float(24), nullable=False)
     P_heat_el = Column("P_heat_el", Float(24), nullable=False)
-    P_hgain =   Column("P_hgain",   Float(24), nullable=False)
     P_base =    Column("P_base",    Float(24), nullable=False)
     P_pv =      Column("P_pv",      Float(24), nullable=False)
     P_bat =     Column("P_bat",     Float(24), nullable=False)
@@ -30,7 +29,6 @@ class Timestep(Base):
         CheckConstraint('"ferntree_sim"."T_en" > 0'),
         CheckConstraint('"ferntree_sim"."P_heat_th" >= 0'),
         CheckConstraint('"ferntree_sim"."P_heat_el" >= 0'),
-        CheckConstraint('"ferntree_sim"."P_hgain" >= 0'),
         CheckConstraint('"ferntree_sim"."P_base" >= 0'),
         CheckConstraint('"ferntree_sim"."P_pv" <= 0'),
     )

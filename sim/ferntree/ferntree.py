@@ -6,18 +6,25 @@ import logging
 import json
 import time
 
-
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("ferntree")
 
-def load_model(model):
+def build_and_run_simulation():
+    # Load sim_builder
     try:
-        # Load model
-        importlib.import_module(model)
+        sim_builder = importlib.import_module("sim_builder")
     except ImportError as e:
         logger.error(f"Failed to import model: {e}")
         sys.exit(1)
+
+    # Build simulation
+    builder = sim_builder.SimBuilder(model_path)
+    sim = builder.build_simulation()
+
+    # Start simulation
+    sim.run_simulation()
+
 
 if __name__ == "__main__":
     logger.info("")
@@ -54,10 +61,11 @@ if __name__ == "__main__":
     logger.info(f"Model directory: \t{model_path}")
     logger.info("")
 
+    # Build and run the simulation
     start_time = time.time()
-
-    # Load model
-    load_model(model)
-
+    build_and_run_simulation()
     end_time = time.time()
+
+    logger.info("")
     logger.info(f"Execution time: {(end_time - start_time):.2f} seconds.")
+    logger.info("")
