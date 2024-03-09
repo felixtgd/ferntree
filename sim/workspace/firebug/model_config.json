@@ -1,0 +1,29 @@
+{
+    "sim":{
+        "timebase": 3600,
+        "timezone": "Europe/Zurich"
+    },
+    "house": {
+        "heating_sys": {
+            "thermal_model": {
+                "order": "2R3C",
+                "yoc": 1970,
+                "heated_area": 158,
+                "renovation": "Var3"
+            },
+            "thermostat": {
+                "temp_setpoint": 20,
+                "deadband": 1
+            },
+            "heating_dev":{
+                "type": "heatpump",
+                "P_heat_th_max": 3.9,
+                "cop": 3.5,
+                "efficiency": 0.9
+            }
+        },
+        "baseload": null,
+        "pv": null,
+        "battery": null
+    }
+}

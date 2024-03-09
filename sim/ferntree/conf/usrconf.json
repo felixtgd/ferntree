@@ -1,0 +1,15 @@
+{
+    "env": {
+        "path": "../ferntree/components/"
+    },
+    "workspace": {
+        "path": "../workspace/"
+    },
+    "db": {
+        "host": "localhost",
+        "port": "5432",
+        "db_name": "sim_db",
+        "clear_db": true
+    },
+    "ver": 0.1
+}
