@@ -1,12 +1,18 @@
-
+import os
+import sys
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+
+import matplotlib.pyplot as plt
+from datetime import datetime
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+ft_path = os.path.abspath(os.path.join(script_dir, "../ferntree/components/"))
+sys.path.insert(0, ft_path)
 
 from database import orm_models
 from database import database
 
-import matplotlib.pyplot as plt
-from datetime import datetime
 
 # Connect to database and get results from table "ferntree_sim"
 db = database.PostgresDatabase()
@@ -33,7 +39,6 @@ def plot_results(timestamps, results):
     axs[1].plot(timestamps, [row.P_solar for row in results], label='Solar irradiance')
     axs[1].plot(timestamps, [row.P_heat_th for row in results], label='Thermal heating power')
     axs[1].plot(timestamps, [row.P_heat_el for row in results], label='Electr heating power')
-    axs[1].plot(timestamps, [row.P_hgain for row in results], label='Internal heat gain')
     axs[1].set_ylabel('Power [kW]')
     axs[1].legend()
     axs[1].grid()
@@ -45,7 +50,7 @@ week = 5
 start_idx = 24*7*week
 # end_idx = 24*7*(week+1)
 end_idx = start_idx + 24*3
-# plot_results(timestamps[start_idx:end_idx], results[start_idx:end_idx])
+plot_results(timestamps[start_idx:end_idx], results[start_idx:end_idx])
 
 
 # Plot the load duration curve of the thermal heating power

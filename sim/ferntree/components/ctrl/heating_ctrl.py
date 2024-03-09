@@ -12,8 +12,8 @@ class HeatingCtrl(device.Device):
 
         super().__init__(host)
 
-        self.temp_setpoint = ctrl_specs["temp_setpoint"]
-        self.deadband = ctrl_specs["deadband"]
+        self.temp_setpoint = ctrl_specs["temp_setpoint"] + 273.15  # temperature setpoint in [K]
+        self.deadband = ctrl_specs["deadband"] # deadband around setpoint
 
         self.lower_bound = self.temp_setpoint - self.deadband
         self.upper_bound = self.temp_setpoint + self.deadband
@@ -48,6 +48,6 @@ class HeatingCtrl(device.Device):
             self.integral += proportional
             
             # Set new control signal
-            self.ctrl_signal = min(max(0, (1 + proportional + self.integral)), 1)
+            self.ctrl_signal = max(0, (1 + proportional + self.integral))
         
         return self.ctrl_signal

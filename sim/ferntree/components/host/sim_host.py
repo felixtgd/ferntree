@@ -1,9 +1,12 @@
 import json
+import logging
 from pytz import timezone
 from datetime import datetime
 
 from dev import sf_house
 from database import database
+
+logger = logging.getLogger("ferntree")
 
 class SimHost:
     """ Main component of the simulation. Responsible for:
@@ -71,10 +74,11 @@ class SimHost:
         - Shuts down the host
         """
         self.startup()
+        logger.info(f"Running simulation with {self.timesteps} timesteps.")
         for t in range(self.timesteps):
             self.timetick(t)
-            if t%200 == 0:
-                print(f"Timestep {t}: T_amb = {self.T_amb[t]:.2f}, P_solar = {self.P_solar[t]:.2f}")
+        
+        logger.info("Simulation finished successfully.")
         self.shutdown()
 
 
