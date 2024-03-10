@@ -77,4 +77,4 @@ def plot_cumulative_energy_demand(results):
     plt.grid()
     plt.show()
 
-plot_cumulative_energy_demand(results)
+# plot_cumulative_energy_demand(results)

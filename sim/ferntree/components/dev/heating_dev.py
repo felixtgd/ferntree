@@ -27,7 +27,7 @@ class HeatingDev(device.Device):
 
     def set_heating_power(self, ctrl_signal):
         """Calculates the electrical heating power required to provide a given thermal heating power."""
-        if ctrl_signal == 1.0:
+        if ctrl_signal == -1.0:
             self.P_heat_th = self.P_heat_th_max
         else:
             self.P_heat_th = min(max(0, ctrl_signal * self.P_heat_th), self.P_heat_th_max)

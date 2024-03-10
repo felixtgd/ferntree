@@ -2,9 +2,9 @@ from dev import device
 
 class HeatingCtrl(device.Device):
     """Class for a thermostat controller.
-    This controller determines the required thermal heating power based on the current indoor temperature, the setpoint
-    and the previous heating power. Using a variant of a PI-controller, the heating power is adjusted to maintain the
-    indoor temperature close to the setpoint.
+    This controller determines the control signal for setting required thermal heating power based on 
+    the current indoor temperature and the setpoint. Using a variant of a PI-controller, the heating power 
+    is adjusted to maintain the indoor temperature close to the setpoint.
     """
 
     def __init__(self, host, ctrl_specs) -> None:
@@ -18,8 +18,7 @@ class HeatingCtrl(device.Device):
         self.lower_bound = self.temp_setpoint - self.deadband
         self.upper_bound = self.temp_setpoint + self.deadband
 
-        self.ctrl_signal = 0.0
-        self.integral = 0.0
+        self.integral = 0.0 # integral term of the PI-controller
         
     def set_ctrl_signal(self, T_in):
         """Determines the control signal to set the required thermal heating power based on the current indoor temperature.
@@ -34,11 +33,11 @@ class HeatingCtrl(device.Device):
         # Thermostat control of heating power
         if T_in < self.lower_bound:
             # If indoor temperature is below setpoint, turn on heating to maximum
-            self.ctrl_signal = 1.0
+            ctrl_signal = -1.0
             self.integral = 0.0
         elif T_in > self.upper_bound:
             # If indoor temperature is above setpoint, turn off heating
-            self.ctrl_signal = 0.0
+            ctrl_signal = 0.0
             self.integral = 0.0
         else:
             # Apply variant of a PI-controller to adjust heating power
@@ -46,8 +45,8 @@ class HeatingCtrl(device.Device):
             proportional = (self.temp_setpoint - T_in) / self.temp_setpoint
             # Integral term: sum of proportional errors over timesteps
             self.integral += proportional
-            
+
             # Set new control signal
-            self.ctrl_signal = max(0, (1 + proportional + self.integral))
-        
-        return self.ctrl_signal
+            ctrl_signal = max(0, (1 + proportional + self.integral))
+            
+        return ctrl_signal
