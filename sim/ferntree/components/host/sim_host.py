@@ -8,6 +8,7 @@ from database import database
 
 logger = logging.getLogger("ferntree")
 
+
 class SimHost:
     """ Main component of the simulation. Responsible for:
     - Setting up the simulation environment
@@ -76,6 +77,7 @@ class SimHost:
         self.startup()
         logger.info(f"Running simulation with {self.timesteps} timesteps.")
         for t in range(self.timesteps):
+            # print(f"Timetick {t}")
             self.timetick(t)
         
         logger.info("Simulation finished successfully.")

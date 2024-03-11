@@ -7,8 +7,19 @@ import json
 import time
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+# logging.basicConfig(level=logging.INFO, format='%(message)s')
+# logger = logging.getLogger("ferntree")
+
+# Global variable to control logging
+ENABLE_LOGGING = False
+
+# Set up logger
 logger = logging.getLogger("ferntree")
+if ENABLE_LOGGING:
+    logging.basicConfig(level=logging.INFO)
+else:
+    logging.basicConfig(level=logging.CRITICAL)
+
 
 def build_and_run_simulation():
     # Load sim_builder

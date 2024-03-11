@@ -23,12 +23,28 @@ class Timestep(Base):
 
     __table_args__ = (
         CheckConstraint('"ferntree_sim".time >= 0'),
+
         CheckConstraint('"ferntree_sim"."T_amb" > 0'),
+        CheckConstraint('"ferntree_sim"."T_amb" < 375.15'),
+
         CheckConstraint('"ferntree_sim"."P_solar" >= 0'),
+        CheckConstraint('"ferntree_sim"."P_solar" < 10000'),
+
         CheckConstraint('"ferntree_sim"."T_in" > 0'),
+        CheckConstraint('"ferntree_sim"."T_in" < 375.15'),
+
         CheckConstraint('"ferntree_sim"."T_en" > 0'),
+        CheckConstraint('"ferntree_sim"."T_en" < 375.15'),
+
         CheckConstraint('"ferntree_sim"."P_heat_th" >= 0'),
+        CheckConstraint('"ferntree_sim"."P_heat_th" < 10000'),
+
         CheckConstraint('"ferntree_sim"."P_heat_el" >= 0'),
+        CheckConstraint('"ferntree_sim"."P_heat_el" < 10000'),
+
         CheckConstraint('"ferntree_sim"."P_base" >= 0'),
+        CheckConstraint('"ferntree_sim"."P_base" < 10000'),
+
         CheckConstraint('"ferntree_sim"."P_pv" <= 0'),
+        CheckConstraint('"ferntree_sim"."P_pv" < 10000'),
     )

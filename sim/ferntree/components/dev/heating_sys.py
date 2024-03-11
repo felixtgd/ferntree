@@ -17,14 +17,6 @@ class HeatingSys(device.Device):
         """Initializes a new instance of the HeatingSys class."""
         super().__init__(host)
 
-        # Settings
-        # self.temp_setpoint = None  # temperature setpoint in [K]
-        # self.deadband = None  # deadband around setpoint
-        # self.P_heat_max = None  # maximum heating power of system [kW]
-        # self.heated_area = None  # heated living area [m2]
-        
-        # self.CoP = None # Coefficient of Performance of heating device
-
         # Components of heating system
         self.thermal_model = None  # thermal building model
         self.heating_ctrl = None  # thermostat controller
@@ -33,7 +25,7 @@ class HeatingSys(device.Device):
         # Initialize current state of the heating system
         self.current_state = {
             "T_in": 20.0 + 273.15, # indoor temperature in [K]
-            "T_en": 20.0 + 273.15, # building envelope temperature in [K]
+            "T_en": 5.0 + 273.15, # building envelope temperature in [K]
             "P_heat_th": 0.0, # thermal heating power in [kW]
             "P_heat_el": 0.0, # electrical heating power in [kW]
         }
