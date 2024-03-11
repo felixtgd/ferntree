@@ -17,14 +17,6 @@ class HeatingSys(device.Device):
         """Initializes a new instance of the HeatingSys class."""
         super().__init__(host)
 
-        # Settings
-        # self.temp_setpoint = None  # temperature setpoint in [K]
-        # self.deadband = None  # deadband around setpoint
-        # self.P_heat_max = None  # maximum heating power of system [kW]
-        # self.heated_area = None  # heated living area [m2]
-        
-        # self.CoP = None # Coefficient of Performance of heating device
-
         # Components of heating system
         self.thermal_model = None  # thermal building model
         self.heating_ctrl = None  # thermostat controller

@@ -3,8 +3,9 @@ import os
 import logging
 
 from host import sim_host
-from dev import sf_house, heating_sys, thermal_model, heating_dev
+from dev import sf_house, heating_sys, heating_dev
 from ctrl import heating_ctrl
+from models import thermal_model
 
 logger = logging.getLogger("ferntree")
 

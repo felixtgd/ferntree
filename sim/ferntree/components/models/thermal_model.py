@@ -1,6 +1,10 @@
 import numpy as np
+import logging
 
 from dev import device
+from models import linear_regression
+
+logger = logging.getLogger("ferntree")
 
 class ThermalModel(device.Device):
     """Class for a thermal building model.
@@ -16,6 +20,7 @@ class ThermalModel(device.Device):
         super().__init__(host)
 
         self.model_order = "2R3C"  # 2 resistances and 3 capacitances in lumped RC-network
+        self.model = linear_regression.LinearRegressionModel('ferntree/components/data/3R2C_model_params.csv', features=3, outputs=6, expand=True)
         self.yoc = model_specs["yoc"]  # year of construction
         self.heated_area = model_specs["heated_area"]  # heated living area [m2]
         self.heat_gain = 3.0 / 1e3  # internal heat gain, constant at 3 W/m2
@@ -28,28 +33,38 @@ class ThermalModel(device.Device):
         self.renovation = model_specs["renovation"]  # state of renovation 
         
         # Set the model parameters 
-        self.set_model_params()
+        self.model.train_model(n_iterations=100, learning_rate=0.1)
+        params = self.model.predict(np.array([[self.yoc, self.heated_area, self.renovation]]).astype(float))
+        # Flatten params
+        params = params.flatten()
+        self.set_model_params(params)
 
         # Pre-calculate time constants
         self.dt = self.host.timebase / 3600
         self.timebase_sqrt = np.sqrt(self.host.timebase)
 
 
-    def set_model_params(self):
-        #TODO: Change this later to dynamically set parameters based on yoc, heated_area, and renovation
-        # SFH F Var3 Model parameters
+    def set_model_params(self, params):
+        logger.info("Parameters of thermal 3R2C model:")
         # Effective window area for absorption of solar gains on internal air [m2]
-        self.Ai = 1.72 
+        self.Ai = params[0] #1.72 
+        logger.info(f"Ai: {self.Ai:.2f} (1.72)")
         # Capacitance of building envelope [kWh/K]
-        self.Ce = 16.39
+        self.Ce = params[1] #16.39
+        logger.info(f"Ce: {self.Ce:.2f} (16.39)")
         # Capacitance of interior [kWh/K]
-        self.Ci = 2.02
+        self.Ci = params[2] #2.02
+        logger.info(f"Ci: {self.Ci:.2f} (2.02)")
         # Thermal resistance between building envelope and the ambient [K/kW]
-        self.Rea = 13.26
+        self.Rea = params[3] #13.26
+        logger.info(f"Rea: {self.Rea:.2f} (13.26)")
         # Thermal resistance between interior and the ambient [K/kW]
-        self.Ria = 24.38
+        self.Ria = params[4] #24.38
+        logger.info(f"Ria: {self.Ria:.2f} (24.38)")
         # Thermal resistance between interior and building envelope [K/kW]
-        self.Rie = 0.53
+        self.Rie = params[5] #0.53
+        logger.info(f"Rie: {self.Rie:.2f} (0.53)")
+        logger.info("")
 
 
     def compute_thermal_response(self, T_in, T_en, T_amb, P_solar, P_heat_th):

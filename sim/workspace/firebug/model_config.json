@@ -9,7 +9,7 @@
                 "order": "2R3C",
                 "yoc": 1970,
                 "heated_area": 158,
-                "renovation": "Var3"
+                "renovation": 3
             },
             "thermostat": {
                 "temp_setpoint": 20,
