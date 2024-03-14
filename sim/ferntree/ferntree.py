@@ -6,19 +6,16 @@ import logging
 import json
 import time
 
-# Set up logging
-# logging.basicConfig(level=logging.INFO, format='%(message)s')
-# logger = logging.getLogger("ferntree")
 
 # Global variable to control logging
-ENABLE_LOGGING = False
+ENABLE_LOGGING = True
 
-# Set up logger
+# Set up logging
 logger = logging.getLogger("ferntree")
 if ENABLE_LOGGING:
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
 else:
-    logging.basicConfig(level=logging.CRITICAL)
+    logging.basicConfig(level=logging.CRITICAL, format="%(message)s")
 
 
 def build_and_run_simulation():
@@ -55,13 +52,15 @@ if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Load user configuration
-    conf_path = os.path.join(script_dir, 'conf', 'usrconf.json')
+    conf_path = os.path.join(script_dir, "conf", "usrconf.json")
     with open(conf_path) as f:
         conf = json.load(f)
 
     # Set up paths
-    ft_path = os.path.abspath(os.path.join(script_dir, conf['env']['path']))
-    model_path = os.path.abspath(os.path.join(script_dir, conf['workspace']['path'], model))
+    ft_path = os.path.abspath(os.path.join(script_dir, conf["env"]["path"]))
+    model_path = os.path.abspath(
+        os.path.join(script_dir, conf["workspace"]["path"], model)
+    )
 
     # Add paths to sys.path
     sys.path.insert(0, ft_path)
