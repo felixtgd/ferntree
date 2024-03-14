@@ -4,11 +4,12 @@ import logging
 logger = logging.getLogger("ferntree")
 
 class LinearRegressionModel():
-    def __init__(self, dataset: str, features: int = 3, outputs: int = 6, expand: bool = False) -> None:
+    def __init__(self, dataset: str, features: int = 3, outputs: int = 6, expand: bool = False, log: bool = False) -> None:
         self.dataset = str(dataset) # csv file with training data
         self.features = int(features) # input features
         self.outputs = int(outputs) # output features
         self.expand = bool(expand) # expand training data
+        self.log = log # log training process
 
     def preprocess_data(self):
         # Load training data from csv file
@@ -110,9 +111,10 @@ class LinearRegressionModel():
         X = self.X
         Y = self.Y
         
-        # logger.info("")
-        # logger.info("Training linear regression model...")
-        # logger.info(f"X: {X.shape}, Y: {Y.shape}")
+        if self.log:
+            logger.info("")
+            logger.info("Training linear regression model...")
+            logger.info(f"X: {X.shape}, Y: {Y.shape}")
         
         # Determine the number of input features, output features, and samples
         n_samples = X.shape[0]
@@ -139,11 +141,13 @@ class LinearRegressionModel():
             theta -= learning_rate * grad
 
             if abs(loss[i] - loss[i-1]) < 1e-6:
-                # logger.info(f"Converged at iteration {i}")
+                if self.log:
+                    logger.info(f"Converged at iteration {i}")
                 break
 
-        # logger.info(f"Final loss: {loss[i]:.4f}")
-        # logger.info("")
+        if self.log:
+            logger.info(f"Final loss: {loss[i]:.4f}")
+            logger.info("")
 
         self.theta = theta # weights and biases
     
@@ -158,26 +162,11 @@ class LinearRegressionModel():
         # NOTE: PFUSCH!!!
         # Make sure that the predictions are not negative
         Y_pred = np.abs(Y_pred)
-        # Get mean of self.Y_org
-        Y_means = np.mean(self.Y_org, axis=0)
-        # print(Y_means)
+        # Get mean of self.Y
+        Y_means = np.mean(self.Y, axis=0)
         # Calculate average of Y_pred and Y_means
         for i in range(len(Y_pred)):
             Y_pred[i] = (Y_pred[i] + Y_means[i]) / 2
 
         return Y_pred
 
-
-# Ai: 6.01 (1.72)
-# Ce: 30.03 (16.39)
-# Ci: 3.13 (2.02)
-# Rea: 1.53 (13.26)
-# Ria: 2.10 (24.38)
-# Rie: 0.11 (0.53)
-
-# Ai: 4.45 (1.72)
-# Ce: 16.46 (16.39)
-# Ci: 3.01 (2.02)
-# Rea: 0.68 (13.26)
-# Ria: 2.50 (24.38)
-# Rie: 1.50 (0.53)

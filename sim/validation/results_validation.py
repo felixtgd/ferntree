@@ -43,7 +43,8 @@ def plot_results(timestamps, results):
     axs[1].legend()
     axs[1].grid()
 
-    plt.show()
+    # Save plot as png
+    fig.savefig(os.path.join(script_dir, 'results/example_heating_profiles.png'))
 
 # Plot results for a ween in february
 week = 5
@@ -57,24 +58,31 @@ plot_results(timestamps[start_idx:end_idx], results[start_idx:end_idx])
 def plot_load_duration_curve(results):
     P_heat_th = [row.P_heat_th for row in results]
     P_heat_th.sort(reverse=True)
+    fig = plt.figure(figsize=(10, 6))
     plt.plot(P_heat_th)
     plt.title('Load duration curve of the thermal heating power')
     plt.xlabel('Timestep')
     plt.ylabel('Power [kW]')
     plt.grid()
-    plt.show()
 
-# plot_load_duration_curve(results)
+    # Save plot as png
+    fig.savefig(os.path.join(script_dir, 'results/example_load_duration_curve_heating.png'))
+
+plot_load_duration_curve(results)
     
 # Plot the cumulative energy demand for heating
 def plot_cumulative_energy_demand(results):
     P_heat_th = [row.P_heat_th for row in results]
     energy_demand = [sum(P_heat_th[:i]) for i in range(len(P_heat_th))]
+    fig = plt.figure(figsize=(10, 6))
     plt.plot(energy_demand)
     plt.title('Cumulative energy demand for heating')
     plt.xlabel('Timestep')
     plt.ylabel('Energy [kWh]')
     plt.grid()
-    plt.show()
 
-# plot_cumulative_energy_demand(results)
+    # Save plot as png
+    fig.savefig(os.path.join(script_dir, 'results/example_cum_heat_demand.png'))
+
+
+plot_cumulative_energy_demand(results)

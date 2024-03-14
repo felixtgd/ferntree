@@ -58,29 +58,34 @@ class ThermalModel(device.Device):
 
 
     def set_model_params(self, params):
-        # NOTE: PFUSCH!!! Params from linear regression model can have negative values!
-        
-        logger.info("Parameters of thermal 3R2C model:")
         # Effective window area for absorption of solar gains on internal air [m2]
-        self.Ai = abs(params[0]) 
-        logger.info(f"Ai: {self.Ai:.2f} (2.89)")
+        self.Ai = params[0]
+        
         # Capacitance of building envelope [kWh/K]
-        self.Ce = abs(params[1]) #16.39
-        logger.info(f"Ce: {self.Ce:.2f} (17.13)")
+        self.Ce = params[1]
+        
         # Capacitance of interior [kWh/K]
-        self.Ci = abs(params[2]) #2.02
-        logger.info(f"Ci: {self.Ci:.2f} (1.99)")
+        self.Ci = params[2]
+        
         # Thermal resistance between building envelope and the ambient [K/kW]
-        self.Rea = abs(params[3]) #13.26
-        logger.info(f"Rea: {self.Rea:.2f} (8.23)")
+        self.Rea = params[3]
+        
         # Thermal resistance between interior and the ambient [K/kW]
-        self.Ria = abs(params[4]) #24.38
-        logger.info(f"Ria: {self.Ria:.2f} (18.25)")
+        self.Ria = params[4]
+        
         # Thermal resistance between interior and building envelope [K/kW]
-        self.Rie = abs(params[5]) #0.53
-        logger.info(f"Rie: {self.Rie:.2f} (0.52)")
-        logger.info("")
-
+        self.Rie = params[5]
+        
+        if False:
+            logger.info("Parameters of thermal 3R2C model:")
+            logger.info(f"Ai: {self.Ai:.2f} (2.92)")
+            logger.info(f"Ce: {self.Ce:.2f} (17.79)")
+            logger.info(f"Ci: {self.Ci:.2f} (2.14)")
+            logger.info(f"Rea: {self.Rea:.2f} (7.97)")
+            logger.info(f"Ria: {self.Ria:.2f} (16.03)")
+            logger.info(f"Rie: {self.Rie:.2f} (0.57)")
+            logger.info("")
+            
 
     def compute_thermal_response(self, T_in, T_en, T_amb, P_solar, P_heat_th):
         """
@@ -109,18 +114,6 @@ class ThermalModel(device.Device):
             + 1.0 / (self.Ce * self.Rea) * (T_amb - T_en)
         ) * self.dt  + np.random.normal()/self.timebase_sqrt
 
-        # logger.info(f"Ti: {T_in:.2f}, dTi: {dTi:.2f}, Te: {T_en:.2f}, dTe: {dTe:.2f}, T_amb: {T_amb:.2f}, P_heat_th: {P_heat_th:.2f}, P_solar: {P_solar:.2f}, P_hgain: {self.P_hgain:.2f}")
-            
-        # NOTE: PFUSCH!!!
-        # Cap value of dTi and dTe
-        # if abs(dTi) > 5:
-        #     logger.info(f"\tPFUSCH: Cap dTi: {dTi:.2f}")
-        #     dTi = 5 * np.sign(dTi)
-
-        # if abs(dTe) > 5:
-        #     logger.info(f"\tPFUSCH: Cap dTe: {dTe:.2f}")
-        #     dTe = 5 * np.sign(dTe)
-
         # Update temperatures
         T_in += dTi
         T_en += dTe
@@ -128,20 +121,6 @@ class ThermalModel(device.Device):
         # NOTE: PFUSCH!!!
         # Safety: Prevent T_en from exceeding T_in
         if T_en > T_in:
-            # logger.info(f"Timestep: {int((self.host.current_time - self.host.start_time) / self.host.timebase)}")
-            # logger.info(f"PFUSCH: T_en = {T_en:.2f} > T_in = {T_in:.2f}")
-            # logger.info(f"Ti: {T_in:.2f}, dTi: {dTi:.2f}, Te: {T_en:.2f}, dTe: {dTe:.2f}, T_amb: {T_amb:.2f}, P_heat_th: {P_heat_th:.2f}, P_solar: {P_solar:.2f}, P_hgain: {self.P_hgain:.2f}")
             T_en = T_in - 2.0
 
         return T_in, T_en
-
-# "yoc": 2000,
-# "heated_area": 111,
-# "renovation": 1 --- 3
-    
-# Ai: 3.92 --- 0.96
-# Ce: 13.30 --- 10.93
-# Ci: 1.37 --- 1.54
-# Rea: 2.52 --- 15.23
-# Ria: 15.94 --- 31.50
-# Rie: 0.26 --- 0.73
