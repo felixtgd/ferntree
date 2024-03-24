@@ -80,12 +80,12 @@ def generate_annual_load_profiles(data_dir, n_profiles, timebase):
             # Generate daily profile with the current season-day model
             mean = df_season_days[f"{season_day}_mean"]
             std = df_season_days[f"{season_day}_std"]
-            # p5 = df_season_day[f"{season_day}_5th"]
-            # p95 = df_season_day[f"{season_day}_95th"]
+            p5 = df_season_days[f"{season_day}_5th"]
+            p95 = df_season_days[f"{season_day}_95th"]
             p25 = df_season_days[f"{season_day}_25th"]
             p75 = df_season_days[f"{season_day}_75th"]
 
-            daily_profile = generate_daily_profile(mean, std, p25, p75)
+            daily_profile = generate_daily_profile(mean, std, p5, p95)
             # Concatenate daily profiles to annual profile
             annual_profile.extend(daily_profile)
 
@@ -134,7 +134,7 @@ def generate_daily_profile(mean, std, lb, ub):
         profile (float): Load profile with n-timesteps
     """
     # Reduce standard deviation to make profiles smoother
-    std = std/10.0
+    std = std/2.0
     # Generate profile with normal distribution
     profile = np.random.normal(mean, std)
     # Truncate profile to min and max values
