@@ -22,7 +22,10 @@
                 "efficiency": 0.9
             }
         },
-        "baseload": null,
+        "baseload": {
+            "annual_consumption": 3000,
+            "profile_id": 4
+        },
         "pv": null,
         "battery": null
     }

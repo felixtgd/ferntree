@@ -28,7 +28,6 @@ n_profiles = 10
 gold.generate_annual_load_profiles(data_dir, n_profiles, timebase)
 
 
-
 # VALIDATION
 VALIDATION = False
 if VALIDATION:
