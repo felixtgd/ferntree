@@ -1,0 +1,6 @@
+pandas == 2.2.1
+numpy == 1.26.4
+matplotlib == 3.8.3
+sqlalchemy == 2.0.29
+psycopg2 == 2.9.9
+h5py == 3.10.0

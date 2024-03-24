@@ -13,8 +13,8 @@ gold_dir = os.path.join(script_dir, "data", "gold")
 
 # BRONZE
 # If necessary ingest bronze datasets to create silver dataset
-if not os.path.isfile(os.path.join(silver_dir, "loadprofiles_silver.csv")):
-    bronze.ingest_datasets(data_dir)
+if not os.path.isfile(os.path.join(silver_dir, "loadprofiles_sorted.csv")):
+    bronze.ingest_datasets(data_dir, verbose=True)
 
 # SILVER
 # Timebase of dataset
@@ -26,6 +26,7 @@ silver.create_season_day_models(data_dir, timebase)
 # Generate annual load profiles for 100 houses
 n_profiles = 10
 gold.generate_annual_load_profiles(data_dir, n_profiles, timebase)
+
 
 
 # VALIDATION

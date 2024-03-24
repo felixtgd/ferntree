@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 
+from sqlalchemy import URL, create_engine
 
 # Generate yearly load profiles
 # - Create 100 profiles & get mean annual consumption of all (will be default value if user does not specify)
@@ -94,24 +95,32 @@ def generate_annual_load_profiles(data_dir, n_profiles, timebase):
         # Add annual profile to dataframe
         df_profiles[f"{n}"] = annual_profile
     
+    # Set power values to kW
+    df_profiles = df_profiles / 1e3    
     # Calculate annual consumption for each profile
-    annual_consumption = df_profiles.sum() * timebase / (60*60)
+    annual_consumption = df_profiles.sum(axis=0) * timebase / (60*60)
+    # Scale annual profiles to 1kWh annual consumption
+    df_profiles = df_profiles.div(annual_consumption, axis=1)
+
     print("Annual consumption:")
-    print(f"Mean: {annual_consumption.mean()/1e3:.2f} kWh")
-    print(f"Max: {annual_consumption.max()/1e3:.2f} kWh")
-    print(f"Min: {annual_consumption.min()/1e3:.2f} kWh")
+    print(f"Mean: {annual_consumption.mean():.2f} kWh")
+    print(f"Max: {annual_consumption.max():.2f} kWh")
+    print(f"Min: {annual_consumption.min():.2f} kWh")
+    print(f"Scaled to 1kWh: {df_profiles.sum(axis=0).mean():.2f}")
+
     # Save annual consumption to csv
     output_file = os.path.join(data_dir, "gold", "annual_consumption_gen.csv")
     annual_consumption.to_csv(output_file, index=False)
     print("Annual consumption saved to gold/annual_consumption_gen.csv")
 
-    # Scale annual profiles to 1kWh annual consumption
-    df_profiles = df_profiles.div(annual_consumption, axis=1)
-    # Save annual profiles to csv
+    # Save generated annual profiles to csv
     output_file = os.path.join(data_dir, "gold", "annual_loadprofiles_gen.csv")
     df_profiles.to_csv(output_file, index=False)
     print("Generated annual load profiles saved to gold/annual_loadprofiles_gen.csv")
     print(f"Timesteps: {len(df_profiles)}, Num. profiles: {len(df_profiles.columns)}")
+
+    # Write generated annual load profiles to database
+    write_profiles_to_db(df_profiles)
 
 
 def generate_daily_profile(mean, std, lb, ub):
@@ -134,3 +143,18 @@ def generate_daily_profile(mean, std, lb, ub):
 
     return profile
 
+def write_profiles_to_db(df_profiles):
+    # Write generated annual load profiles to database    
+    host = "localhost"
+    port = "5432"
+    db_name = "sim_db"
+    db_url = URL.create(
+        "postgresql+psycopg2",
+        host=host,
+        port=port,
+        database=db_name,
+        )
+
+    engine = create_engine(db_url)
+    df_profiles.to_sql("annual_loadprofiles", con=engine, if_exists="replace", index=False)
+    print(f"Exported generated annual load profiles to database at {db_url}")

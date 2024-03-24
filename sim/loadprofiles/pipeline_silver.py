@@ -13,7 +13,7 @@ def create_season_day_models(data_dir, timebase):
     """
     print("\nSILVER: Create season-day models")
      # Load the preprocessed data
-    silver_data = os.path.join(data_dir, "silver", "loadprofiles_silver.csv")
+    silver_data = os.path.join(data_dir, "silver", "loadprofiles_sorted.csv")
     print(f"Loading data from {silver_data}")
     df_raw = pd.read_csv(silver_data)
     df_raw["time"] = pd.to_datetime(df_raw["time"], unit="s")

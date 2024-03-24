@@ -60,6 +60,10 @@ def ingest_datasets(data_dir, verbose=False):
                     df_tmp.rename(columns={"P_TOT": f"P_{house}"}, inplace=True)
                 else:
                     df_tmp = df_tmp[["time", "S_TOT"]]
+                    # # Multiply "S_TOT" with mean of "PF_1", "PF_2", "PF_3"
+                    # df_tmp["S_TOT"] = df_tmp["S_TOT"] * df_tmp[["PF_1", "PF_2", "PF_3"]].mean(axis=1)
+                    # # Drop columns "PF_1", "PF_2", "PF_3"
+                    # df_tmp = df_tmp.drop(["PF_1", "PF_2", "PF_3"], axis=1)
                     # Rename P_TOT to P_{house}
                     df_tmp.rename(columns={"S_TOT": f"P_{house}"}, inplace=True)
 
