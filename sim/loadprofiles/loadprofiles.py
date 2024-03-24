@@ -32,7 +32,7 @@ gold.generate_annual_load_profiles(data_dir, n_profiles, timebase)
 VALIDATION = False
 if VALIDATION:
     # Load gold dataset
-    gold_data = os.path.join(gold_dir, "annual_load_profiles.csv")
+    gold_data = os.path.join(gold_dir, "annual_loadprofiles_gen.csv")
     df_profiles = pd.read_csv(gold_data)
 
     # Plot 5 random annual load profiles

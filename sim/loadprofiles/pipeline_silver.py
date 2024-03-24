@@ -102,6 +102,6 @@ def create_season_day_models(data_dir, timebase):
         df_season_days[f"{label}_25th"] = percentile25
 
     # Save df_season_day to csv
-    season_days_path = os.path.join(data_dir, "gold", "season_days.csv")
+    season_days_path = os.path.join(data_dir, "gold", "season_days_models.csv")
     df_season_days.to_csv(season_days_path, index=False)
-    print("Season days saved to gold/season_days.csv")
+    print("Season days saved to gold/season_days_models.csv")

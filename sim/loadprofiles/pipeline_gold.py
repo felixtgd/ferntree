@@ -23,7 +23,7 @@ def generate_annual_load_profiles(data_dir, n_profiles, timebase):
     """
     print("\nGOLD: Generate annual load profiles")
     # Load models of season-days
-    season_days_path = os.path.join(data_dir, "gold", "season_days.csv")
+    season_days_path = os.path.join(data_dir, "gold", "season_days_models.csv")
     df_season_days = pd.read_csv(season_days_path)
 
     # Create dataframe for annual load profiles
@@ -101,16 +101,16 @@ def generate_annual_load_profiles(data_dir, n_profiles, timebase):
     print(f"Max: {annual_consumption.max()/1e3:.2f} kWh")
     print(f"Min: {annual_consumption.min()/1e3:.2f} kWh")
     # Save annual consumption to csv
-    output_file = os.path.join(data_dir, "gold", "annual_consumption.csv")
+    output_file = os.path.join(data_dir, "gold", "annual_consumption_gen.csv")
     annual_consumption.to_csv(output_file, index=False)
-    print("Annual consumption saved to gold/annual_consumption.csv")
+    print("Annual consumption saved to gold/annual_consumption_gen.csv")
 
     # Scale annual profiles to 1kWh annual consumption
-    # df_profiles = df_profiles.div(annual_consumption, axis=1)
+    df_profiles = df_profiles.div(annual_consumption, axis=1)
     # Save annual profiles to csv
-    output_file = os.path.join(data_dir, "gold", "annual_load_profiles.csv")
+    output_file = os.path.join(data_dir, "gold", "annual_loadprofiles_gen.csv")
     df_profiles.to_csv(output_file, index=False)
-    print("Annual load profiles saved to gold/annual_load_profiles.csv")
+    print("Generated annual load profiles saved to gold/annual_loadprofiles_gen.csv")
     print(f"Timesteps: {len(df_profiles)}, Num. profiles: {len(df_profiles.columns)}")
 
 

@@ -84,9 +84,9 @@ def ingest_datasets(data_dir, verbose=False):
         os.makedirs(silver_dir)
 
     # Save silver dataset containing preprocessed loadprofiles to csv
-    output_file = os.path.join(silver_dir, "loadprofiles_silver.csv")
+    output_file = os.path.join(silver_dir, "loadprofiles_sorted.csv")
     df.to_csv(output_file, index=False)
-    print("Silver dataset saved to silver/loadprofiles_silver.csv")
+    print("Silver dataset saved to silver/loadprofiles_sorted.csv")
     print(f"Timesteps: {len(df)}, Houses: {len(df.columns)}")
 
 
