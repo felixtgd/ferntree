@@ -26,6 +26,7 @@ class SimHost:
         self.timezone = timezone(sim_settings["timezone"])
         self.start_time = int(self.timezone.localize(datetime(2023, 1, 1)).timestamp()) # Start time in seconds since epoch
         self.current_time = None # Current time in seconds since epoch
+        self.current_timestep = None # Current timestep
 
         self.house = None # House object being simulated
 
@@ -77,6 +78,7 @@ class SimHost:
         self.startup()
         logger.info(f"Running simulation with {self.timesteps} timesteps.")
         for t in range(self.timesteps):
+            self.current_timestep = t
             self.timetick(t)
         
         logger.info("Simulation finished successfully.")
@@ -107,6 +109,14 @@ class SimHost:
         """ Saves the results of the house to the database. """
         self.db.write_data_to_db(results)
 
+    def get_load_profile(self, profile_id):
+        """ Gets a load profile for the baseload from the database. """
+        load_profile = self.db.get_load_profile(profile_id)
+
+        if len(load_profile) != self.timesteps:
+            raise ValueError("Load profile length does not match number of timesteps.")
+        else:
+            return load_profile
 
     # Only for prototyping, will be replaced by database access
     def load_weather_data(self):

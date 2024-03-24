@@ -60,7 +60,7 @@ class SfHouse(device.Device):
             T_en=self.components.get("heating").current_state.get("T_en"),
             P_heat_th=self.components.get("heating").current_state.get("P_heat_th"),
             P_heat_el=self.components.get("heating").current_state.get("P_heat_el"),
-            P_base=0.0,
+            P_base=self.components.get("baseload").current_state.get("P_base"),
             P_pv=0.0,
             P_bat=0.0,
         )

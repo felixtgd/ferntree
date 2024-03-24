@@ -1,4 +1,4 @@
-from sqlalchemy import URL, create_engine
+from sqlalchemy import URL, create_engine, text
 from sqlalchemy.orm import Session
 from database import orm_models
 
@@ -64,3 +64,26 @@ class PostgresDatabase:
         with Session(self.engine) as session:
             session.bulk_save_objects(batch)
             session.commit()
+
+    def get_load_profile(self, profile_id):
+        """ Gets a load profile from the database.
+        - Queries the database for a load profile with the given profile_id
+        - Returns the load profile
+        """
+        # Get column matching "profile_id" from table "annual_loadprofiles":
+        # SELECT profile_id FROM annual_loadprofiles
+        # NOTE: This is a bit of a hack, as columns are not really meant to be 
+        # queried like this in SQL. 
+        with Session(self.engine) as session:
+            load_profile = session.execute(
+                text('SELECT ":profile_id" FROM annual_loadprofiles'),
+                {"profile_id": profile_id}
+                ).fetchall()
+        
+        if not load_profile:
+            raise ValueError(f"Load profile with ID {profile_id} not found in database.")
+        
+        # Turn elements of load_profile into a list
+        load_profile = [x[0] for x in load_profile]
+
+        return list(load_profile)

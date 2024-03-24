@@ -156,5 +156,7 @@ def write_profiles_to_db(df_profiles):
         )
 
     engine = create_engine(db_url)
+
+    # Export to database
     df_profiles.to_sql("annual_loadprofiles", con=engine, if_exists="replace", index=False)
     print(f"Exported generated annual load profiles to database at {db_url}")

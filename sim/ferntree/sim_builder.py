@@ -3,7 +3,7 @@ import os
 import logging
 
 from host import sim_host
-from dev import sf_house, heating_sys, heating_dev
+from dev import sf_house, heating_sys, heating_dev, baseload
 from ctrl import heating_ctrl
 from models import thermal_model
 
@@ -44,8 +44,8 @@ class SimBuilder():
             
             # Create baseload
             if self.model_specs["baseload"]:
-                # baseload = Baseload(self.sim, self.model_specs["baseload"])
-                # house.add_component(baseload)
+                bl = baseload.BaseLoad(self.sim, self.model_specs["baseload"])
+                house.add_component(bl, "baseload")
                 logger.info("Baseload added to the house.")
             else:
                 logger.error("No baseload specifications found. Required for simulation!")
