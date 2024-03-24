@@ -36,7 +36,7 @@ class SimBuilder():
                 heating.heating_ctrl = heating_ctrl.HeatingCtrl(self.sim, self.model_specs["heating_sys"]["thermostat"])
                 heating.heating_dev = heating_dev.HeatingDev(self.sim, self.model_specs["heating_sys"]["heating_dev"])
 
-                house.add_component(heating)
+                house.add_component(heating, "heating")
                 logger.info("Heating system added to the house.")
             else:
                 logger.error("No heating system specifications found. Required for simulation!")

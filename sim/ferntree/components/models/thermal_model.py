@@ -10,8 +10,9 @@ logger = logging.getLogger("ferntree")
 class ThermalModel(device.Device):
     """Class for a thermal building model.
     This model represents the 3R2C thermal model based on a lumped RC-network with three resistances and two capacitances.
-    It uses the parameters of the SFH F Var3 model presented in the paper 'Reduced-order models for assessing demand 
-    response with heat pumps - Insights from the German energy system' by E. Sperber, U. Frey, V. Bertsch (2020)
+    It uses a linear regression model to approximate the model parameters presented in the paper 
+    'Reduced-order models for assessing demand response with heat pumps - Insights from the German energy system' 
+    by E. Sperber, U. Frey, V. Bertsch (2020)
     """
 
     def __init__(self, host, model_specs):

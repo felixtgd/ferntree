@@ -15,23 +15,23 @@ class SfHouse(device.Device):
         super().__init__(host)
 
         self.host.add_house(self)
-        self.components = []
+        self.components = {}
 
-    def add_component(self, comp: device.Device):
+    def add_component(self, comp: device.Device, name: str):
         """ Adds a components to the house. """
         if isinstance(comp, device.Device):
-            self.components.append(comp)
+            self.components[name] = comp
         else:
             raise TypeError("Can only add objects of class 'Device' to house.")
 
     def startup(self):
         """Startup of the house and its components."""
-        for comp in self.components:
+        for comp in self.components.values():
             comp.startup()
 
     def shutdown(self):
         """Shutdown of the house and its components."""
-        for comp in self.components:
+        for comp in self.components.values():
             comp.shutdown()
 
     def timetick(self):
@@ -40,7 +40,7 @@ class SfHouse(device.Device):
         Then the PV system is simulated to determine the electricity generation.
         Finally the battery is simulated to balance supply and demand.
         """
-        for comp in self.components:
+        for comp in self.components.values():
             comp.timetick()
 
         results = self.get_results()
@@ -53,13 +53,13 @@ class SfHouse(device.Device):
         These results are then written to the database.
         """
         results = orm_models.Timestep(
-            time=self.host.env_state["time"],
-            T_amb=self.host.env_state["T_amb"],
-            P_solar=self.host.env_state["P_solar"],
-            T_in=self.components[0].current_state["T_in"],
-            T_en=self.components[0].current_state["T_en"],
-            P_heat_th=self.components[0].current_state["P_heat_th"],
-            P_heat_el=self.components[0].current_state["P_heat_el"],
+            time=self.host.env_state.get("time"),
+            T_amb=self.host.env_state.get("T_amb"),
+            P_solar=self.host.env_state.get("P_solar"),
+            T_in=self.components.get("heating").current_state.get("T_in"),
+            T_en=self.components.get("heating").current_state.get("T_en"),
+            P_heat_th=self.components.get("heating").current_state.get("P_heat_th"),
+            P_heat_el=self.components.get("heating").current_state.get("P_heat_el"),
             P_base=0.0,
             P_pv=0.0,
             P_bat=0.0,
