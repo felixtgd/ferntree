@@ -18,7 +18,7 @@ else:
     logging.basicConfig(level=logging.CRITICAL, format="%(message)s")
 
 
-def build_and_run_simulation():
+def build_and_run_simulation(model_path):
     # Load sim_builder
     try:
         sim_builder = importlib.import_module("sim_builder")
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     # Build and run the simulation
     start_time = time.time()
-    build_and_run_simulation()
+    build_and_run_simulation(model_path)
     end_time = time.time()
 
     logger.info("")

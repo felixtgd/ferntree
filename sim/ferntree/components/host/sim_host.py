@@ -118,7 +118,8 @@ class SimHost:
         else:
             return load_profile
 
-    # Only for prototyping, will be replaced by database access
+    # NOTE: Only for prototyping, will be replaced by database access
+    # TODO: Need two solar irradiances: global horizontal for house and beam on tilted plane for PV
     def load_weather_data(self):
         """ Loads the weather data from the weather data file. """
         with open(self.weather_data_path) as json_file:

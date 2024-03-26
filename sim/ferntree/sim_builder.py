@@ -3,7 +3,7 @@ import os
 import logging
 
 from host import sim_host
-from dev import sf_house, heating_sys, heating_dev, baseload
+from dev import sf_house, heating_sys, heating_dev, baseload, pv_sys
 from ctrl import heating_ctrl
 from models import thermal_model
 
@@ -49,12 +49,12 @@ class SimBuilder():
                 logger.info("Baseload added to the house.")
             else:
                 logger.error("No baseload specifications found. Required for simulation!")
-                # return
+                return
             
             # Create PV system
             if self.model_specs["pv"]:
-                # pv = PV(self.sim, self.model_specs["pv"])
-                # house.add_component(pv)
+                pv = pv_sys.PVSys(self.sim, self.model_specs["pv"])
+                house.add_component(pv, "pv")
                 logger.info("PV system added to the house.")
             else:
                 logger.warning("No PV system specifications found.")
