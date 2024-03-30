@@ -1,6 +1,9 @@
+import logging
+
 from dev import device
 from database import orm_models
 
+logger = logging.getLogger("ferntree")
 
 class SfHouse(device.Device):
     """Class for a single-family house.
@@ -52,6 +55,7 @@ class SfHouse(device.Device):
         The current state of each component is read and returned as a Timestep object.
         These results are then written to the database.
         """
+        
         results = orm_models.Timestep(
             time=self.host.env_state.get("time"),
             T_amb=self.host.env_state.get("T_amb"),
@@ -61,7 +65,9 @@ class SfHouse(device.Device):
             P_heat_th=self.components.get("heating").current_state.get("P_heat_th"),
             P_heat_el=self.components.get("heating").current_state.get("P_heat_el"),
             P_base=self.components.get("baseload").current_state.get("P_base"),
-            P_pv=getattr(getattr(self.components.get("pv"), "current_state", None), "P_pv", 0.0),
-            P_bat=getattr(getattr(self.components.get("battery"), "current_state", None), "P_bat", 0.0),
+            P_pv=0.0 if self.components.get("pv") is None else self.components.get("pv").current_state.get("P_pv"),
+            P_bat=0.0 if self.components.get("battery") is None else self.components.get("battery").current_state.get("P_bat"),
+            Soc_bat=0.0 if self.components.get("battery") is None else self.components.get("battery").current_state.get("Soc_bat"),
         )
+        
         return results

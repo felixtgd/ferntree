@@ -22,8 +22,16 @@
                 "efficiency": 0.9
             }
         },
-        "baseload": null,
-        "pv": null,
-        "battery": null
+        "baseload": {
+            "annual_consumption": 4000,
+            "profile_id": 4
+        },
+        "pv": {
+            "peak_power": 10
+        },
+        "battery": {
+            "capacity": 20,
+            "max_power": 5
+        }
     }
 }

@@ -1,7 +1,8 @@
 {
     "sim":{
         "timebase": 3600,
-        "timezone": "Europe/Zurich"
+        "timezone": "Europe/Zurich",
+        "planning_horizon": 1
     },
     "house": {
         "heating_sys": {
@@ -26,7 +27,19 @@
             "annual_consumption": 3000,
             "profile_id": 4
         },
-        "pv": null,
-        "battery": null
+        "pv": {
+            "peak_power": 10
+        },
+        "battery": {
+            "capacity": 10,
+            "max_power": 5,
+            "soc_init": 0.5,
+            "battery_ctrl": {
+                "planning_horizon": 1,
+                "useable_capacity": 0.8,
+                "greedy": false,
+                "opt_fill": false
+            }
+        }
     }
 }

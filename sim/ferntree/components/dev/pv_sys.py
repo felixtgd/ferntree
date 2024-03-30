@@ -14,7 +14,7 @@ class PVSys(device.Device):
 
         # Peak power of the PV system [kWp]
         if not dev_specs["peak_power"]:
-            self.peak_power = 3000  # Default [kWp]
+            self.peak_power = 10  # Default [kWp]
         else:
             self.peak_power = dev_specs["peak_power"]
         
@@ -27,5 +27,6 @@ class PVSys(device.Device):
     def timetick(self):
         """Simulates a single timestep of the PV system."""
 
-        # Update current state of the PV system
-        self.current_state["P_pv"] = self.peak_power * self.host.env_state.get("P_solar")
+        # Update current state of the PV system 
+        # Convention: Generation is negative, consumption positive
+        self.current_state["P_pv"] = -1 * self.peak_power * self.host.env_state.get("P_solar")

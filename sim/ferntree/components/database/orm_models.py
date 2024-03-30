@@ -20,31 +20,38 @@ class Timestep(Base):
     P_base =    Column("P_base",    Float(24), nullable=False)
     P_pv =      Column("P_pv",      Float(24), nullable=False)
     P_bat =     Column("P_bat",     Float(24), nullable=False)
+    Soc_bat =   Column("Soc_bat",   Float(24), nullable=False)
 
     __table_args__ = (
         CheckConstraint('"ferntree_sim".time >= 0'),
 
-        CheckConstraint('"ferntree_sim"."T_amb" > 0'),
+        CheckConstraint('"ferntree_sim"."T_amb" > 0.0'),
         CheckConstraint('"ferntree_sim"."T_amb" < 375.15'),
 
-        CheckConstraint('"ferntree_sim"."P_solar" >= 0'),
-        CheckConstraint('"ferntree_sim"."P_solar" < 10000'),
+        CheckConstraint('"ferntree_sim"."P_solar" >= 0.0'),
+        CheckConstraint('"ferntree_sim"."P_solar" < 1e6'),
 
-        CheckConstraint('"ferntree_sim"."T_in" > 0'),
+        CheckConstraint('"ferntree_sim"."T_in" > 0.0'),
         CheckConstraint('"ferntree_sim"."T_in" < 375.15'),
 
-        CheckConstraint('"ferntree_sim"."T_en" > 0'),
+        CheckConstraint('"ferntree_sim"."T_en" > 0.0'),
         CheckConstraint('"ferntree_sim"."T_en" < 375.15'),
 
-        CheckConstraint('"ferntree_sim"."P_heat_th" >= 0'),
-        CheckConstraint('"ferntree_sim"."P_heat_th" < 10000'),
+        CheckConstraint('"ferntree_sim"."P_heat_th" >= 0.0'),
+        CheckConstraint('"ferntree_sim"."P_heat_th" < 1e6'),
 
-        CheckConstraint('"ferntree_sim"."P_heat_el" >= 0'),
-        CheckConstraint('"ferntree_sim"."P_heat_el" < 10000'),
+        CheckConstraint('"ferntree_sim"."P_heat_el" >= 0.0'),
+        CheckConstraint('"ferntree_sim"."P_heat_el" < 1e6'),
 
-        CheckConstraint('"ferntree_sim"."P_base" >= 0'),
-        CheckConstraint('"ferntree_sim"."P_base" < 10000'),
+        CheckConstraint('"ferntree_sim"."P_base" >= 0.0'),
+        CheckConstraint('"ferntree_sim"."P_base" < 1e6'),
 
-        CheckConstraint('"ferntree_sim"."P_pv" <= 0'),
-        CheckConstraint('"ferntree_sim"."P_pv" < 10000'),
+        CheckConstraint('"ferntree_sim"."P_pv" <= 0.0'),
+        CheckConstraint('"ferntree_sim"."P_pv" > -1e6'),
+
+        CheckConstraint('"ferntree_sim"."P_bat" > -1e6'),
+        CheckConstraint('"ferntree_sim"."P_bat" < 1e6'),
+
+        CheckConstraint('"ferntree_sim"."Soc_bat" >= 0.0'),
+        CheckConstraint('"ferntree_sim"."Soc_bat" < 1e6'),
     )

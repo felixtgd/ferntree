@@ -3,8 +3,8 @@ import os
 import logging
 
 from host import sim_host
-from dev import sf_house, heating_sys, heating_dev, baseload, pv_sys
-from ctrl import heating_ctrl
+from dev import sf_house, heating_sys, heating_dev, baseload, pv_sys, battery_dev
+from ctrl import heating_ctrl, battery_ctrl
 from models import thermal_model
 
 logger = logging.getLogger("ferntree")
@@ -28,6 +28,7 @@ class SimBuilder():
         # Create model of single-family house
         if self.model_specs:
             house = sf_house.SfHouse(self.sim)
+            sm = smart_meter.SmartMeter(self.sim)
 
             # Create heating system
             if self.model_specs["heating_sys"]:
@@ -61,7 +62,8 @@ class SimBuilder():
                 
             # Create battery
             if self.model_specs["battery"]:
-                # battery = Battery(self.sim, self.model_specs["battery"])
+                # battery = battery_dev.BatteryDev(self.sim, self.model_specs["battery"])
+                # battery.battery_ctrl = battery_ctrl.BatteryCtrl(self.sim, self.model_specs["battery"]["battery_ctrl"])
                 # house.add_component(battery)
                 logger.info("Battery added to the house.")
             else:
