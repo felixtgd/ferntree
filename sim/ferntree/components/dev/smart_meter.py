@@ -32,10 +32,12 @@ class SmartMeter(device.Device):
         }
 
     def startup(self):
-        self.update_measurements()
+        #self.update_measurements()
+        pass
 
     def timetick(self):
-        self.update_measurements()
+        #self.update_measurements()
+        pass
 
     def update_measurements(self):
         """Updates the measurements of the smart meter."""
@@ -57,4 +59,10 @@ class SmartMeter(device.Device):
 
     def get_net_load(self):
         """Returns the net load of the house."""
+        self.update_measurements()
         return self.measurements["P_base"] + self.measurements["P_heat_el"] + self.measurements["P_pv"]
+    
+    def get_measurements(self):
+        """Returns all measurements of the house."""
+        self.update_measurements()
+        return self.measurements

@@ -160,8 +160,7 @@ class LinearRegressionModel():
         Y_pred = np.dot(X_pred, self.theta)
         # Flatten the predictions
         Y_pred = Y_pred.flatten()
-        logger.info(f"Y_pred shape: {Y_pred.shape}")    
-
+        
         # NOTE: PFUSCH!!!
         # Make sure that the predictions are not negative
         Y_pred = np.abs(Y_pred)
@@ -170,7 +169,6 @@ class LinearRegressionModel():
         # Calculate average of Y_pred and Y_means
         pfusch_factor = 1.0
         for i in range(len(Y_pred)):
-            logger.info(f"Y_pred[{i}]: {Y_pred[i]:.2f} --> Y_means[{i}]: {Y_means[i]:.2f}")
             Y_pred[i] = (1-pfusch_factor) * Y_pred[i] + pfusch_factor * Y_means[i]
 
         return Y_pred

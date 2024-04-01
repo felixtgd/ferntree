@@ -3,6 +3,9 @@ import cvxpy as cp
 
 from dev import device
 
+import logging
+logger = logging.getLogger("ferntree")
+
 class BatteryCtrl(device.Device):
     
     def __init__(self, host, ctrl_specs, smart_meter) -> None:
@@ -10,8 +13,8 @@ class BatteryCtrl(device.Device):
 
         super().__init__(host)
 
-        # Planning horizon for battery operation [days]
-        self.planning_horizon = ctrl_specs.get("planning_horizon", 1)
+        # Planning horizon for battery operation [days]: set to timesteps per planning horizon
+        self.planning_horizon = int(ctrl_specs.get("planning_horizon", 1) * 24 * 60 * 60 / self.host.timebase)
         # Useable capacity [0 ... 1]: safety margins for battery operation
         self.useable_capacity = ctrl_specs.get("useable_capacity", 0.8)
         # Use greedy strategy or valley filling method as control strategy
@@ -26,22 +29,24 @@ class BatteryCtrl(device.Device):
         self.prediction_window = self.planning_horizon
         self.P_load_pred = np.zeros(self.prediction_window)
 
+        # Initialise fill levels (greedy strategy as default)
+        self.Z_charge = 0.0
+        self.Z_discharge = 0.0
+
 
     def set_battery_power(self, soc_t, bat_max_pwr, bat_cap):
         # Get current net load of house
         p_t = self.smart_meter.get_net_load()
+        # Update prediction of net load power profile
+        self.P_load_pred = self.update_prediction(self.P_load_pred, p_t)
         
-        if self.greedy: # Option to choose greedy control strategy
-            Z_charge, Z_discharge = (0.0, 0.0)
         # If not greedy and start of new day/planning horizon, update Z values
-        elif self.host.current_timestep % self.planning_horizon == 0:
-            # Update prediction of net load power profile
-            self.P_load_pred = self.update_prediction(self.P_load_pred, p_t)
+        if not self.greedy and self.host.current_timestep % self.planning_horizon == 0:
             # Update fill levels based on predicted net load of house
-            Z_charge, Z_discharge = self.set_fill_levels(self.P_load_pred)
+            self.Z_charge, self.Z_discharge = self.set_fill_levels(self.P_load_pred)
         
         # Determine battery power using Z values
-        bat_pwr, soc_t, Z_t = self.fill_level_battery_power(Z_charge, Z_discharge, p_t, soc_t, bat_max_pwr, bat_cap)
+        bat_pwr, soc_t, Z_t = self.fill_level_battery_power(self.Z_charge, self.Z_discharge, p_t, soc_t, bat_max_pwr, bat_cap)
         
         return bat_pwr, soc_t, Z_t, self.P_load_pred[0]
 

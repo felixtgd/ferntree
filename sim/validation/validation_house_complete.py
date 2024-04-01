@@ -74,7 +74,7 @@ measurements = {
     "Soc_bat": [],
     "fill_level": [],
     "P_load_pred": []
-}
+    }
 
 for result in results:
     measurements["time"].append(result.time)
@@ -171,7 +171,7 @@ def plot_results(df_annual, month):
     fig.savefig(os.path.join(script_dir, f"{month}_sim_results_complete.png"))
 
 
-months = [0, 1, 2, 10, 11]
+months = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 for month in months:
     plot_results(df, month)
 

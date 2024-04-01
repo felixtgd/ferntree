@@ -54,6 +54,6 @@ class SfHouse(device.Device):
         The current state of each component is read from the smart meter and returned as a dictionary.
         These results are then converted to a ORM object and written to the database.
         """
-        results = self.components.get("smart_meter").measurements
+        results = self.components.get("smart_meter").get_measurements()
         
         return results
