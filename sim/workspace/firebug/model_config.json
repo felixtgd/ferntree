@@ -33,7 +33,7 @@
         "battery": {
             "capacity": 10,
             "max_power": 5,
-            "soc_init": 0.5,
+            "soc_init": 0,
             "battery_ctrl": {
                 "planning_horizon": 1,
                 "useable_capacity": 0.8,

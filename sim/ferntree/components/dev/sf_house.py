@@ -1,7 +1,6 @@
 import logging
 
 from dev import device
-from database import orm_models
 
 logger = logging.getLogger("ferntree")
 
@@ -52,22 +51,9 @@ class SfHouse(device.Device):
 
     def get_results(self):
         """Returns the results of the house's components for the current timestep.
-        The current state of each component is read and returned as a Timestep object.
-        These results are then written to the database.
+        The current state of each component is read from the smart meter and returned as a dictionary.
+        These results are then converted to a ORM object and written to the database.
         """
-        
-        results = orm_models.Timestep(
-            time=self.host.env_state.get("time"),
-            T_amb=self.host.env_state.get("T_amb"),
-            P_solar=self.host.env_state.get("P_solar"),
-            T_in=self.components.get("heating").current_state.get("T_in"),
-            T_en=self.components.get("heating").current_state.get("T_en"),
-            P_heat_th=self.components.get("heating").current_state.get("P_heat_th"),
-            P_heat_el=self.components.get("heating").current_state.get("P_heat_el"),
-            P_base=self.components.get("baseload").current_state.get("P_base"),
-            P_pv=0.0 if self.components.get("pv") is None else self.components.get("pv").current_state.get("P_pv"),
-            P_bat=0.0 if self.components.get("battery") is None else self.components.get("battery").current_state.get("P_bat"),
-            Soc_bat=0.0 if self.components.get("battery") is None else self.components.get("battery").current_state.get("Soc_bat"),
-        )
+        results = self.components.get("smart_meter").measurements
         
         return results

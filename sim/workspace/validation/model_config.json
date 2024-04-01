@@ -1,15 +1,16 @@
 {
     "sim": {
         "timebase": 3600,
-        "timezone": "Europe/Zurich"
+        "timezone": "Europe/Zurich",
+        "planning_horizon": 1
     },
     "house": {
         "heating_sys": {
             "thermal_model": {
                 "order": "2R3C",
-                "yoc": 2023,
-                "heated_area": 160,
-                "renovation": 3
+                "yoc": 1930,
+                "heated_area": 275,
+                "renovation": 1
             },
             "thermostat": {
                 "temp_setpoint": 20,
@@ -17,7 +18,7 @@
             },
             "heating_dev": {
                 "type": "heatpump",
-                "P_heat_th_max": 3.9,
+                "P_heat_th_max": 4,
                 "cop": 3.5,
                 "efficiency": 0.9
             }
@@ -31,7 +32,14 @@
         },
         "battery": {
             "capacity": 20,
-            "max_power": 5
+            "max_power": 5,
+            "soc_init": 0,
+            "battery_ctrl": {
+                "planning_horizon": 1,
+                "useable_capacity": 0.8,
+                "greedy": false,
+                "opt_fill": false
+            }
         }
     }
 }

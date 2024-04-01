@@ -21,6 +21,8 @@ class Timestep(Base):
     P_pv =      Column("P_pv",      Float(24), nullable=False)
     P_bat =     Column("P_bat",     Float(24), nullable=False)
     Soc_bat =   Column("Soc_bat",   Float(24), nullable=False)
+    fill_level =   Column("fill_level",   Float(24), nullable=False)
+    P_load_pred =   Column("P_load_pred",   Float(24), nullable=False)
 
     __table_args__ = (
         CheckConstraint('"ferntree_sim".time >= 0'),

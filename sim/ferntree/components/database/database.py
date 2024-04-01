@@ -49,7 +49,8 @@ class PostgresDatabase:
         - Appends data to the buffer
         - Writes the buffer to the database if it is full
         """
-        self.data_buffer.append(data)
+        orm_obj = self.create_orm_object_from_dict(data)
+        self.data_buffer.append(orm_obj)
 
         if len(self.data_buffer) == self.batch_size:
             self.write_batch(self.data_buffer)
@@ -64,6 +65,26 @@ class PostgresDatabase:
         with Session(self.engine) as session:
             session.bulk_save_objects(batch)
             session.commit()
+
+    def create_orm_object_from_dict(self, dict):
+        """ Creates an ORM object from a dictionary."""
+        orm_obj = orm_models.Timestep(
+            time=dict["time"],
+            T_amb=dict["T_amb"],
+            P_solar=dict["P_solar"],
+            T_in=dict["T_in"],
+            T_en=dict["T_en"],
+            P_heat_th=dict["P_heat_th"],
+            P_heat_el=dict["P_heat_el"],
+            P_base=dict["P_base"],
+            P_pv=dict["P_pv"],
+            P_bat=dict["P_bat"],
+            Soc_bat=dict["Soc_bat"],
+            fill_level=dict["fill_level"],
+            P_load_pred=dict["P_load_pred"],
+        )
+
+        return orm_obj
 
     def get_load_profile(self, profile_id):
         """ Gets a load profile from the database.

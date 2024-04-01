@@ -77,7 +77,7 @@ class ThermalModel(device.Device):
         # Thermal resistance between interior and building envelope [K/kW]
         self.Rie = params[5]
         
-        if False:
+        if True:
             logger.info("Parameters of thermal 3R2C model:")
             logger.info(f"Ai: {self.Ai:.2f} (2.92)")
             logger.info(f"Ce: {self.Ce:.2f} (17.79)")
