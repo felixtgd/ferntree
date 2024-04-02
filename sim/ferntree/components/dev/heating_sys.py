@@ -36,7 +36,7 @@ class HeatingSys(device.Device):
         - Initializes thermostat controller, thermal building model and heating device
         """
         # TODO: Check that components have been properly initialised
-        pass        
+        self.net_heat_demand_profile, self.primary_heat_demand_profile = self.create_heat_demand_profiles()
 
     def timetick(self):
         """Simulates a single timestep of the heating system.

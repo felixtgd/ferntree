@@ -37,9 +37,9 @@ class LinearRegressionModel():
         # Sort years in ascending order
         years = np.sort(years)
 
-        X_train = np.zeros((len(years), 3))
+        X_train = np.zeros((len(years), self.features))
         X_train[:, 0] = years
-        Y_train = np.zeros((len(years), 6))
+        Y_train = np.zeros((len(years), self.outputs))
 
         for i, year in enumerate(years):
             if year <= 1859:
@@ -85,7 +85,7 @@ class LinearRegressionModel():
         # First three columns are input features
         # Last six columns are output features
         X = np.array(data)[1:, :self.features].astype(float) # ["yoc", "area", "renov"]
-        Y = np.array(data)[1:, self.features:].astype(float) # ["Ai", "Ce", "Ci", "Rea", "Ria", "Rie"]
+        Y = np.array(data)[1:, self.features:].astype(float) # ["net heat demand"] or ["Ai", "Ce", "Ci", "Rea", "Ria", "Rie"]
 
         return X, Y
     
@@ -167,7 +167,7 @@ class LinearRegressionModel():
         # Get mean of self.Y
         Y_means = np.mean(self.Y, axis=0)
         # Calculate average of Y_pred and Y_means
-        pfusch_factor = 1.0
+        pfusch_factor = 0.1 
         for i in range(len(Y_pred)):
             Y_pred[i] = (1-pfusch_factor) * Y_pred[i] + pfusch_factor * Y_means[i]
 

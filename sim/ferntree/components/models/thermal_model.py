@@ -22,7 +22,8 @@ class ThermalModel(device.Device):
         super().__init__(host)
         
         self.model_order = "3R2C"  # 2 resistances and 3 capacitances in lumped RC-network
-        self.model = linear_regression.LinearRegressionModel(os.path.join(os.path.dirname(os.path.abspath(__file__)) ,'data/3R2C_model_params.csv'), features=3, outputs=6, expand=True)
+        # self.model = linear_regression.LinearRegressionModel(os.path.join(os.path.dirname(os.path.abspath(__file__)) ,'data/3R2C_model_params.csv'), features=3, outputs=6, expand=True)
+        self.model = linear_regression.LinearRegressionModel(os.path.join(os.path.dirname(os.path.abspath(__file__)) ,'data/TABULA_annual_heat_demand.csv'), features=3, outputs=1, expand=True)
         
         self.yoc = int(model_specs["yoc"])  # year of construction
         # Check that year of construction is within the range 1600-2100
@@ -48,14 +49,26 @@ class ThermalModel(device.Device):
 
         # Set the model parameters 
         self.model.train_model(n_iterations=100, learning_rate=0.1)
-        params = self.model.predict(np.array([[self.yoc, self.heated_area, self.renovation]]).astype(float))
-        # Flatten params
-        params = params.flatten()
+        # params = self.model.predict(np.array([[self.yoc, self.heated_area, self.renovation]]).astype(float))
+        # params = params.flatten()
+        # Approximate annual heat demand from linear regression model
+        self.annual_heat_demand = self.model.predict(np.array([[self.yoc, self.heated_area, self.renovation]]).astype(float))
+        # Use mean parameters to model thermal behaviour of building
+        # This only needs to "look" realistic, not be accurate, since demand profile
+        # is later scaled to annual heat demand anyways
+        params = [2.92, 17.79, 2.14, 7.97, 16.03, 0.57]
         self.set_model_params(params)
 
         # Pre-calculate time constants
         self.dt = self.host.timebase / 3600
         self.timebase_sqrt = np.sqrt(self.host.timebase)
+
+        # TABULA: Warm water demand: 
+        # 10 kWh/(m2 a) for single-family houses
+        # 15 kWh/(m2 a) for multi-family houses
+        self.hot_water_demand = 10.0  # [kWh/m2/a]
+        self.annual_heat_demand += self.hot_water_demand * self.heated_area
+
 
 
     def set_model_params(self, params):
