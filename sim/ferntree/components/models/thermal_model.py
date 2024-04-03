@@ -22,8 +22,8 @@ class ThermalModel(device.Device):
         super().__init__(host)
         
         self.model_order = "3R2C"  # 2 resistances and 3 capacitances in lumped RC-network
-        # self.model = linear_regression.LinearRegressionModel(os.path.join(os.path.dirname(os.path.abspath(__file__)) ,'data/3R2C_model_params.csv'), features=3, outputs=6, expand=True)
-        self.model = linear_regression.LinearRegressionModel(os.path.join(os.path.dirname(os.path.abspath(__file__)) ,'data/TABULA_annual_heat_demand.csv'), features=3, outputs=1, expand=True)
+        self.dataset = os.path.join(os.path.dirname(os.path.abspath(__file__)) ,'data/3R2C_model_params_heat_demand.csv')
+        self.model = linear_regression.LinearRegressionModel(self.dataset, features=3, outputs=7, expand=True)
         
         self.yoc = int(model_specs["yoc"])  # year of construction
         # Check that year of construction is within the range 1600-2100
@@ -47,30 +47,26 @@ class ThermalModel(device.Device):
         self.heat_gain = 3.0 / 1e3  # internal heat gain, constant at 3 W/m2
         self.P_hgain = self.heated_area * self.heat_gain  # internal heat gain [kW]
 
-        # Set the model parameters 
+        # Set the model parameters and annual net heat demand using linear regression model
         self.model.train_model(n_iterations=100, learning_rate=0.1)
-        # params = self.model.predict(np.array([[self.yoc, self.heated_area, self.renovation]]).astype(float))
-        # params = params.flatten()
-        # Approximate annual heat demand from linear regression model
-        self.annual_heat_demand = self.model.predict(np.array([[self.yoc, self.heated_area, self.renovation]]).astype(float))
-        # Use mean parameters to model thermal behaviour of building
-        # This only needs to "look" realistic, not be accurate, since demand profile
-        # is later scaled to annual heat demand anyways
-        params = [2.92, 17.79, 2.14, 7.97, 16.03, 0.57]
+        params = self.model.predict(np.array([[self.yoc, self.heated_area, self.renovation]]).astype(float))
+        params = params.flatten() # first six elements are the parameters of the 3R2C model and last element is the annual heat demand
+        # params = [2.92, 17.79, 2.14, 7.97, 16.03, 0.57] # Mean model parameters
         self.set_model_params(params)
 
-        # Pre-calculate time constants
-        self.dt = self.host.timebase / 3600
-        self.timebase_sqrt = np.sqrt(self.host.timebase)
-
+        # Approximate annual net heat demand from linear regression model
+        self.annual_net_heat_demand = params[-1] * self.heated_area  # [kWh/a]
         # TABULA: Warm water demand: 
         # 10 kWh/(m2 a) for single-family houses
         # 15 kWh/(m2 a) for multi-family houses
         self.hot_water_demand = 10.0  # [kWh/m2/a]
-        self.annual_heat_demand += self.hot_water_demand * self.heated_area
+        self.annual_net_heat_demand += self.hot_water_demand * self.heated_area # [kWh/a]
+                
+        # Pre-calculate time constants
+        self.dt = self.host.timebase / 3600
+        self.timebase_sqrt = np.sqrt(self.host.timebase)
 
-
-
+        
     def set_model_params(self, params):
         # Effective window area for absorption of solar gains on internal air [m2]
         self.Ai = params[0]

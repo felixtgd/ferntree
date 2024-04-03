@@ -167,7 +167,7 @@ class LinearRegressionModel():
         # Get mean of self.Y
         Y_means = np.mean(self.Y, axis=0)
         # Calculate average of Y_pred and Y_means
-        pfusch_factor = 0.1 
+        pfusch_factor = 0.8
         for i in range(len(Y_pred)):
             Y_pred[i] = (1-pfusch_factor) * Y_pred[i] + pfusch_factor * Y_means[i]
 

@@ -18,7 +18,7 @@
             },
             "heating_dev":{
                 "type": "heatpump",
-                "P_heat_th_max": 4,
+                "P_heat_th_max": 10,
                 "cop": 3.5,
                 "efficiency": 0.9
             }

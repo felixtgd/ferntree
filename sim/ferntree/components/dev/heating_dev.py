@@ -25,16 +25,21 @@ class HeatingDev(device.Device):
         self.P_heat_th = self.P_heat_th_max 
 
 
-    def set_heating_power(self, ctrl_signal):
+    def set_thermal_heating_power(self, ctrl_signal):
         """Calculates the electrical heating power required to provide a given thermal heating power."""
         if ctrl_signal == -1.0:
             self.P_heat_th = self.P_heat_th_max
         else:
             self.P_heat_th = min(max(0, ctrl_signal * self.P_heat_th), self.P_heat_th_max)
         
+        return self.P_heat_th
+    
+    def set_electrical_heating_power(self, P_heat_th):
+        """Sets the electrical heating power of the heating device."""
+        
         if self.type == "heatpump":
-            P_heat_el = self.P_heat_th / self.cop
+            P_heat_el = P_heat_th / self.cop
         else:
             P_heat_el = 0.0
 
-        return self.P_heat_th, P_heat_el
+        return P_heat_el

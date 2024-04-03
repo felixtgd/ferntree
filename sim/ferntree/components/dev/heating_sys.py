@@ -30,14 +30,58 @@ class HeatingSys(device.Device):
             "P_heat_el": 0.0, # electrical heating power in [kW]
         }
 
+        # Initialize heat demand profiles
+        self.heat_demand_profiles = {
+            "T_in": [self.current_state["T_in"]], # indoor temperature in [K]
+            "T_en": [self.current_state["T_en"]], # building envelope temperature in [K]
+            "P_heat_th": [self.current_state["P_heat_th"]], # thermal heating power in [kW]
+        }
+
 
     def startup(self):
         """Startup of the heating system.
         - Initializes thermostat controller, thermal building model and heating device
         """
         # TODO: Check that components have been properly initialised
-        self.net_heat_demand_profile, self.primary_heat_demand_profile = self.create_heat_demand_profiles()
 
+        # Create heat demand profiles and scale to annual demand 
+        self.create_heat_demand_profiles()
+
+    def create_heat_demand_profiles(self):
+        # First: simulate thermal behaviour and heating demand of building
+        for t in range(self.host.timesteps):
+            # Get state variables of current timestep from simHost
+            T_amb = self.host.T_amb[t]
+            P_solar = self.host.P_solar[t]
+
+            # Get state variables of previous timestep from heating system
+            T_in = self.heat_demand_profiles["T_in"][t]
+            T_en = self.heat_demand_profiles["T_en"][t]
+
+            # Heating controller: Determine control signal for heating device based on thermal response of building
+            ctrl_signal = self.heating_ctrl.set_ctrl_signal(T_in)
+
+            # Heating device: Calculate heating power (th and el) of heating system based on control signal
+            P_heat_th_next = self.heating_dev.set_thermal_heating_power(ctrl_signal)
+
+            # Thermal model: Compute thermal response of building
+            T_in_next, T_en_next = self.thermal_model.compute_thermal_response(T_in, T_en, T_amb, P_solar, P_heat_th_next)
+
+            # Update current state of heating system
+            self.heat_demand_profiles["T_in"].append(T_in_next)
+            self.heat_demand_profiles["T_en"].append(T_en_next)
+            self.heat_demand_profiles["P_heat_th"].append(P_heat_th_next)
+        
+        # Second: scale to annual demand as defined in user input or approximated from LinReg model
+        annual_net_heat_demand = self.thermal_model.annual_net_heat_demand
+        total_P_heat_th = sum(self.heat_demand_profiles["P_heat_th"])
+        scaling_factor = annual_net_heat_demand / total_P_heat_th
+        logger.info(f"Annual net heat demand (model): {annual_net_heat_demand/self.thermal_model.heated_area:.2f} kWh/m2/a")
+        logger.info(f"Total heating demand (sim): {total_P_heat_th/self.thermal_model.heated_area:.2f} kWh/m2/a")
+        logger.info(f"Scaling factor for heat demand profile: {scaling_factor:.2f}")
+        self.heat_demand_profiles["P_heat_th"] = [val * scaling_factor for val in self.heat_demand_profiles["P_heat_th"]]
+        
+       
     def timetick(self):
         """Simulates a single timestep of the heating system.
         - Gets state variables of current timestep from simHost
@@ -48,26 +92,26 @@ class HeatingSys(device.Device):
         - Updates current state of heating system
         """
 
-        # Get state variables of current timestep from simHost
-        T_amb = self.host.env_state["T_amb"]
-        P_solar = self.host.env_state["P_solar"]
+        # # Get state variables of current timestep from simHost
+        # T_amb = self.host.env_state["T_amb"]
+        # P_solar = self.host.env_state["P_solar"]
 
-        # Get state variables of previous timestep from heating system
-        T_in = self.current_state["T_in"]
-        T_en = self.current_state["T_en"]
-        # P_heat_th = self.current_state["P_heat_th"]
+        # # Get state variables of previous timestep from heating system
+        # T_in = self.current_state["T_in"]
+        # T_en = self.current_state["T_en"]
+        # # P_heat_th = self.current_state["P_heat_th"]
 
-        # Heating controller: Determine control signal for heating device based on thermal response of building
-        ctrl_signal = self.heating_ctrl.set_ctrl_signal(T_in)
+        # # Heating controller: Determine control signal for heating device based on thermal response of building
+        # ctrl_signal = self.heating_ctrl.set_ctrl_signal(T_in)
 
-        # Heating device: Calculate heating power (th and el) of heating system based on control signal
-        P_heat_th_next, P_heat_el_next = self.heating_dev.set_heating_power(ctrl_signal)
+        # # Heating device: Calculate heating power (th and el) of heating system based on control signal
+        # P_heat_th_next, P_heat_el_next = self.heating_dev.set_heating_power(ctrl_signal)
 
-        # Thermal model: Compute thermal response of building
-        T_in_next, T_en_next = self.thermal_model.compute_thermal_response(T_in, T_en, T_amb, P_solar, P_heat_th_next)
+        # # Thermal model: Compute thermal response of building
+        # T_in_next, T_en_next = self.thermal_model.compute_thermal_response(T_in, T_en, T_amb, P_solar, P_heat_th_next)
 
         # Update current state of heating system
-        self.current_state["T_in"] = T_in_next
-        self.current_state["T_en"] = T_en_next
-        self.current_state["P_heat_th"] = P_heat_th_next
-        self.current_state["P_heat_el"] = P_heat_el_next
+        self.current_state["T_in"] = self.heat_demand_profiles["T_in"][self.host.current_timestep]
+        self.current_state["T_en"] = self.heat_demand_profiles["T_en"][self.host.current_timestep]
+        self.current_state["P_heat_th"] = self.heat_demand_profiles["P_heat_th"][self.host.current_timestep]
+        self.current_state["P_heat_el"] = self.heating_dev.set_electrical_heating_power(self.current_state["P_heat_th"])

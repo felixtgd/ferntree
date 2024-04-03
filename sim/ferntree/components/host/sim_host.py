@@ -50,8 +50,8 @@ class SimHost:
         self.current_time = self.start_time
         self.db = database.PostgresDatabase()
         self.db.startup()
-        self.house.startup()
         self.load_weather_data()
+        self.house.startup()
     
     def shutdown(self):
         """
