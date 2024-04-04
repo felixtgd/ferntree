@@ -1,45 +1,48 @@
 {
-  "house": {
-    "baseload": {
-      "annual_consumption": 4000,
-      "profile_id": 4
+    "sim": {
+        "timebase": 3600,
+        "timezone": "Europe/Zurich",
+        "planning_horizon": 1
     },
-    "battery": {
-      "battery_ctrl": {
-        "greedy": false,
-        "opt_fill": false,
-        "planning_horizon": 1,
-        "useable_capacity": 0.8
-      },
-      "capacity": 20,
-      "max_power": 5,
-      "soc_init": 0
-    },
-    "heating_sys": {
-      "heating_dev": {
-        "P_heat_th_max": 5,
-        "cop": 3.5,
-        "efficiency": 0.9,
-        "type": "heatpump"
-      },
-      "thermal_model": {
-        "heated_area": 158,
-        "order": "2R3C",
-        "renovation": 2,
-        "yoc": 1970
-      },
-      "thermostat": {
-        "deadband": 1,
-        "temp_setpoint": 20
-      }
-    },
-    "pv": {
-      "peak_power": 10
+    "house": {
+        "heating_sys": {
+            "thermal_model": {
+                "order": "2R3C",
+                "yoc": 1970,
+                "heated_area": 158,
+                "renovation": 2,
+                "annual_heat_demand_primary": null,
+                "factor_net_primary_heat_demand": 0.53,
+                "hot_water_demand": 10.0
+            },
+            "thermostat": {
+                "temp_setpoint": 20,
+                "deadband": 1
+            },
+            "heating_dev": {
+                "type": "heatpump",
+                "P_heat_th_max": 5,
+                "cop": 3.5,
+                "efficiency": 0.9
+            }
+        },
+        "baseload": {
+            "annual_consumption": 3000,
+            "profile_id": 4
+        },
+        "pv": {
+            "peak_power": 10
+        },
+        "battery": {
+            "capacity": 20,
+            "max_power": 5,
+            "soc_init": 0,
+            "battery_ctrl": {
+                "planning_horizon": 1,
+                "useable_capacity": 0.8,
+                "greedy": false,
+                "opt_fill": false
+            }
+        }
     }
-  },
-  "sim": {
-    "planning_horizon": 1,
-    "timebase": 3600,
-    "timezone": "Europe/Zurich"
-  }
 }

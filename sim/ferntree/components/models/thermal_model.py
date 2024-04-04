@@ -63,37 +63,47 @@ class ThermalModel(device.Device):
         # params = [2.92, 17.79, 2.14, 7.97, 16.03, 0.57] # Mean model parameters
         self.set_model_params(params)
 
-        # Approximate annual net heat demand from linear regression model
-        self.annual_net_heat_demand = params[-1] * self.heated_area  # [kWh/a]
-        # TABULA: Warm water demand:
-        # 10 kWh/(m2 a) for single-family houses
-        # 15 kWh/(m2 a) for multi-family houses
-        self.hot_water_demand = 10.0  # [kWh/m2/a]
-        self.annual_net_heat_demand += (
-            self.hot_water_demand * self.heated_area
-        )  # [kWh/a]
+        if model_specs["annual_heat_demand_primary"] is not None:
+            self.annual_net_heat_demand = (
+                model_specs["annual_heat_demand_primary"]
+                * model_specs["factor_net_primary_heat_demand"]
+            )
+        else:
+            # Approximate annual net heat demand from linear regression model
+            self.annual_net_heat_demand = params[-1] * self.heated_area  # [kWh/a]
+            # TABULA: Warm water demand:
+            # 10 kWh/(m2 a) for single-family houses
+            # 15 kWh/(m2 a) for multi-family houses
+            self.hot_water_demand = model_specs["hot_water_demand"]  # [kWh/m2/a]
+            self.annual_net_heat_demand += (
+                self.hot_water_demand * self.heated_area
+            )  # [kWh/a]
 
         # Pre-calculate time constants
         self.dt = self.host.timebase / 3600
         self.timebase_sqrt = np.sqrt(self.host.timebase)
 
     def set_model_params(self, params):
-        # Effective window area for absorption of solar gains on internal air [m2]
+        """
+        Set the parameters of the thermal 3R2C model.
+
+        Args:
+            params (list): A list of parameters for the model in the following order:
+                - Ai: Effective window area for absorption of solar gains on internal air [m2]
+                - Ce: Capacitance of building envelope [kWh/K]
+                - Ci: Capacitance of interior [kWh/K]
+                - Rea: Thermal resistance between building envelope and the ambient [K/kW]
+                - Ria: Thermal resistance between interior and the ambient [K/kW]
+                - Rie: Thermal resistance between interior and building envelope [K/kW]
+
+        Returns:
+            None
+        """
         self.Ai = params[0]
-
-        # Capacitance of building envelope [kWh/K]
         self.Ce = params[1]
-
-        # Capacitance of interior [kWh/K]
         self.Ci = params[2]
-
-        # Thermal resistance between building envelope and the ambient [K/kW]
         self.Rea = params[3]
-
-        # Thermal resistance between interior and the ambient [K/kW]
         self.Ria = params[4]
-
-        # Thermal resistance between interior and building envelope [K/kW]
         self.Rie = params[5]
 
         if False:
