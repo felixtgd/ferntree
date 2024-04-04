@@ -18,7 +18,7 @@ if not os.path.isfile(os.path.join(silver_dir, "loadprofiles_sorted.csv")):
 
 # SILVER
 # Timebase of dataset
-timebase = 60*60 # 60 minutes
+timebase = 60 * 60  # 60 minutes
 # Process silver dataset containing loadprofiles and determine statistical models for season-days
 silver.create_season_day_models(data_dir, timebase)
 
@@ -40,13 +40,19 @@ if VALIDATION:
     plt.figure(figsize=(30, 5))
     plt.title("Annual Load Profiles")
 
-    timesteps_per_day = 24*60*60 // timebase
-    timesteps_per_year = 365*timesteps_per_day
-    time = pd.date_range(start="2023-01-01", periods=timesteps_per_year, freq=f"{timebase}s")
+    timesteps_per_day = 24 * 60 * 60 // timebase
+    timesteps_per_year = 365 * timesteps_per_day
+    time = pd.date_range(
+        start="2023-01-01", periods=timesteps_per_year, freq=f"{timebase}s"
+    )
 
-    day = 100*24
+    day = 100 * 24
     for i in range(5):
-        plt.plot(time[day:day+24*7], df_profiles[f"{i}"].iloc[day:day+24*7], label=f"Profile {i}")
+        plt.plot(
+            time[day : day + 24 * 7],
+            df_profiles[f"{i}"].iloc[day : day + 24 * 7],
+            label=f"Profile {i}",
+        )
 
     plt.xlabel("Time [h]")
     plt.ylabel("Power [W]")

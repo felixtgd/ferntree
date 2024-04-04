@@ -5,6 +5,7 @@ from dev import device
 
 logger = logging.getLogger("ferntree")
 
+
 class PVSys(device.Device):
     """Class for photovoltaic system."""
 
@@ -17,16 +18,20 @@ class PVSys(device.Device):
             self.peak_power = 10  # Default [kWp]
         else:
             self.peak_power = dev_specs["peak_power"]
-        
-        self.current_state = {"P_pv": 0.0}  # Current state of the PV system: Power output at current timestep [kW]
+
+        self.current_state = {
+            "P_pv": 0.0
+        }  # Current state of the PV system: Power output at current timestep [kW]
 
     def startup(self):
-        """Startup of the pv system. """
+        """Startup of the pv system."""
         pass
 
     def timetick(self):
         """Simulates a single timestep of the PV system."""
 
-        # Update current state of the PV system 
+        # Update current state of the PV system
         # Convention: Generation is negative, consumption positive
-        self.current_state["P_pv"] = -1 * self.peak_power * self.host.env_state.get("P_solar")
+        self.current_state["P_pv"] = (
+            -1 * self.peak_power * self.host.env_state.get("P_solar")
+        )

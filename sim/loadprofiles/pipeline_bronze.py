@@ -17,13 +17,29 @@ def ingest_datasets(data_dir, verbose=False):
     # Define column names present in data
     cols = [
         "time",
-        "S_1", "S_2", "S_3", "S_TOT",
-        "P_1", "P_2", "P_3", "P_TOT", "P_TOT_WITH_PV",
-        "Q_1", "Q_2", "Q_3", "Q_TOT",
-        "U_1", "U_2", "U_3",
-        "I_1", "I_2", "I_3",
-        "PF_1", "PF_2", "PF_3",
-        ]
+        "S_1",
+        "S_2",
+        "S_3",
+        "S_TOT",
+        "P_1",
+        "P_2",
+        "P_3",
+        "P_TOT",
+        "P_TOT_WITH_PV",
+        "Q_1",
+        "Q_2",
+        "Q_3",
+        "Q_TOT",
+        "U_1",
+        "U_2",
+        "U_3",
+        "I_1",
+        "I_2",
+        "I_3",
+        "PF_1",
+        "PF_2",
+        "PF_3",
+    ]
 
     # Get data from all datasets and store in dataframe
     df = pd.DataFrame()
@@ -45,14 +61,14 @@ def ingest_datasets(data_dir, verbose=False):
             for house in data.keys():
                 # Get measurements from household meter
                 data_sfh = data[house]["HOUSEHOLD"]["table"]
-                
+
                 # Convert list of tuples into list of lists
                 data_sfh = [list(row) for row in data_sfh]
 
                 # Create dataframe from list of lists
                 df_tmp = pd.DataFrame(data_sfh, columns=cols)
 
-                # Only care about time and S_TOT --> P_TOT are shit values!!! 
+                # Only care about time and S_TOT --> P_TOT are shit values!!!
                 # USE S_TOT, values make more sense and actually resemble profiles in paper
                 if False:
                     df_tmp = df_tmp[["time", "P_TOT"]]
@@ -75,7 +91,9 @@ def ingest_datasets(data_dir, verbose=False):
 
                 if verbose:
                     # Percentage of missing P_TOT values
-                    availability = (1 - df_tmp[f"P_{house}"].isna().sum() / len(df_tmp)) * 100
+                    availability = (
+                        1 - df_tmp[f"P_{house}"].isna().sum() / len(df_tmp)
+                    ) * 100
                     print(f"{year} {house}: {availability:.2f}% data availability")
 
             # Append df_year to df
@@ -92,5 +110,3 @@ def ingest_datasets(data_dir, verbose=False):
     df.to_csv(output_file, index=False)
     print("Silver dataset saved to silver/loadprofiles_sorted.csv")
     print(f"Timesteps: {len(df)}, Houses: {len(df.columns)}")
-
-

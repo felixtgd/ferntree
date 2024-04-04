@@ -2,12 +2,14 @@ from sqlalchemy import URL, create_engine, text
 from sqlalchemy.orm import Session
 from database import orm_models
 
+
 class PostgresDatabase:
-    """ Class for the Postgres database. 
+    """Class for the Postgres database.
     Main purpose is to write data to the database.
     """
+
     def __init__(self):
-        """ Initializes a new instance of the PostgresDatabase class.
+        """Initializes a new instance of the PostgresDatabase class.
         - Defines the database URL
         - Defines the batch size for writing to the database
         """
@@ -26,7 +28,7 @@ class PostgresDatabase:
         self.data_buffer = []
 
     def startup(self):
-        """ Startup of the database:
+        """Startup of the database:
         - Creates the database engine
         - Drops existing tables
         - Creates new tables defined in orm_models
@@ -36,16 +38,15 @@ class PostgresDatabase:
         orm_models.Base.metadata.create_all(self.engine)
 
     def shutdown(self):
-        """ Shutdown of the database:
+        """Shutdown of the database:
         - Writes any remaining data in the buffer to the database
         """
         if self.data_buffer:
             self.write_batch(self.data_buffer)
             self.data_buffer = []
 
-
     def write_data_to_db(self, data):
-        """ Writes data in batches to the database.
+        """Writes data in batches to the database.
         - Appends data to the buffer
         - Writes the buffer to the database if it is full
         """
@@ -57,7 +58,7 @@ class PostgresDatabase:
             self.data_buffer = []
 
     def write_batch(self, batch):
-        """ Writes a batch of data to the database.
+        """Writes a batch of data to the database.
         - Opens a new session
         - Writes the batch to the database
         - Commits the session
@@ -67,7 +68,7 @@ class PostgresDatabase:
             session.commit()
 
     def create_orm_object_from_dict(self, dict):
-        """ Creates an ORM object from a dictionary."""
+        """Creates an ORM object from a dictionary."""
         orm_obj = orm_models.Timestep(
             time=dict["time"],
             T_amb=dict["T_amb"],
@@ -87,23 +88,25 @@ class PostgresDatabase:
         return orm_obj
 
     def get_load_profile(self, profile_id):
-        """ Gets a load profile from the database.
+        """Gets a load profile from the database.
         - Queries the database for a load profile with the given profile_id
         - Returns the load profile
         """
         # Get column matching "profile_id" from table "annual_loadprofiles":
         # SELECT profile_id FROM annual_loadprofiles
-        # NOTE: This is a bit of a hack, as columns are not really meant to be 
-        # queried like this in SQL. 
+        # NOTE: This is a bit of a hack, as columns are not really meant to be
+        # queried like this in SQL.
         with Session(self.engine) as session:
             load_profile = session.execute(
                 text('SELECT ":profile_id" FROM annual_loadprofiles'),
-                {"profile_id": profile_id}
-                ).fetchall()
-        
+                {"profile_id": profile_id},
+            ).fetchall()
+
         if not load_profile:
-            raise ValueError(f"Load profile with ID {profile_id} not found in database.")
-        
+            raise ValueError(
+                f"Load profile with ID {profile_id} not found in database."
+            )
+
         # Turn elements of load_profile into a list
         load_profile = [x[0] for x in load_profile]
 

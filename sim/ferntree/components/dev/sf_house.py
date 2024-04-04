@@ -4,6 +4,7 @@ from dev import device
 
 logger = logging.getLogger("ferntree")
 
+
 class SfHouse(device.Device):
     """Class for a single-family house.
     Each house has a baseload, a heating system, and optionally a PV system and a battery.
@@ -20,7 +21,7 @@ class SfHouse(device.Device):
         self.components = {}
 
     def add_component(self, comp: device.Device, name: str):
-        """ Adds a components to the house. """
+        """Adds a components to the house."""
         if isinstance(comp, device.Device):
             self.components[name] = comp
         else:
@@ -55,5 +56,5 @@ class SfHouse(device.Device):
         These results are then converted to a ORM object and written to the database.
         """
         results = self.components.get("smart_meter").get_measurements()
-        
+
         return results
