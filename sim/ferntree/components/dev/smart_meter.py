@@ -46,27 +46,41 @@ class SmartMeter(device.Device):
             "time": self.host.env_state.get("time"),
             "T_amb": self.host.env_state.get("T_amb"),
             "P_solar": self.host.env_state.get("P_solar"),
-            "T_in": self.house.components.get("heating").current_state.get("T_in"),
-            "T_en": self.house.components.get("heating").current_state.get("T_en"),
-            "P_heat_th": self.house.components.get("heating").current_state.get(
-                "P_heat_th"
-            ),
-            "P_heat_el": self.house.components.get("heating").current_state.get(
-                "P_heat_el"
-            ),
+            # Inside temperature
+            "T_in": 0.0
+            if self.house.components.get("heating") is None
+            else self.house.components.get("heating").current_state.get("T_in"),
+            # Building envelope temperature
+            "T_en": 0.0
+            if self.house.components.get("heating") is None
+            else self.house.components.get("heating").current_state.get("T_en"),
+            # Thermal heating demand
+            "P_heat_th": 0.0
+            if self.house.components.get("heating") is None
+            else self.house.components.get("heating").current_state.get("P_heat_th"),
+            # Electrical heating demand
+            "P_heat_el": 0.0
+            if self.house.components.get("heating") is None
+            else self.house.components.get("heating").current_state.get("P_heat_el"),
+            # Baseload power
             "P_base": self.house.components.get("baseload").current_state.get("P_base"),
+            # PV power generation
             "P_pv": 0.0
             if self.house.components.get("pv") is None
             else self.house.components.get("pv").current_state.get("P_pv"),
+            # Battery power
             "P_bat": 0.0
             if self.house.components.get("battery") is None
             else self.house.components.get("battery").current_state.get("P_bat"),
+            # Battery state of charge
             "Soc_bat": 0.0
             if self.house.components.get("battery") is None
             else self.house.components.get("battery").current_state.get("Soc_bat"),
+            # Battery fill level
             "fill_level": 0.0
             if self.house.components.get("battery") is None
             else self.house.components.get("battery").current_state.get("fill_level"),
+            # Predicted net load of house
             "P_load_pred": 0.0
             if self.house.components.get("battery") is None
             else self.house.components.get("battery").current_state.get("P_load_pred"),

@@ -32,7 +32,7 @@ engine = create_engine(db.db_url)
 # ----------SETUP AND RUN SIM----------
 start_time = time.time()
 # Model parameters
-annual_consumption = 4000  # kWh
+annual_consumption = 2339  # kWh
 pv_size = 10  # kWp
 bat_cap = 20  # kWh
 bat_pwr = 5  # kW
@@ -110,9 +110,11 @@ def plot_results(df_annual, month):
     annual_heating_demand_el = df_annual["P_heat_el"].sum() / 1000
     annual_pv_generation = df_annual["P_pv"].sum() / 1000
     annual_grid_consumption = (
-        df_annual["P_total"][df_annual["P_total"] > 0].sum() / 1000
+        df_annual["P_total"][df_annual["P_total"] > 0.0].sum() / 1000
     )
-    annual_grid_feed_in = df_annual["P_total"][df_annual["P_total"] < 0].sum() / 1000
+    annual_grid_feed_in = df_annual["P_total"][df_annual["P_total"] < 0.0].sum() / 1000
+
+    diff_soc = (df_annual["Soc_bat"].iloc[-1] - bat_soc_init) / 1000
     annual_self_consumption = (
         annual_baseload_demand + annual_heating_demand_el - annual_grid_consumption
     )
@@ -129,7 +131,7 @@ def plot_results(df_annual, month):
     axs[0].legend()
     axs[0].grid()
     # Add textbox with annual thermal energy demand
-    textstr = f"Thermal energy demand: {annual_heating_demand_th:.2f} MWh/a"
+    textstr = f"Thermal energy demand: {annual_heating_demand_th:.3f} MWh/a"
     props = dict(boxstyle="round", facecolor="white", alpha=0.5)
     axs[0].text(
         0.05,
@@ -171,12 +173,13 @@ def plot_results(df_annual, month):
     axs[2].grid()
     # Add textbox with annual baseload demand, heating demand, pv generation, consumption from grid, grid feed-in, self-consumption
     textstr = (
-        f"Baseload demand: {annual_baseload_demand:.2f} MWh/a\n"
-        f"Heating demand (el): {annual_heating_demand_el:.2f} MWh/a\n"
-        f"PV generation: {annual_pv_generation:.2f} MWh/a\n"
-        f"Consumption from grid: {annual_grid_consumption:.2f} MWh/a\n"
-        f"Grid feed-in: {annual_grid_feed_in:.2f} MWh/a\n"
-        f"Self-consumption: {annual_self_consumption:.2f} MWh/a ({annual_self_consumption/(annual_baseload_demand+annual_heating_demand_el) * 100:.2f}%)"
+        f"Baseload demand: {annual_baseload_demand:.3f} MWh/a\n"
+        f"Heating demand (el): {annual_heating_demand_el:.3f} MWh/a\n"
+        f"PV generation: {annual_pv_generation:.3f} MWh/a\n"
+        f"Consumption from grid: {annual_grid_consumption:.3f} MWh/a\n"
+        f"Grid feed-in: {annual_grid_feed_in:.3f} MWh/a\n"
+        f"Self-consumption: {annual_self_consumption:.3f} MWh/a ({annual_self_consumption/(annual_baseload_demand+annual_heating_demand_el) * 100:.3f}%)\n"
+        f"Diff. Bat. SoC: {diff_soc:.3f} MWh"
     )
     props = dict(boxstyle="round", facecolor="white", alpha=0.5)
     axs[2].text(

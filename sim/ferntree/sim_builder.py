@@ -6,14 +6,11 @@ from host import sim_host
 from dev import (
     sf_house,
     smart_meter,
-    heating_sys,
-    heating_dev,
     baseload,
     pv_sys,
     battery_dev,
 )
-from ctrl import heating_ctrl, battery_ctrl
-from models import thermal_model
+from ctrl import battery_ctrl
 
 logger = logging.getLogger("ferntree")
 
@@ -39,26 +36,26 @@ class SimBuilder:
             sm = smart_meter.SmartMeter(self.sim, house)
             house.add_component(sm, "smart_meter")
 
-            # Create heating system
-            if self.model_specs["heating_sys"]:
-                heating = heating_sys.HeatingSys(self.sim)
-                heating.thermal_model = thermal_model.ThermalModel(
-                    self.sim, self.model_specs["heating_sys"]["thermal_model"]
-                )
-                heating.heating_ctrl = heating_ctrl.HeatingCtrl(
-                    self.sim, self.model_specs["heating_sys"]["thermostat"]
-                )
-                heating.heating_dev = heating_dev.HeatingDev(
-                    self.sim, self.model_specs["heating_sys"]["heating_dev"]
-                )
+            # # Create heating system
+            # if self.model_specs["heating_sys"]:
+            #     heating = heating_sys.HeatingSys(self.sim)
+            #     heating.thermal_model = thermal_model.ThermalModel(
+            #         self.sim, self.model_specs["heating_sys"]["thermal_model"]
+            #     )
+            #     heating.heating_ctrl = heating_ctrl.HeatingCtrl(
+            #         self.sim, self.model_specs["heating_sys"]["thermostat"]
+            #     )
+            #     heating.heating_dev = heating_dev.HeatingDev(
+            #         self.sim, self.model_specs["heating_sys"]["heating_dev"]
+            #     )
 
-                house.add_component(heating, "heating")
-                logger.info("Heating system added to the house.")
-            else:
-                logger.error(
-                    "No heating system specifications found. Required for simulation!"
-                )
-                return
+            #     house.add_component(heating, "heating")
+            #     logger.info("Heating system added to the house.")
+            # else:
+            #     logger.error(
+            #         "No heating system specifications found. Required for simulation!"
+            #     )
+            #     return
 
             # Create baseload
             if self.model_specs["baseload"]:

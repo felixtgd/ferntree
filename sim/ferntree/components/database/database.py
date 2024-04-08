@@ -2,6 +2,8 @@ from sqlalchemy import URL, create_engine, text
 from sqlalchemy.orm import Session
 from database import orm_models
 
+import pandas as pd
+
 
 class PostgresDatabase:
     """Class for the Postgres database.
@@ -111,3 +113,23 @@ class PostgresDatabase:
         load_profile = [x[0] for x in load_profile]
 
         return list(load_profile)
+
+    def get_sim_results(self):
+        """Gets the simulation results from the database."""
+        with Session(self.engine) as session:
+            results = session.query(orm_models.Timestep).all()
+
+        # Create pd dataframe from results
+        measurements = {
+            column: [getattr(result, column) for result in results]
+            for column in orm_models.Timestep.__table__.columns.keys()
+        }
+
+        df = pd.DataFrame(measurements)
+        df["time"] = pd.to_datetime(df["time"], unit="s")
+        df.set_index("time", inplace=True)
+
+        df["P_net_load"] = df["P_base"] + df["P_pv"] + df["P_heat_el"]
+        df["P_total"] = df["P_net_load"] + df["P_bat"]
+
+        return df

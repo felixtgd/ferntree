@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from pytz import timezone
 from datetime import datetime
 
@@ -22,6 +23,7 @@ class SimHost:
         Initializes a new instance of the SimHost class.
         """
 
+        self.model_name = sim_settings["model_name"]
         self.timebase = int(sim_settings["timebase"])  # Timebase in seconds
         self.timesteps = int(365 * 24 * 3600 / self.timebase)  # Number of timesteps
         self.timezone = timezone(sim_settings["timezone"])
@@ -65,6 +67,9 @@ class SimHost:
         self.db.shutdown()
         self.house.shutdown()
 
+        # Prototype of results export
+        self.export_results()
+
     def add_house(self, house: sf_house.SfHouse):
         """Adds a house to the simulation host."""
         if isinstance(house, sf_house.SfHouse):
@@ -79,7 +84,7 @@ class SimHost:
         - Shuts down the host
         """
         self.startup()
-        logger.info(f"Running simulation with {self.timesteps} timesteps.")
+        logger.info(f"Running simulation with {self.timesteps} timesteps.\n")
         for t in range(self.timesteps):
             self.current_timestep = t
             self.timetick(t)
@@ -128,4 +133,54 @@ class SimHost:
             input_data = json.load(json_file)
             hourly_data = input_data["outputs"]["hourly"]
             self.T_amb = [hd["T2m"] + 273.15 for hd in hourly_data]  # [K]
-            self.P_solar = [hd["Gb(i)"] / 1e3 for hd in hourly_data]  # [kW/m2]
+            # self.P_solar = [hd["Gb(i)"] / 1e3 for hd in hourly_data]  # [kW/m2]
+            self.P_solar = [hd["G(i)"] / 1e3 for hd in hourly_data]  # [kW/m2]
+
+    # PROTOTYPE: Export results to json file, later to database
+    def export_results(self):
+        """Exports the results of the simulation to a json file."""
+        results_df = self.db.get_sim_results()
+
+        annual_baseload_demand = results_df["P_base"].sum()
+        annual_pv_generation = results_df["P_pv"].sum() + results_df["Soc_bat"].iloc[-1]
+        annual_grid_consumption = results_df["P_total"][
+            results_df["P_total"] > 0.0
+        ].sum()
+        annual_grid_feed_in = results_df["P_total"][results_df["P_total"] < 0.0].sum()
+        annual_self_consumption = annual_baseload_demand - annual_grid_consumption
+
+        # Create results dictionary with model specifications and simulation results
+        results = {
+            "model": {
+                "pv_size": self.house.components["pv"].peak_power,
+                "bat_cap": self.house.components["battery"].capacity,
+                "bat_pwr": self.house.components["battery"].max_power,
+            },
+            "results": {
+                "annual_baseload_demand": annual_baseload_demand,
+                "annual_pv_generation": annual_pv_generation,
+                "annual_grid_consumption": annual_grid_consumption,
+                "annual_grid_feed_in": annual_grid_feed_in,
+                "annual_self_consumption": annual_self_consumption,
+            },
+        }
+
+        file_path = os.path.join(
+            os.getcwd(), f"sim/workspace/{self.model_name}/results.json"
+        )
+        with open(file_path, "w") as json_file:
+            json.dump(results, json_file, indent=4)
+
+        logger.info("Results exported to results.json.\n")
+
+        logger.info(f"PV size: {results['model']['pv_size']} kWp")
+        logger.info(f"Battery capacity: {results['model']['bat_cap']} kWh")
+        logger.info(f"Battery power: {results['model']['bat_pwr']} kW\n")
+
+        logger.info(f"Annual baseload demand: {annual_baseload_demand:.2f} kWh")
+        logger.info(f"Annual PV generation: {annual_pv_generation:.2f} kWh")
+        logger.info(f"Annual grid consumption: {annual_grid_consumption:.2f} kWh")
+        logger.info(f"Annual grid feed-in: {annual_grid_feed_in:.2f} kWh")
+        logger.info(
+            f"Annual self-consumption: {annual_self_consumption:.2f} kWh ({(annual_self_consumption/annual_baseload_demand * 100):.2f}%)"
+        )
