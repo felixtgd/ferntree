@@ -142,11 +142,15 @@ class SimHost:
         results_df = self.db.get_sim_results()
 
         annual_baseload_demand = results_df["P_base"].sum()
-        annual_pv_generation = results_df["P_pv"].sum() + results_df["Soc_bat"].iloc[-1]
+        annual_pv_generation = (
+            abs(results_df["P_pv"].sum()) + results_df["Soc_bat"].iloc[-1]
+        )
         annual_grid_consumption = results_df["P_total"][
             results_df["P_total"] > 0.0
         ].sum()
-        annual_grid_feed_in = results_df["P_total"][results_df["P_total"] < 0.0].sum()
+        annual_grid_feed_in = abs(
+            results_df["P_total"][results_df["P_total"] < 0.0].sum()
+        )
         annual_self_consumption = annual_baseload_demand - annual_grid_consumption
 
         # Create results dictionary with model specifications and simulation results

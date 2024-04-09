@@ -6,9 +6,9 @@
     },
     "results": {
         "annual_baseload_demand": 2338.9999991229997,
-        "annual_pv_generation": -13592.277336499998,
+        "annual_pv_generation": 13621.1392635,
         "annual_grid_consumption": 135.73397711872,
-        "annual_grid_feed_in": -11389.01131382415,
+        "annual_grid_feed_in": 11389.01131382415,
         "annual_self_consumption": 2203.26602200428
     }
 }
