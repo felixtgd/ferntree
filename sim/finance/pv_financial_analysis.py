@@ -22,7 +22,7 @@ with open(results_path) as f:
 # Input from simulation results
 pv_size = results.get("model").get("pv_size")  # kWp
 bat_cap = results.get("model").get("bat_cap")  # kWh
-bat_power = results.get("model").get("bat_power")  # kW
+bat_power = results.get("model").get("bat_pwr")  # kW
 
 annual_baseload_demand = results.get("results").get("annual_baseload_demand")  # kWh
 annual_pv_generation = results.get("results").get("annual_pv_generation")  # kWh
@@ -127,4 +127,4 @@ plt.ylabel("€")
 plt.title("Break Even Analysis")
 plt.legend()
 plt.grid()
-plt.show()
+# plt.show()

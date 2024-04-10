@@ -2,6 +2,7 @@
 *.png
 *.csv
 *.hdf5
+.dat
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
