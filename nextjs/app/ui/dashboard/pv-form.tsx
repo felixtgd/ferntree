@@ -19,13 +19,43 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
 import { useFormState } from 'react-dom';
+import React, { useState } from 'react';
 
 export default function Form() {
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log('Form submitted');
+  const [formData, setFormData] = useState({
+    location: '',
+    electr_cons: 0,
+    roof_incl: 0,
+    roof_azimuth: 0,
+    peak_power: 0,
+    battery_cap: 0,
+    elec_price: 0,
+    down_payment: 0,
+    pay_off_rate: 0,
+    interest_rate: 0,
+  });
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
   };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      const response = await fetch('http://localhost:8000/pv-calc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
 
   return (
     <form onSubmit={handleSubmit}>
@@ -41,6 +71,8 @@ export default function Form() {
               id="location"
               name="location"
               type="text"
+              onChange={handleChange}
+              value = {formData.location}
               placeholder="Enter location"
               className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
             />
@@ -59,6 +91,8 @@ export default function Form() {
                 name="electr_cons"
                 type="number"
                 step="0.01"
+                onChange = {handleChange}
+                value = {formData.electr_cons}
                 placeholder="300,000"
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
@@ -77,7 +111,8 @@ export default function Form() {
                 id="roof_incl"
                 name="roof_incl"
                 className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                defaultValue=""
+                onChange={handleChange}
+                value = {formData.roof_incl}
               >
                 <option value="" disabled>
                   Select roof inclination
@@ -101,7 +136,8 @@ export default function Form() {
                 id="roof_azimuth"
                 name="roof_azimuth"
                 className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                defaultValue=""
+                onChange={handleChange}
+                value = {formData.roof_azimuth}
               >
                 <option value="" disabled>
                   Select roof orientation
@@ -132,6 +168,8 @@ export default function Form() {
                 type="number"
                 step="0.01"
                 placeholder="10"
+                onChange={handleChange}
+                value = {formData.peak_power}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
@@ -151,6 +189,8 @@ export default function Form() {
                 type="number"
                 step="0.01"
                 placeholder="10"
+                onChange={handleChange}
+                value = {formData.battery_cap}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
@@ -170,6 +210,8 @@ export default function Form() {
                 type="number"
                 step="0.01"
                 placeholder="35"
+                onChange={handleChange}
+                value = {formData.elec_price}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
@@ -189,6 +231,8 @@ export default function Form() {
                 type="number"
                 step="0.01"
                 placeholder="20"
+                onChange={handleChange}
+                value = {formData.down_payment}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
@@ -208,6 +252,8 @@ export default function Form() {
                 type="number"
                 step="0.01"
                 placeholder="5"
+                onChange={handleChange}
+                value = {formData.pay_off_rate}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
@@ -227,6 +273,8 @@ export default function Form() {
                 type="number"
                 step="0.01"
                 placeholder="3"
+                onChange={handleChange}
+                value = {formData.interest_rate}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
