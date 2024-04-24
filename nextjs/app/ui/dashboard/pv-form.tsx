@@ -21,19 +21,22 @@ import { Button } from '@/app/ui/button';
 import { useFormState } from 'react-dom';
 import React, { useState } from 'react';
 
-export default function Form() {
+import { PvData } from '@/app/lib/definitions';
+
+
+export default function PvForm({ setData }: { setData: (data: PvData) => void }) {
 
   const [formData, setFormData] = useState({
-    location: '',
-    electr_cons: 0,
+    location: 'Aarau',
+    electr_cons: 300000,
     roof_incl: 0,
     roof_azimuth: 0,
-    peak_power: 0,
-    battery_cap: 0,
-    elec_price: 0,
-    down_payment: 0,
-    pay_off_rate: 0,
-    interest_rate: 0,
+    peak_power: 10,
+    battery_cap: 10,
+    elec_price: 35,
+    down_payment: 20,
+    pay_off_rate: 5,
+    interest_rate: 3,
   });
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -44,12 +47,13 @@ export default function Form() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/pv-calc', {
+      const response = await fetch('http://localhost:8000/dashboard/pv-calc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
       const data = await response.json();
+      setData(data);
       console.log(data);
     } catch (error) {
       console.error(error);

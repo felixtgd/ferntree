@@ -44,7 +44,7 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.post("/pv-calc")
+@app.post("/dashboard/pv-calc")
 async def pv_calc(sim_model: SimulationModel):
     print(sim_model.model_dump())
     return {"status": "Simulation started", "model": sim_model.model_dump()}
