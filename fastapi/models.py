@@ -1,6 +1,12 @@
 from pydantic import BaseModel, Field
 
 
+# Add class for solar irradiation data quieried from PVGIS
+# For testing this model should accept any data
+class SolarIrradiationData(BaseModel):
+    data: str = Field(title="Data", description="The solar irradiation data")
+
+
 class SimParams(BaseModel):
     name: str = Field(
         title="Name of the model", description="The name of the model to be simulated"
