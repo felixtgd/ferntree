@@ -1,19 +1,43 @@
-import motor.motor_asyncio
+import os
 
-from models import SolarIrradiationData
+from dotenv import load_dotenv
 
-client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017")
-db = client.SimData
-collection = db.SolarIrradiation
-
-
-async def insert_data(data: SolarIrradiationData):
-    await collection.insert_one(data.model_dump())
-    return True
+from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo.server_api import ServerApi
 
 
-async def get_data():
-    data = []
-    async for doc in collection.find():
-        data.append(doc)
-    return data
+# Load config from .env file:
+load_dotenv()
+MONGODB_URI = os.environ["MONGODB_URI"]
+
+
+class DBClient:
+    def __init__(self):
+        self.client = AsyncIOMotorClient(MONGODB_URI, server_api=ServerApi("1"))
+        self.db = self.client.sample_mflix
+        self.movies = self.db.movies
+
+    async def list_databases(self):
+        print("Databases:")
+        for db_info in await self.client.list_database_names():
+            print(db_info)
+
+    async def list_collections(self):
+        print("Collections in sample_mflix:")
+        for collection in await self.db.list_collection_names():
+            print(collection)
+
+    async def get_random_movie(self):
+        print("Movie:")
+        # Print a random movie from the collection
+        movie = await self.movies.find_one()
+        print(movie)
+        # Print the title of the movie
+        print(movie["title"])
+
+    async def close(self):
+        self.client.close()
+
+
+# client = DBClient()
+# asyncio.run(client.list_databases())
