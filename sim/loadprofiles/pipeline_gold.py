@@ -2,7 +2,13 @@ import os
 import numpy as np
 import pandas as pd
 
-from sqlalchemy import URL, create_engine
+
+from dotenv import load_dotenv
+from pymongo import MongoClient
+from pymongo.server_api import ServerApi
+import certifi
+
+# from sqlalchemy import URL, create_engine
 
 # Generate yearly load profiles
 # - Create 100 profiles & get mean annual consumption of all (will be default value if user does not specify)
@@ -147,21 +153,50 @@ def generate_daily_profile(mean, std, lb, ub):
 
 
 def write_profiles_to_db(df_profiles):
-    # Write generated annual load profiles to database
-    host = "localhost"
-    port = "5432"
-    db_name = "sim_db"
-    db_url = URL.create(
-        "postgresql+psycopg2",
-        host=host,
-        port=port,
-        database=db_name,
-    )
+    # Write generated annual load profiles to MongoDB database
+    # Use certifi to get the path of the CA file
+    ca = certifi.where()
 
-    engine = create_engine(db_url)
+    # Load config from .env file:
+    scipt_dir = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.join(scipt_dir, "../../.env")
+    load_dotenv(env_path)
+    MONGODB_URI = os.environ["MONGODB_URI"]
 
-    # Export to database
-    df_profiles.to_sql(
-        "annual_loadprofiles", con=engine, if_exists="replace", index=False
-    )
-    print(f"Exported generated annual load profiles to database at {db_url}")
+    client = MongoClient(MONGODB_URI, server_api=ServerApi("1"), tlsCAFile=ca)
+    db = client["ferntree_db"]
+    collection = db["loadprofiles"]
+
+    # Convert dataframe to dictionary
+    profiles_dict = df_profiles.to_dict(orient="list")
+
+    # Write profiles as one document to database
+    profiles_doc = {
+        "type": "normalised annual loadprofiles",
+        "profiles": profiles_dict,
+    }
+    doc_id = collection.insert_one(profiles_doc)
+    if doc_id:
+        print("Generated annual load profiles written to MongoDB database.")
+        print("doc_id: ", doc_id)
+    else:
+        print("Error writing annual load profiles to MongoDB database.")
+    client.close()
+
+    # host = "localhost"
+    # port = "5432"
+    # db_name = "sim_db"
+    # db_url = URL.create(
+    #     "postgresql+psycopg2",
+    #     host=host,
+    #     port=port,
+    #     database=db_name,
+    # )
+
+    # engine = create_engine(db_url)
+
+    # # Export to database
+    # df_profiles.to_sql(
+    #     "annual_loadprofiles", con=engine, if_exists="replace", index=False
+    # )
+    # print(f"Exported generated annual load profiles to database at {db_url}")

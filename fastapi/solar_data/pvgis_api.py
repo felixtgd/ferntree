@@ -1,6 +1,9 @@
 import pandas as pd
 import requests
 import time
+from datetime import datetime
+
+from solar_data.geolocator import get_location_coordinates
 
 
 def api_request_solar_irr(
@@ -83,21 +86,28 @@ def api_request_solar_irr(
         response.raise_for_status()
 
 
-def get_solar_data_for_coordinates(coordinates: dict) -> pd.DataFrame:
+def get_solar_data_for_location(
+    location: str, roof_azimuth: float, roof_incl: float
+) -> pd.DataFrame:
     """
-    Get solar irradaince data from PVGIS API for a specified coordinates.
+    Get solar irradiance data from PVGIS API for a specified location.
 
     Args:
-        coordinates: dict with lat and lon coordinates
+        location: str with the address of the location
+        roof_azimuth: float with the azimuth angle of the roof
+        roof_incl: float with the inclination angle of the roof
 
     Returns:
         sol_irr_df: dataframe with solar irradiance data and timestamps
 
     """
+    coordinates = get_location_coordinates(location)
     lat = coordinates["lat"]
     lon = coordinates["lon"]
     try:
-        response_sol_irr = api_request_solar_irr(lat=lat, lon=lon)
+        response_sol_irr = api_request_solar_irr(
+            lat=lat, lon=lon, angle=roof_incl, aspect=roof_azimuth
+        )
     except requests.exceptions.HTTPError as e:
         print(
             f"API request failed with status code {e.response.status_code}: {e.response.text}"
@@ -107,23 +117,19 @@ def get_solar_data_for_coordinates(coordinates: dict) -> pd.DataFrame:
 
     hourly_data = response_sol_irr["outputs"]["hourly"]
 
-    timestamp = []
-    solar_irradiance = []
+    for item in hourly_data:
+        # Convert 'time' to datetime
+        item["time"] = datetime.strptime(item["time"], "%Y%m%d:%H%M").isoformat()
 
-    for hd in hourly_data:
-        timestamp.append(hd["time"])
-        solar_irradiance.append(hd["G(i)"])
+        # Ensure 'G(i)' and 'T2m' are floats
+        item["G_i"] = float(item.pop("G(i)"))
+        item["T2m"] = float(item["T2m"])
 
-    print(f"{len(timestamp)} data points")
+        # Remove unwanted fields
+        item.pop("H_sun", None)
+        item.pop("WS10m", None)
+        item.pop("Int", None)
 
-    timestamp = pd.date_range(
-        start="2019-01-01", periods=len(solar_irradiance), freq="H"
-    )
-    sol_irr_df = pd.DataFrame(
-        data={
-            "timestamp": pd.to_datetime(timestamp, format="%Y%m%d:%H%M"),
-            "solar_irradiance": solar_irradiance,
-        }
-    )
+    print(f"{len(hourly_data)} data points")
 
-    return sol_irr_df
+    return hourly_data, coordinates
