@@ -1,7 +1,6 @@
 import pandas as pd
 import requests
 import time
-from datetime import datetime
 
 from solar_data.geolocator import get_location_coordinates
 
@@ -117,19 +116,26 @@ def get_solar_data_for_location(
 
     hourly_data = response_sol_irr["outputs"]["hourly"]
 
+    T_amb = []
+    G_i = []
+
     for item in hourly_data:
-        # Convert 'time' to datetime
-        item["time"] = datetime.strptime(item["time"], "%Y%m%d:%H%M").isoformat()
+        T_amb.append(item["T2m"])
+        G_i.append(item["G(i)"])
 
-        # Ensure 'G(i)' and 'T2m' are floats
-        item["G_i"] = float(item.pop("G(i)"))
-        item["T2m"] = float(item["T2m"])
+    # for item in hourly_data:
+    #     # Convert 'time' to datetime
+    #     item["time"] = datetime.strptime(item["time"], "%Y%m%d:%H%M").isoformat()
 
-        # Remove unwanted fields
-        item.pop("H_sun", None)
-        item.pop("WS10m", None)
-        item.pop("Int", None)
+    #     # Ensure 'G(i)' and 'T2m' are floats
+    #     item["G_i"] = float(item.pop("G(i)"))
+    #     item["T2m"] = float(item["T2m"])
+
+    #     # Remove unwanted fields
+    #     item.pop("H_sun", None)
+    #     item.pop("WS10m", None)
+    #     item.pop("Int", None)
 
     print(f"{len(hourly_data)} data points")
 
-    return hourly_data, coordinates
+    return T_amb, G_i  # hourly_data

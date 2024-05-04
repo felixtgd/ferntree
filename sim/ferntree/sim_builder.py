@@ -1,8 +1,8 @@
-import json
-import os
 import logging
+from bson.objectid import ObjectId
 
 from host import sim_host
+from database.mongodb import pyMongoClient
 from dev import (
     sf_house,
     smart_meter,
@@ -16,16 +16,33 @@ logger = logging.getLogger("ferntree")
 
 
 class SimBuilder:
-    def __init__(self, model_path):
-        # Load simulation settings and model specifications
-        with open(os.path.join(model_path, "model_config.json")) as f:
-            config = json.load(f)
-            self.model_specs = config["house"]
-            self.sim_settings = config["sim"]
+    def __init__(self, sim_id: str, model_id: str):
+        # # Load simulation settings and model specifications
+        # with open(os.path.join(model_path, "model_config.json")) as f:
+        #     config = json.load(f)
+        #     self.model_specs = config["house"]
+        #     self.sim_settings = config["sim"]
+
+        # Connect to database
+        self.db_client = pyMongoClient()
+
+        # Load model specifications from database
+        config = self.db_client.find_one(
+            "model_specs_coll", {"_id": ObjectId(model_id)}
+        )
+        sim_params = config["sim_model_specs"]["sim_params"]
+        self.model_specs = config["sim_model_specs"]["house"]
+
+        # Load simulation input data from database
+        sim_input = self.db_client.find_one(
+            "simulation_coll", {"_id": ObjectId(sim_id)}
+        )
 
         # Set up simulation host
-        self.sim = sim_host.SimHost(self.sim_settings)
-        self.sim.weather_data_path = os.path.join(model_path, "env_data.json")
+        self.sim = sim_host.SimHost(sim_params)
+        self.sim.T_amb = sim_input["T_amb"]
+        self.sim.P_solar = sim_input["G_i"]
+        # self.sim.weather_data_path = os.path.join(model_path, "env_data.json")
 
     def build_simulation(self):
         logger.info("Building simulation...")

@@ -18,7 +18,7 @@ else:
     logging.basicConfig(level=logging.CRITICAL, format="%(message)s")
 
 
-def build_and_run_simulation(model_path):
+def build_and_run_simulation(sim_id, model_id):
     # Load sim_builder
     try:
         sim_builder = importlib.import_module("sim_builder")
@@ -27,7 +27,7 @@ def build_and_run_simulation(model_path):
         sys.exit(1)
 
     # Build simulation
-    builder = sim_builder.SimBuilder(model_path)
+    builder = sim_builder.SimBuilder(sim_id, model_id)
     sim = builder.build_simulation()
 
     # Start simulation
@@ -41,11 +41,19 @@ if __name__ == "__main__":
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--model", help="model name", required=True)
+    parser.add_argument(
+        "-m", "--model_id", help="id of model specs doc in db", required=True
+    )
+    parser.add_argument(
+        "-s", "--sim_id", help="id of simulation doc in db", required=True
+    )
     args = parser.parse_args()
-    model = args.model
+    model_id = args.model_id
+    sim_id = args.sim_id
 
-    logger.info(f"Model: \t{model}")
+    logger.info(f"Model ID: \t{model_id}")
+    logger.info(f"Simulation ID: \t{sim_id}")
+
     logger.info("")
 
     # Get the absolute path to the script directory
@@ -58,22 +66,23 @@ if __name__ == "__main__":
 
     # Set up paths
     ft_path = os.path.abspath(os.path.join(script_dir, conf["env"]["path"]))
-    model_path = os.path.abspath(
-        os.path.join(script_dir, conf["workspace"]["path"], model)
-    )
+    # model_path = os.path.abspath(
+    #     os.path.join(script_dir, conf["workspace"]["path"], model)
+    # )
 
     # Add paths to sys.path
     sys.path.insert(0, ft_path)
-    sys.path.insert(0, model_path)
+    # sys.path.insert(0, model_path)
 
     logger.info(f"Script directory: \t{script_dir}")
     logger.info(f"Ferntree directory: \t{ft_path}")
-    logger.info(f"Model directory: \t{model_path}")
+    # logger.info(f"Model directory: \t{model_path}")
     logger.info("")
 
     # Build and run the simulation
     start_time = time.time()
-    build_and_run_simulation(model_path)
+    # build_and_run_simulation(model_path)
+    build_and_run_simulation(sim_id, model_id)
     end_time = time.time()
 
     logger.info("")

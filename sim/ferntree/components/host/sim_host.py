@@ -23,7 +23,7 @@ class SimHost:
         Initializes a new instance of the SimHost class.
         """
 
-        self.model_name = sim_settings["model_name"]
+        # self.model_name = sim_settings["model_name"]
         self.timebase = int(sim_settings["timebase"])  # Timebase in seconds
         self.timesteps = int(365 * 24 * 3600 / self.timebase)  # Number of timesteps
         self.timezone = timezone(sim_settings["timezone"])
@@ -41,7 +41,9 @@ class SimHost:
             "P_solar": None,  # Solar irradiance [kW/m2]
         }
 
-        self.weather_data_path = None  # Path to the weather data file
+        # self.weather_data_path = None  # Path to the weather data file
+        self.T_amb = None
+        self.P_solar = None
 
     def startup(self):
         """
@@ -55,7 +57,7 @@ class SimHost:
         self.current_time = self.start_time
         self.db = database.PostgresDatabase()
         self.db.startup()
-        self.load_weather_data()
+        # self.load_weather_data()
         self.house.startup()
 
     def shutdown(self):
@@ -68,7 +70,7 @@ class SimHost:
         self.house.shutdown()
 
         # Prototype of results export
-        self.export_results()
+        # self.export_results()
 
     def add_house(self, house: sf_house.SfHouse):
         """Adds a house to the simulation host."""
