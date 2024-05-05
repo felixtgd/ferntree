@@ -1,5 +1,4 @@
 import logging
-from bson.objectid import ObjectId
 
 from host import sim_host
 from database.mongodb import pyMongoClient
@@ -17,32 +16,21 @@ logger = logging.getLogger("ferntree")
 
 class SimBuilder:
     def __init__(self, sim_id: str, model_id: str):
-        # # Load simulation settings and model specifications
-        # with open(os.path.join(model_path, "model_config.json")) as f:
-        #     config = json.load(f)
-        #     self.model_specs = config["house"]
-        #     self.sim_settings = config["sim"]
-
         # Connect to database
-        self.db_client = pyMongoClient()
+        self.db_client = pyMongoClient(model_id, sim_id)
 
         # Load model specifications from database
-        config = self.db_client.find_one(
-            "model_specs_coll", {"_id": ObjectId(model_id)}
-        )
+        config = self.db_client.load_config()
         sim_params = config["sim_model_specs"]["sim_params"]
         self.model_specs = config["sim_model_specs"]["house"]
 
         # Load simulation input data from database
-        sim_input = self.db_client.find_one(
-            "simulation_coll", {"_id": ObjectId(sim_id)}
-        )
+        sim_input = self.db_client.load_simulation_input()
 
         # Set up simulation host
-        self.sim = sim_host.SimHost(sim_params)
+        self.sim = sim_host.SimHost(sim_params, self.db_client)
         self.sim.T_amb = sim_input["T_amb"]
         self.sim.P_solar = sim_input["G_i"]
-        # self.sim.weather_data_path = os.path.join(model_path, "env_data.json")
 
     def build_simulation(self):
         logger.info("Building simulation...")
@@ -76,7 +64,14 @@ class SimBuilder:
 
             # Create baseload
             if self.model_specs["baseload"]:
-                bl = baseload.BaseLoad(self.sim, self.model_specs["baseload"])
+                # Get load profile for baseload from database
+                load_profile = self.db_client.get_load_profile(
+                    int(self.model_specs["baseload"]["profile_id"])
+                )
+                # Create baseload device
+                bl = baseload.BaseLoad(
+                    self.sim, self.model_specs["baseload"], load_profile
+                )
                 house.add_component(bl, "baseload")
                 logger.info("Baseload added to the house.")
             else:

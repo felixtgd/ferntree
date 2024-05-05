@@ -170,17 +170,24 @@ def write_profiles_to_db(df_profiles):
     # Convert dataframe to dictionary
     profiles_dict = df_profiles.to_dict(orient="list")
 
-    # Write profiles as one document to database
-    profiles_doc = {
-        "type": "normalised annual loadprofiles",
-        "profiles": profiles_dict,
-    }
-    doc_id = collection.insert_one(profiles_doc)
-    if doc_id:
+    # Write each profile as a separate document to database
+    profile_docs = [
+        {
+            "type": "normalised annual loadprofile",
+            "profile_id": int(profile_id),
+            "load_profile": profile,
+        }
+        for profile_id, profile in profiles_dict.items()
+    ]
+    doc_ids = collection.insert_many(profile_docs)
+    # Create an index on the 'profile_id' field
+    collection.create_index("profile_id")
+
+    if doc_ids:
         print("Generated annual load profiles written to MongoDB database.")
-        print("doc_id: ", doc_id)
     else:
         print("Error writing annual load profiles to MongoDB database.")
+
     client.close()
 
     # host = "localhost"

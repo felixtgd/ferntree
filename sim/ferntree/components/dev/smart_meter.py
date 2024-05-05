@@ -20,10 +20,10 @@ class SmartMeter(device.Device):
             "time": 0.0,  # Time of the simulation
             "T_amb": 0.0,  # Ambient temperature [K]
             "P_solar": 0.0,  # Solar irradiance [kW/m2]
-            "T_in": 0.0,  # Indoor temperature [K]
-            "T_en": 0.0,  # Building envelope temperature [K]
-            "P_heat_th": 0.0,  # Thermal heating power [kW]
-            "P_heat_el": 0.0,  # Electrical heating power [kW]
+            # "T_in": 0.0,  # Indoor temperature [K]
+            # "T_en": 0.0,  # Building envelope temperature [K]
+            # "P_heat_th": 0.0,  # Thermal heating power [kW]
+            # "P_heat_el": 0.0,  # Electrical heating power [kW]
             "P_base": 0.0,  # Baseload power [kW]
             "P_pv": 0.0,  # PV power generation [kW]
             "P_bat": 0.0,  # Battery power [kW]
@@ -46,22 +46,22 @@ class SmartMeter(device.Device):
             "time": self.host.env_state.get("time"),
             "T_amb": self.host.env_state.get("T_amb"),
             "P_solar": self.host.env_state.get("P_solar"),
-            # Inside temperature
-            "T_in": 0.0
-            if self.house.components.get("heating") is None
-            else self.house.components.get("heating").current_state.get("T_in"),
-            # Building envelope temperature
-            "T_en": 0.0
-            if self.house.components.get("heating") is None
-            else self.house.components.get("heating").current_state.get("T_en"),
-            # Thermal heating demand
-            "P_heat_th": 0.0
-            if self.house.components.get("heating") is None
-            else self.house.components.get("heating").current_state.get("P_heat_th"),
-            # Electrical heating demand
-            "P_heat_el": 0.0
-            if self.house.components.get("heating") is None
-            else self.house.components.get("heating").current_state.get("P_heat_el"),
+            # # Inside temperature
+            # "T_in": 0.0
+            # if self.house.components.get("heating") is None
+            # else self.house.components.get("heating").current_state.get("T_in"),
+            # # Building envelope temperature
+            # "T_en": 0.0
+            # if self.house.components.get("heating") is None
+            # else self.house.components.get("heating").current_state.get("T_en"),
+            # # Thermal heating demand
+            # "P_heat_th": 0.0
+            # if self.house.components.get("heating") is None
+            # else self.house.components.get("heating").current_state.get("P_heat_th"),
+            # # Electrical heating demand
+            # "P_heat_el": 0.0
+            # if self.house.components.get("heating") is None
+            # else self.house.components.get("heating").current_state.get("P_heat_el"),
             # Baseload power
             "P_base": self.house.components.get("baseload").current_state.get("P_base"),
             # PV power generation
@@ -91,7 +91,7 @@ class SmartMeter(device.Device):
         self.update_measurements()
         return (
             self.measurements["P_base"]
-            + self.measurements["P_heat_el"]
+            # + self.measurements["P_heat_el"]
             + self.measurements["P_pv"]
         )
 

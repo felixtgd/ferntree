@@ -5,7 +5,9 @@ from pytz import timezone
 from datetime import datetime
 
 from dev import sf_house
-from database import database
+
+# from database import database
+from database.mongodb import pyMongoClient
 
 logger = logging.getLogger("ferntree")
 
@@ -18,10 +20,12 @@ class SimHost:
     - Saving the results to the database
     """
 
-    def __init__(self, sim_settings):
+    def __init__(self, sim_settings: dict, db_client: pyMongoClient):
         """
         Initializes a new instance of the SimHost class.
         """
+
+        self.db_client = db_client  # MongoDB database client
 
         # self.model_name = sim_settings["model_name"]
         self.timebase = int(sim_settings["timebase"])  # Timebase in seconds
@@ -49,14 +53,11 @@ class SimHost:
         """
         Startup of the host:
         - Initializes the current time
-        - Creates a database instance
-        - Starts up the database
         - Starts up the house
-        - Loads weather data
         """
         self.current_time = self.start_time
-        self.db = database.PostgresDatabase()
-        self.db.startup()
+        # self.db = database.PostgresDatabase()
+        # self.db.startup()
         # self.load_weather_data()
         self.house.startup()
 
@@ -66,7 +67,7 @@ class SimHost:
         - Shuts down the database
         - Shuts down the house
         """
-        self.db.shutdown()
+        self.db_client.shutdown()
         self.house.shutdown()
 
         # Prototype of results export
@@ -116,27 +117,27 @@ class SimHost:
 
     def save_results(self, results):
         """Saves the results of the house to the database."""
-        self.db.write_data_to_db(results)
+        self.db_client.write_timeseries_data_to_db(results)
 
-    def get_load_profile(self, profile_id):
-        """Gets a load profile for the baseload from the database."""
-        load_profile = self.db.get_load_profile(profile_id)
+    # def get_load_profile(self, profile_id):
+    #     """Gets a load profile for the baseload from the database."""
+    #     load_profile = self.db.get_load_profile(profile_id)
 
-        if len(load_profile) != self.timesteps:
-            raise ValueError("Load profile length does not match number of timesteps.")
-        else:
-            return load_profile
+    #     if len(load_profile) != self.timesteps:
+    #         raise ValueError("Load profile length does not match number of timesteps.")
+    #     else:
+    #         return load_profile
 
-    # NOTE: Only for prototyping, will be replaced by database access
-    # TODO: Need two solar irradiances: global horizontal for house and beam on tilted plane for PV
-    def load_weather_data(self):
-        """Loads the weather data from the weather data file."""
-        with open(self.weather_data_path) as json_file:
-            input_data = json.load(json_file)
-            hourly_data = input_data["outputs"]["hourly"]
-            self.T_amb = [hd["T2m"] + 273.15 for hd in hourly_data]  # [K]
-            # self.P_solar = [hd["Gb(i)"] / 1e3 for hd in hourly_data]  # [kW/m2]
-            self.P_solar = [hd["G(i)"] / 1e3 for hd in hourly_data]  # [kW/m2]
+    # # NOTE: Only for prototyping, will be replaced by database access
+    # # TODO: Need two solar irradiances: global horizontal for house and beam on tilted plane for PV
+    # def load_weather_data(self):
+    #     """Loads the weather data from the weather data file."""
+    #     with open(self.weather_data_path) as json_file:
+    #         input_data = json.load(json_file)
+    #         hourly_data = input_data["outputs"]["hourly"]
+    #         self.T_amb = [hd["T2m"] + 273.15 for hd in hourly_data]  # [K]
+    #         # self.P_solar = [hd["Gb(i)"] / 1e3 for hd in hourly_data]  # [kW/m2]
+    #         self.P_solar = [hd["G(i)"] / 1e3 for hd in hourly_data]  # [kW/m2]
 
     # PROTOTYPE: Export results to json file, later to database
     def export_results(self):

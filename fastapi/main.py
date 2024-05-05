@@ -69,7 +69,7 @@ async def pv_calc(
     sim_user_input: SimUserInputForm = SimUserInputForm(
         **{
             "location": "Ferntree Gully, Victoria, Australia",
-            "electr_cons": 10,
+            "electr_cons": 3000,
             "roof_incl": RoofTilt.tilted30,
             "roof_azimuth": RoofAzimuth.south,
             "peak_power": 5,
@@ -103,7 +103,7 @@ async def pv_calc(
         # timeseries_data=parsed_solar_data,
     )
     sim_id = await db_client.insert_one(
-        collection="simulation_coll", document=document_solar_data.model_dump()
+        collection="simulation_timeseries", document=document_solar_data.model_dump()
     )
 
     # Define model_specs for the simulation
@@ -117,7 +117,7 @@ async def pv_calc(
 
     # Write model_specs to model_specs_coll in MongoDB
     model_specs_id = await db_client.insert_one(
-        collection="model_specs_coll", document=document_model_specs.model_dump()
+        collection="model_specs", document=document_model_specs.model_dump()
     )
 
     # Start ferntree simulation, pass sim_id to sim via args
