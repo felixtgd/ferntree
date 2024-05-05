@@ -6,7 +6,7 @@ from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from bson.objectid import ObjectId
 
-from models import TimestepData
+from database.models import TimestepData
 
 # Use certifi to get the path of the CA file
 ca = certifi.where()
@@ -24,6 +24,7 @@ MONGODB_DATABASE = os.environ["MONGODB_DATABASE"]
 class pyMongoClient:
     def __init__(self, model_id: str, sim_id: str):
         self.client = MongoClient(MONGODB_URI, server_api=ServerApi("1"), tlsCAFile=ca)
+
         self.db = self.client[MONGODB_DATABASE]
 
         self.model_id = ObjectId(model_id)

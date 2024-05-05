@@ -87,9 +87,12 @@ async def pv_calc(
     roof_incl = sim_user_input.roof_incl
 
     # Pass parameters to pvgis_api to query solar data for sim input
-    T_amb, G_i = pvgis_api.get_solar_data_for_location(
+    T_amb, G_i = await pvgis_api.get_solar_data_for_location(
         location, roof_azimuth, roof_incl
     )
+    if not T_amb or not G_i:
+        return {"status": "Error fetching solar data"}
+
     # parsed_solar_data = [PvgisInputData(**item) for item in solar_data]
 
     # Write sim input data and model specs as one document to simulation_coll in MongoDB, return sim_id
@@ -107,7 +110,7 @@ async def pv_calc(
     )
 
     # Define model_specs for the simulation
-    sim_model_specs = define_sim_model_specs(sim_user_input)
+    sim_model_specs = await define_sim_model_specs(sim_user_input)
     document_model_specs = SimModelSpecsDoc(
         user_id=user_id,
         sim_id=sim_id,

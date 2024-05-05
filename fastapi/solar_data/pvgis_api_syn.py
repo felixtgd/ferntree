@@ -1,9 +1,11 @@
-import aiohttp
+import pandas as pd
+import requests
+import time
 
 from solar_data.geolocator import get_location_coordinates
 
 
-async def api_request_solar_irr(
+def api_request_solar_irr(
     lat: float,
     lon: float,
     year: int = 2019,
@@ -28,14 +30,12 @@ async def api_request_solar_irr(
         Inclination and azimuth angles can be set in input or calculated optimally by PVGIS
 
     Returns:
-        Dict with response data
+        Response object containing status_code, response content etc.
+
     """
-    print(
-        f"PVGIS API: Request for lat={lat}, lon={lon}, year={year}, angle={angle}, aspect={aspect}."
-    )
 
     # INPUTS Hourly radiation (minum example: https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8)
-    params = {  # type, obligatory, default, default, comment
+    irr_inputs = {  # type, obligatory, default, default, comment
         "lat": lat,  # float, y, - , Latitude, in decimal degrees, south is negative.
         "lon": lon,  # float, y, - , Longitude, in decimal degrees, west is negative.
         "usehorizon": 1,  # int,   n,	1 , Calculate taking into account shadows from high horizon.
@@ -55,25 +55,39 @@ async def api_request_solar_irr(
         "browser": 1,  # int,   n , 0 , Use this with a value of "1" if you access the web service from a web browser and want to save the data to a file.
     }
 
-    url = "https://re.jrc.ec.europa.eu/api/v5_2/seriescalc"
+    print(f"API request to PVGIS_seriescalc for lat={lat} lon={lon} year={year}")
+    response = requests.get(
+        "https://re.jrc.ec.europa.eu/api/v5_2/seriescalc", params=irr_inputs
+    )
 
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(url, params=params) as response:
-                print(f"PVGIS API: Response code: {response.status}")
-                if response.status != 200:
-                    print(f"PVGIS API: An error occurred: {response.status}")
-                    return None
-                data = await response.json()
-                return data
-        except Exception as ex:
-            print(f"PVGIS API: An error occurred: {ex}")
-            return None
+    if response.status_code == 200:
+        # Continue processing returned data
+        print("Request successful.")
+        return response.json()
+    elif response.status_code == 429 or response.status_code == 529:
+        # Retry after waiting for a moment
+        print(f"Received status code {response.status_code}. Retrying in 2 seconds...")
+        time.sleep(2)
+        # Recursive call to retry
+        return api_request_solar_irr(
+            lat=lat,
+            lon=lon,
+            year=year,
+            pvcalc=pvcalc,
+            peakpower=peakpower,
+            loss=loss,
+            angle=angle,
+            aspect=aspect,
+            opt=opt,
+        )
+    else:
+        # Raise an error for other status code
+        response.raise_for_status()
 
 
-async def get_solar_data_for_location(
+def get_solar_data_for_location(
     location: str, roof_azimuth: float, roof_incl: float
-) -> tuple:
+) -> pd.DataFrame:
     """
     Get solar irradiance data from PVGIS API for a specified location.
 
@@ -83,39 +97,45 @@ async def get_solar_data_for_location(
         roof_incl: float with the inclination angle of the roof
 
     Returns:
-        Tuple of two lists with the temperature and solar irradiance data
+        sol_irr_df: dataframe with solar irradiance data and timestamps
 
     """
-    coordinates = await get_location_coordinates(location)
-    if coordinates is None:
-        print("No coordinates found for location")
-        return None
-
+    coordinates = get_location_coordinates(location)
     lat = coordinates["lat"]
     lon = coordinates["lon"]
-
     try:
-        response_data = await api_request_solar_irr(
+        response_sol_irr = api_request_solar_irr(
             lat=lat, lon=lon, angle=roof_incl, aspect=roof_azimuth
         )
-    except Exception as ex:
-        print(f"Get Solar Data: An error occurred: {ex}")
-        return None
+    except requests.exceptions.HTTPError as e:
+        print(
+            f"API request failed with status code {e.response.status_code}: {e.response.text}"
+        )
+    except Exception as e:
+        print(f"Alarm! An unexpected error occurred: {e}")
 
-    if response_data is None:
-        print("No data returned from API request")
-        return None
-
-    hourly_data = response_data["outputs"]["hourly"]
+    hourly_data = response_sol_irr["outputs"]["hourly"]
 
     T_amb = []
     G_i = []
 
-    # TODO: This needs to go faster!!!
     for item in hourly_data:
         T_amb.append(item["T2m"])
         G_i.append(item["G(i)"])
 
-    print(f"Solar Data: {len(hourly_data)} data points")
+    # for item in hourly_data:
+    #     # Convert 'time' to datetime
+    #     item["time"] = datetime.strptime(item["time"], "%Y%m%d:%H%M").isoformat()
 
-    return T_amb, G_i
+    #     # Ensure 'G(i)' and 'T2m' are floats
+    #     item["G_i"] = float(item.pop("G(i)"))
+    #     item["T2m"] = float(item["T2m"])
+
+    #     # Remove unwanted fields
+    #     item.pop("H_sun", None)
+    #     item.pop("WS10m", None)
+    #     item.pop("Int", None)
+
+    print(f"{len(hourly_data)} data points")
+
+    return T_amb, G_i  # hourly_data

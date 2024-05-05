@@ -10,7 +10,7 @@ from database.models import (
 )
 
 
-def define_sim_model_specs(sim_user_input: SimUserInputForm) -> SimModelSpecs:
+async def define_sim_model_specs(sim_user_input: SimUserInputForm) -> SimModelSpecs:
     """Defines the simulation model specifications based on user input.
     Uses default values for some specs.
 
