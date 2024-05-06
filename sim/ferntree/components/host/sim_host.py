@@ -31,6 +31,7 @@ class SimHost:
         self.timebase = int(sim_settings["timebase"])  # Timebase in seconds
         self.timesteps = int(365 * 24 * 3600 / self.timebase)  # Number of timesteps
         self.timezone = timezone(sim_settings["timezone"])
+        # self.start_time = int(datetime(2023, 1, 1).timestamp())  # Start time in seconds since epoch
         self.start_time = int(
             self.timezone.localize(datetime(2023, 1, 1)).timestamp()
         )  # Start time in seconds since epoch

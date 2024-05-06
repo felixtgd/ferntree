@@ -1,4 +1,5 @@
 import logging
+import pandas as pd
 
 from datetime import datetime
 from enum import Enum
@@ -64,7 +65,7 @@ async def root():
 async def pv_calc(
     sim_user_input: SimUserInputForm = SimUserInputForm(
         **{
-            "location": "Ferntree Gully, Victoria, Australia",
+            "location": "London, United Kingdom",  # "Aarau, Switzerland" "Ferntree Gully, Victoria, Australia"
             "electr_cons": 3000,
             "roof_incl": RoofTilt.tilted30,
             "roof_azimuth": RoofAzimuth.south,
@@ -92,16 +93,24 @@ async def pv_calc(
     if not sim_run:
         return {"status": "Ferntree simulation failed."}
 
-    logger.info(
-        f"Total execution time: {(datetime.now() - starttime).total_seconds():.2f} seconds"
-    )
-
-    return {"status": "Simulation finished"}
-
     # Read sim results from db and calculate system KPIs
+    sim_results = await db_client.find_one_by_id("simulation_timeseries", sim_id)
+
+    sim_results_df = pd.DataFrame(sim_results["timeseries_data"])
+    # Set time column to datetime, measured in seconds
+    sim_results_df["time"] = pd.to_datetime(sim_results_df["time"], unit="s")
+    # Set time column as index
+    sim_results_df.set_index("time", inplace=True)
+    print(sim_results_df.head(24))
 
     # Compute financial perfomance with model_specs and system KPIs, write results to financial collection
 
     # Add financial KPIs to results, store all KPIs and model specs as one document in results collection
 
     # return {"status": "Simulation started", "model": sim_model.model_dump()}
+
+    logger.info(
+        f"Total execution time: {(datetime.now() - starttime).total_seconds():.2f} seconds"
+    )
+
+    return {"status": "Simulation finished"}

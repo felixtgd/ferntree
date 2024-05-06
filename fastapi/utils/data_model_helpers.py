@@ -25,7 +25,7 @@ async def define_sim_model_specs(sim_user_input: SimUserInputForm) -> SimModelSp
 
     sim_params = SimParams(
         timebase=3600,
-        timezone="Europe/Zurich",  # TODO: Get timezone from location
+        timezone="UTC",  # "Australia/Melbourne" "Europe/Zurich" # TODO: Get timezone from location
         planning_horizon=1,
         location=sim_user_input.location,
     )
