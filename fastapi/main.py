@@ -1,6 +1,4 @@
 import logging
-import os
-import subprocess
 
 from datetime import datetime
 from enum import Enum
@@ -9,12 +7,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database.models import (
     SimUserInputForm,
-    SimTimeSeriesDoc,
-    SimModelSpecsDoc,
 )
 from database.mongodb import MongoClient
-from solar_data import pvgis_api
-from utils.data_model_helpers import define_sim_model_specs
+from utils.user_input_funcs import process_sim_user_input, start_ferntree_simulation
 
 
 class RoofTilt(int, Enum):
@@ -34,9 +29,10 @@ class RoofAzimuth(int, Enum):
     north = 180
 
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("backend_logger")
+# Set up logger
+LOGGERNAME = "fastapi_logger"
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+logger = logging.getLogger(LOGGERNAME)
 
 # Create a FastAPI instance
 app = FastAPI()
@@ -81,60 +77,24 @@ async def pv_calc(
         }
     ),
 ):
-    # Get address, roof azimuth and tilt from model specs
-    location = sim_user_input.location
-    roof_azimuth = sim_user_input.roof_azimuth
-    roof_incl = sim_user_input.roof_incl
+    starttime = datetime.now()
 
-    # Pass parameters to pvgis_api to query solar data for sim input
-    T_amb, G_i = await pvgis_api.get_solar_data_for_location(
-        location, roof_azimuth, roof_incl
-    )
-    if not T_amb or not G_i:
-        return {"status": "Error fetching solar data"}
+    logger.info(f"\nReceived request: {sim_user_input}")
 
-    # parsed_solar_data = [PvgisInputData(**item) for item in solar_data]
-
-    # Write sim input data and model specs as one document to simulation_coll in MongoDB, return sim_id
+    # Determine user_id
     user_id = 123
-    created_at = datetime.now().isoformat()
-    document_solar_data = SimTimeSeriesDoc(
-        user_id=user_id,
-        created_at=created_at,
-        T_amb=T_amb,
-        G_i=G_i,
-        # timeseries_data=parsed_solar_data,
-    )
-    sim_id = await db_client.insert_one(
-        collection="simulation_timeseries", document=document_solar_data.model_dump()
-    )
 
-    # Define model_specs for the simulation
-    sim_model_specs = await define_sim_model_specs(sim_user_input)
-    document_model_specs = SimModelSpecsDoc(
-        user_id=user_id,
-        sim_id=sim_id,
-        created_at=created_at,
-        sim_model_specs=sim_model_specs,
-    )
+    # Process user input and write to database
+    sim_id, model_id = await process_sim_user_input(db_client, sim_user_input, user_id)
 
-    # Write model_specs to model_specs_coll in MongoDB
-    model_specs_id = await db_client.insert_one(
-        collection="model_specs", document=document_model_specs.model_dump()
-    )
+    # Start ferntree simulation
+    sim_run = await start_ferntree_simulation(sim_id, model_id)
+    if not sim_run:
+        return {"status": "Ferntree simulation failed."}
 
-    # Start ferntree simulation, pass sim_id to sim via args
-    script_dir = os.path.dirname(__file__)
-    ferntree_sim_dir = os.path.join(script_dir, "../sim/ferntree/")
-    command = [
-        "python",
-        "ferntree.py",
-        "--sim_id",
-        sim_id,
-        "--model_id",
-        model_specs_id,
-    ]
-    subprocess.run(command, cwd=ferntree_sim_dir)
+    logger.info(
+        f"Total execution time: {(datetime.now() - starttime).total_seconds():.2f} seconds"
+    )
 
     return {"status": "Simulation finished"}
 

@@ -1,6 +1,12 @@
 import aiohttp
+import logging
 
 from solar_data.geolocator import get_location_coordinates
+
+
+# Set up logger
+LOGGERNAME = "fastapi_logger"
+logger = logging.getLogger(LOGGERNAME)
 
 
 async def api_request_solar_irr(
@@ -30,8 +36,8 @@ async def api_request_solar_irr(
     Returns:
         Dict with response data
     """
-    print(
-        f"PVGIS API: Request for lat={lat}, lon={lon}, year={year}, angle={angle}, aspect={aspect}."
+    logger.info(
+        f"\nPVGIS API: Request for lat={lat}, lon={lon}, year={year}, angle={angle}, aspect={aspect}."
     )
 
     # INPUTS Hourly radiation (minum example: https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8)
@@ -60,14 +66,14 @@ async def api_request_solar_irr(
     async with aiohttp.ClientSession() as session:
         try:
             async with session.get(url, params=params) as response:
-                print(f"PVGIS API: Response code: {response.status}")
+                logger.info(f"PVGIS API: Response code: {response.status}")
                 if response.status != 200:
-                    print(f"PVGIS API: An error occurred: {response.status}")
+                    logger.error(f"PVGIS API: An error occurred: {response.status}")
                     return None
                 data = await response.json()
                 return data
         except Exception as ex:
-            print(f"PVGIS API: An error occurred: {ex}")
+            logger.error(f"PVGIS API: An error occurred: {ex}")
             return None
 
 
@@ -88,7 +94,7 @@ async def get_solar_data_for_location(
     """
     coordinates = await get_location_coordinates(location)
     if coordinates is None:
-        print("No coordinates found for location")
+        logger.error("No coordinates found for location")
         return None
 
     lat = coordinates["lat"]
@@ -99,23 +105,18 @@ async def get_solar_data_for_location(
             lat=lat, lon=lon, angle=roof_incl, aspect=roof_azimuth
         )
     except Exception as ex:
-        print(f"Get Solar Data: An error occurred: {ex}")
+        logger.error(f"Get Solar Data: An error occurred: {ex}")
         return None
 
     if response_data is None:
-        print("No data returned from API request")
+        logger.error("No data returned from PVGIS API request")
         return None
 
     hourly_data = response_data["outputs"]["hourly"]
 
-    T_amb = []
-    G_i = []
+    T_amb = [item["T2m"] for item in hourly_data]
+    G_i = [item["G(i)"] for item in hourly_data]
 
-    # TODO: This needs to go faster!!!
-    for item in hourly_data:
-        T_amb.append(item["T2m"])
-        G_i.append(item["G(i)"])
-
-    print(f"Solar Data: {len(hourly_data)} data points")
+    logger.info(f"Solar Data: {len(hourly_data)} data points\n")
 
     return T_amb, G_i
