@@ -101,7 +101,35 @@ async def pv_calc(
     sim_results_df["time"] = pd.to_datetime(sim_results_df["time"], unit="s")
     # Set time column as index
     sim_results_df.set_index("time", inplace=True)
-    print(sim_results_df.head(24))
+
+    sim_results_df["P_net_load"] = (
+        sim_results_df["P_base"] + sim_results_df["P_pv"]
+    )  # + sim_results_df["P_heat_el"]
+    sim_results_df["P_total"] = sim_results_df["P_net_load"] + sim_results_df["P_bat"]
+
+    annual_baseload_demand = sim_results_df["P_base"].sum()
+    annual_pv_generation = (
+        abs(sim_results_df["P_pv"].sum()) + sim_results_df["Soc_bat"].iloc[-1]
+    )
+    annual_grid_consumption = sim_results_df["P_total"][
+        sim_results_df["P_total"] > 0.0
+    ].sum()
+    annual_grid_feed_in = abs(
+        sim_results_df["P_total"][sim_results_df["P_total"] < 0.0].sum()
+    )
+    annual_self_consumption = annual_baseload_demand - annual_grid_consumption
+
+    # Create results dictionary with model specifications and simulation results
+    results = {
+        "annual": {
+            "baseload_demand": annual_baseload_demand,
+            "pv_generation": annual_pv_generation,
+            "grid_consumption": annual_grid_consumption,
+            "grid_feed_in": annual_grid_feed_in,
+            "self_consumption": annual_self_consumption,
+        },
+    }
+    logger.info(f"Results: {results}")
 
     # Compute financial perfomance with model_specs and system KPIs, write results to financial collection
 
