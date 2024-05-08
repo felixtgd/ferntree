@@ -7,13 +7,13 @@ from database.models import (
     SimTimeSeriesDoc,
     SimModelSpecsDoc,
 )
-from database.mongodb import MongoClient
-from solar_data import pvgis_api
-from utils.data_model_helpers import define_sim_model_specs
+from database import mongodb
+from solar_data import pvgis_api, geolocator
+from utils import data_model_helpers
 
 
 async def process_sim_user_input(
-    db_client: MongoClient, sim_user_input: SimUserInputForm, user_id: int
+    db_client: mongodb.MongoClient, sim_user_input: SimUserInputForm, user_id: int
 ) -> tuple[str, str]:
     """Processes the user input for the simulation.
     - Fetches solar data for the location from PVGIS API
@@ -36,13 +36,13 @@ async def process_sim_user_input(
 
     # Pass parameters to pvgis_api to query solar data for sim input
     try:
-        T_amb, G_i = await pvgis_api.get_solar_data_for_location(
+        T_amb, G_i, coordinates = await pvgis_api.get_solar_data_for_location(
             location, roof_azimuth, roof_incl
         )
     except Exception as ex:
         raise ValueError(f"Error fetching solar data: {ex}")
 
-    # Write sim input data and model specs as one document to simulation_coll in MongoDB, return sim_id
+    # Write sim input data as one document to simulation_timeseries collection in MongoDB, return sim_id
     created_at = datetime.now().isoformat()
     document_solar_data = SimTimeSeriesDoc(
         user_id=user_id,
@@ -54,8 +54,13 @@ async def process_sim_user_input(
         collection="simulation_timeseries", document=document_solar_data.model_dump()
     )
 
+    # Determine timezone based on coordinates
+    timezone = await geolocator.get_timezone(coordinates)
+
     # Define model_specs for the simulation and write to database
-    sim_model_specs = await define_sim_model_specs(sim_user_input)
+    sim_model_specs = await data_model_helpers.define_sim_model_specs(
+        sim_user_input, coordinates, timezone
+    )
     document_model_specs = SimModelSpecsDoc(
         user_id=user_id,
         sim_id=sim_id,

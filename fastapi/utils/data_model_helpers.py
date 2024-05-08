@@ -10,12 +10,16 @@ from database.models import (
 )
 
 
-async def define_sim_model_specs(sim_user_input: SimUserInputForm) -> SimModelSpecs:
+async def define_sim_model_specs(
+    sim_user_input: SimUserInputForm, coordinates: dict, timezone: str
+) -> SimModelSpecs:
     """Defines the simulation model specifications based on user input.
     Uses default values for some specs.
 
     Args:
         sim_user_input (SimUserInputForm): The user input form.
+        coordinates (dict): Dictionary with lat and lon coordinates.
+        timezone (str): The timezone string.
 
     Returns:
         SimModelSpecs: The simulation model specifications. Will be written
@@ -25,9 +29,12 @@ async def define_sim_model_specs(sim_user_input: SimUserInputForm) -> SimModelSp
 
     sim_params = SimParams(
         timebase=3600,
-        timezone="UTC",  # "Australia/Melbourne" "Europe/Zurich" # TODO: Get timezone from location
+        timezone=timezone
+        if timezone
+        else "UTC",  # "Australia/Melbourne" "Europe/Zurich" # TODO: Get timezone from location
         planning_horizon=1,
         location=sim_user_input.location,
+        coordinates=coordinates,
     )
 
     baseload = Baseload(

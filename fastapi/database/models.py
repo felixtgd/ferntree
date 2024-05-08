@@ -80,6 +80,9 @@ class SimParams(BaseModel):
     location: str = Field(
         title="Location", description="The location of the simulation"
     )
+    coordinates: dict = Field(
+        title="Coordinates", description="The coordinates of the location"
+    )
 
 
 class Baseload(BaseModel):

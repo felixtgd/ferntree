@@ -65,7 +65,7 @@ async def root():
 async def pv_calc(
     sim_user_input: SimUserInputForm = SimUserInputForm(
         **{
-            "location": "London, United Kingdom",  # "Aarau, Switzerland" "Ferntree Gully, Victoria, Australia"
+            "location": "Rütmattstrasse 17, Aarau, Switzerland",  # "Aarau, Switzerland" "Ferntree Gully, Victoria, Australia"
             "electr_cons": 3000,
             "roof_incl": RoofTilt.tilted30,
             "roof_azimuth": RoofAzimuth.south,

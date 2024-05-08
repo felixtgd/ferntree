@@ -119,4 +119,4 @@ async def get_solar_data_for_location(
 
     logger.info(f"Solar Data: {len(hourly_data)} data points\n")
 
-    return T_amb, G_i
+    return T_amb, G_i, coordinates
