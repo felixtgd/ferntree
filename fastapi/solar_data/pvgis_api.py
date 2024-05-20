@@ -68,7 +68,9 @@ async def api_request_solar_irr(
             async with session.get(url, params=params) as response:
                 logger.info(f"PVGIS API: Response code: {response.status}")
                 if response.status != 200:
-                    logger.error(f"PVGIS API: An error occurred: {response.status}")
+                    logger.error(
+                        f"PVGIS API: An error occurred: {response.status} {response.reason}"
+                    )
                     return None
                 data = await response.json()
                 return data

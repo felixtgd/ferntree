@@ -33,5 +33,5 @@ class PVSys(device.Device):
         # Update current state of the PV system
         # Convention: Generation is negative, consumption positive
         self.current_state["P_pv"] = (
-            -1 * self.peak_power * self.host.env_state.get("P_solar")
+            -1 * self.peak_power * self.host.env_state.get("P_solar") * 1e-3
         )

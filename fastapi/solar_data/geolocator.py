@@ -73,7 +73,9 @@ async def get_timezone(coordinates: dict):
             async with session.get(url) as response:
                 logger.info(f"GeoNames API: Response code: {response.status}")
                 if response.status != 200:
-                    logger.error(f"GeoNames API: An error occurred: {response.status}")
+                    logger.error(
+                        f"GeoNames API: An error occurred: {response.status} {response.reason}"
+                    )
                     return None
                 data = await response.json()
                 timezone = data["timezoneId"]

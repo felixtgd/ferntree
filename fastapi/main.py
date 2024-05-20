@@ -71,7 +71,7 @@ async def pv_calc(
             "roof_azimuth": RoofAzimuth.south,
             "peak_power": 5,
             "battery_cap": 10,
-            "elec_price": 0.25,
+            "electr_price": 0.25,
             "down_payment": 1000,
             "pay_off_rate": 0.1,
             "interest_rate": 5,
@@ -119,19 +119,72 @@ async def pv_calc(
     )
     annual_self_consumption = annual_baseload_demand - annual_grid_consumption
 
-    # Create results dictionary with model specifications and simulation results
-    results = {
-        "annual": {
-            "baseload_demand": annual_baseload_demand,
-            "pv_generation": annual_pv_generation,
-            "grid_consumption": annual_grid_consumption,
-            "grid_feed_in": annual_grid_feed_in,
-            "self_consumption": annual_self_consumption,
-        },
+    # Create results dictionary with model specifications, simulation results and financial results
+    model_summary = {
+        "electr_cons": sim_user_input.electr_cons,
+        "pv_power": sim_user_input.peak_power,
+        "battery_capacity": sim_user_input.battery_cap,
+        "electr_price": sim_user_input.electr_price,
+        "down_payment": sim_user_input.down_payment,
+        "pay_off_rate": sim_user_input.pay_off_rate,
+        "interest_rate": sim_user_input.interest_rate,
     }
-    logger.info(f"Results: {results}")
+
+    sim_analysis = {
+        "baseload_demand": annual_baseload_demand,
+        "pv_generation": annual_pv_generation,
+        "grid_consumption": annual_grid_consumption,
+        "grid_feed_in": annual_grid_feed_in,
+        "self_consumption": annual_self_consumption,
+        "self_consumption_rate": annual_self_consumption / annual_pv_generation,
+        "self_sufficiency": annual_self_consumption / annual_baseload_demand,
+    }
 
     # Compute financial perfomance with model_specs and system KPIs, write results to financial collection
+
+    # Assumptions for financial performance calculation
+    price_increase = 0.025  # annual (electricity) price increase 2.5%
+    pv_costs_per_kWp = 1700  # €/kWp for PV system (1563 - 2167) TODO: model this as a function of peak_power
+    battery_costs_per_kWh = 650  # €/kWh for battery system (570 - 732) TODO: model this as a function of battery_cap
+    module_degradation = 0.01  # annual module degradation 1%
+    operation_costs = (
+        0.015  # annual operation costs 1.5% (insurance, maintenance, etc.)
+    )
+    feed_in_tariff = 0.08  # €/kWh feed-in tariff
+
+    # Investment costs
+    pv_investment = sim_user_input.peak_power * pv_costs_per_kWp
+    battery_investment = sim_user_input.battery_cap * battery_costs_per_kWh
+    total_investment = pv_investment + battery_investment
+
+    # Dataframe for fincancial calculations
+    df = pd.DataFrame()
+    df["year"] = range(31)
+    df["consumption"] = annual_baseload_demand  # annual electricity consumption in kWh
+    df["electr_price"] = (
+        sim_user_input.electr_price * (1 + price_increase) ** df["year"]
+    )  # electricity price in €/kWh
+    df["pv_generation"] = (
+        annual_pv_generation * (1 - module_degradation) ** df["year"]
+    )  # annual PV generation in kWh
+    df["self_consumption"] = (
+        df["pv_generation"] * sim_analysis["self_consumption_rate"]
+    )  # annual self-consumption in kWh (the amount of PV generation that is consumed on-site)
+    df["electr_cost_savings"] = (
+        df["self_consumption"] * df["electr_price"]
+    )  # annual electricity cost savings in €
+    df["feed_in_remuneration"] = (
+        df["pv_generation"] - df["self_consumption"]
+    ) * feed_in_tariff  # annual feed-in remuneration in €
+    df["operation_costs"] = (
+        total_investment * operation_costs * (1 + price_increase) ** df["year"]
+    )  # annual operation costs in €
+    df["profit"] = (
+        df["electr_cost_savings"] + df["feed_in_remuneration"] - df["operation_costs"]
+    )  # annual profit in €
+    df["cumulative_profit"] = df["profit"].cumsum()
+
+    break_even_year = df[df["cumulative_profit"] > total_investment]["year"].iloc[0]
 
     # Add financial KPIs to results, store all KPIs and model specs as one document in results collection
 
@@ -141,4 +194,11 @@ async def pv_calc(
         f"Total execution time: {(datetime.now() - starttime).total_seconds():.2f} seconds"
     )
 
-    return {"status": "Simulation finished"}
+    return {
+        "status": "Simulation finished",
+        "total_investment": float(total_investment),
+        "break_even_year": int(break_even_year),
+        "model_summary": model_summary,
+        "sim_analysis": sim_analysis,
+        "cumulative_profit": [float(profit) for profit in df["cumulative_profit"]],
+    }

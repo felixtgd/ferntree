@@ -22,7 +22,7 @@ class SimUserInputForm(BaseModel):
     battery_cap: float = Field(
         title="Battery Capacity", description="The capacity of the battery in kWh"
     )
-    elec_price: float = Field(
+    electr_price: float = Field(
         title="Electricity Price", description="The price of electricity in €/kWh"
     )
     down_payment: float = Field(
