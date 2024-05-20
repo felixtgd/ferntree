@@ -163,3 +163,139 @@ class SimModelSpecsDoc(BaseModel):
         title="Simulation Model Specifications",
         description="The simulation model specifications",
     )
+
+
+class SimModelSummary(BaseModel):
+    electr_cons: float = Field(
+        title="Electricity Consumption",
+        description="The electricity consumption in kWh",
+    )
+    pv_power: float = Field(
+        title="Peak Power", description="The peak power of the PV system in kWp"
+    )
+    battery_capacity: float = Field(
+        title="Battery Capacity", description="The capacity of the battery in kWh"
+    )
+    electr_price: float = Field(
+        title="Electricity Price", description="The price of electricity in €/kWh"
+    )
+    down_payment: float = Field(
+        title="Down Payment", description="The down payment in €"
+    )
+    pay_off_rate: float = Field(
+        title="Pay Off Rate", description="The pay off rate in €/kWh"
+    )
+    interest_rate: float = Field(
+        title="Interest Rate", description="The interest rate in %"
+    )
+
+
+class SimAnalysis(BaseModel):
+    baseload_demand: float = Field(
+        title="Baseload Demand",
+        description="The annual baseload demand in kWh",
+    )
+    pv_generation: float = Field(
+        title="PV Generation",
+        description="The annual PV generation in kWh",
+    )
+    grid_consumption: float = Field(
+        title="Grid Consumption",
+        description="The annual grid consumption in kWh",
+    )
+    grid_feed_in: float = Field(
+        title="Grid Feed-in",
+        description="The annual grid feed-in in kWh",
+    )
+    self_consumption: float = Field(
+        title="Self Consumption",
+        description="The annual self consumption in kWh",
+    )
+    self_consumption_rate: float = Field(
+        title="Self Consumption Rate",
+        description="The annual self consumption rate",
+    )
+    self_sufficiency: float = Field(
+        title="Self Sufficiency",
+        description="The annual self sufficiency",
+    )
+
+
+class SimFinancialAssumptions(BaseModel):
+    price_increase: float = Field(
+        title="Price Increase",
+        description="The annual price increase in %",
+    )
+    pv_costs_per_kWp: float = Field(
+        title="PV Costs per kWp",
+        description="The costs per kWp for the PV system in €",
+    )
+    battery_costs_per_kWh: float = Field(
+        title="Battery Costs per kWh",
+        description="The costs per kWh for the battery system in €",
+    )
+    module_degradation: float = Field(
+        title="Module Degradation",
+        description="The annual module degradation in %",
+    )
+    operation_costs: float = Field(
+        title="Operation Costs",
+        description="The annual operation costs in %",
+    )
+    feed_in_tariff: float = Field(
+        title="Feed-in Tariff",
+        description="The feed-in tariff in €/kWh",
+    )
+
+
+class SimFinancialInvestment(BaseModel):
+    pv: float = Field(
+        title="PV Investment",
+        description="The investment for the PV system in €",
+    )
+    battery: float = Field(
+        title="Battery Investment",
+        description="The investment for the battery system in €",
+    )
+    total: float = Field(
+        title="Total Investment",
+        description="The total investment in €",
+    )
+
+
+class SimFinancialKPIs(BaseModel):
+    break_even_year: int = Field(
+        title="Break-even Year",
+        description="The break-even year",
+    )
+
+
+class SimFinancialAnalysis(BaseModel):
+    assumptions: SimFinancialAssumptions = Field(
+        title="Financial Assumptions",
+        description="The assumptions for the financial performance calculation",
+    )
+    investment: SimFinancialInvestment = Field(
+        title="Investment",
+        description="The investment costs",
+    )
+    kpis: SimFinancialKPIs = Field(
+        title="Key Performance Indicators",
+        description="The key performance indicators",
+    )
+
+
+class SimEvaluationDoc(BaseModel):
+    sim_id: str = Field(title="Simulation ID", description="The ID of the simulation")
+    sim_model_summary: SimModelSummary = Field(
+        title="Simulation Model Summary",
+        description="The simulation model summary",
+    )
+    sim_analysis: SimAnalysis = Field(
+        title="Simulation Analysis",
+        description="The simulation analysis",
+    )
+    financial_analysis: SimFinancialAnalysis = Field(
+        title="Simulation Financial Analysis",
+        description="The simulation financial analysis",
+    )

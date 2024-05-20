@@ -29,9 +29,7 @@ async def define_sim_model_specs(
 
     sim_params = SimParams(
         timebase=3600,
-        timezone=timezone
-        if timezone
-        else "UTC",  # "Australia/Melbourne" "Europe/Zurich" # TODO: Get timezone from location
+        timezone=timezone if timezone else "UTC",
         planning_horizon=1,
         location=sim_user_input.location,
         coordinates=coordinates,
