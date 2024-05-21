@@ -9,7 +9,8 @@ export default function PvResults() {
       {data && (
         <div>
           <p>Status: {data.status}</p>
-          <p>Model: {JSON.stringify(data.model)}</p>
+          <p>Total investment: {data.total_investment}</p>
+          <p>Break-even year: {data.break_even_year}</p>
         </div>
       )}
     </div>

@@ -28,12 +28,12 @@ export default function PvForm({ setData }: { setData: (data: PvData) => void })
 
   const [formData, setFormData] = useState({
     location: 'Aarau',
-    electr_cons: 300000,
+    electr_cons: 3000,
     roof_incl: 0,
     roof_azimuth: 0,
     peak_power: 10,
     battery_cap: 10,
-    elec_price: 35,
+    electr_price: 35,
     down_payment: 20,
     pay_off_rate: 5,
     interest_rate: 3,
@@ -203,19 +203,19 @@ export default function PvForm({ setData }: { setData: (data: PvData) => void })
 
         {/* Electricity price */}
         <div className="mb-4">
-          <label htmlFor="elec_price" className="mb-2 block text-sm font-medium">
+          <label htmlFor="electr_price" className="mb-2 block text-sm font-medium">
             Electricity price [cents/kWh]
           </label>
           <div className="relative mt-2 rounded-md">
             <div className="relative">
               <input
-                id="elec_price"
-                name="elec_price"
+                id="electr_price"
+                name="electr_price"
                 type="number"
                 step="0.01"
                 placeholder="35"
                 onChange={handleChange}
-                value = {formData.elec_price}
+                value = {formData.electr_price}
                 className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>

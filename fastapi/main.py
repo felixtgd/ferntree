@@ -63,23 +63,23 @@ async def root():
     return {"message": "Hello World"}
 
 
-# @app.post("/dashboard/pv-calc")
-@app.get("/dashboard/pv-calc")
+@app.post("/dashboard/pv-calc")
 async def pv_calc(
-    sim_user_input: SimUserInputForm = SimUserInputForm(
-        **{
-            "location": "Rütmattstrasse 17, Aarau, Switzerland",  # "Aarau, Switzerland" "Ferntree Gully, Victoria, Australia"
-            "electr_cons": 3000,
-            "roof_incl": RoofTilt.tilted30,
-            "roof_azimuth": RoofAzimuth.south,
-            "peak_power": 5,
-            "battery_cap": 10,
-            "electr_price": 0.25,
-            "down_payment": 1000,
-            "pay_off_rate": 0.1,
-            "interest_rate": 5,
-        }
-    ),
+    sim_user_input: SimUserInputForm,
+    # = SimUserInputForm(
+    #     **{
+    #         "location": "Rütmattstrasse 17, Aarau, Switzerland",  # "Aarau, Switzerland" "Ferntree Gully, Victoria, Australia"
+    #         "electr_cons": 3000,
+    #         "roof_incl": RoofTilt.tilted30,
+    #         "roof_azimuth": RoofAzimuth.south,
+    #         "peak_power": 5,
+    #         "battery_cap": 10,
+    #         "electr_price": 0.25,
+    #         "down_payment": 1000,
+    #         "pay_off_rate": 0.1,
+    #         "interest_rate": 5,
+    #     }
+    # ),
 ):
     starttime = datetime.now()
 
@@ -105,8 +105,15 @@ async def pv_calc(
         f"Total execution time: {(datetime.now() - starttime).total_seconds():.2f} seconds"
     )
 
+    logger.info(
+        f"total_investment: {int(sim_evaluation.financial_analysis.investment.total)}"
+    )
+    logger.info(
+        f"break_even_year: {int(sim_evaluation.financial_analysis.kpis.break_even_year)}"
+    )
+
     return {
         "status": "Simulation finished",
-        "total_investment": sim_evaluation.financial_analysis.investment.total,
-        "break_even_year": sim_evaluation.financial_analysis.kpis.break_even_year,
+        "total_investment": int(sim_evaluation.financial_analysis.investment.total),
+        "break_even_year": int(sim_evaluation.financial_analysis.kpis.break_even_year),
     }
