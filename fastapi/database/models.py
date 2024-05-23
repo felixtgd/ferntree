@@ -177,20 +177,26 @@ class SimModelSummary(BaseModel):
         title="Battery Capacity", description="The capacity of the battery in kWh"
     )
     electr_price: float = Field(
-        title="Electricity Price", description="The price of electricity in €/kWh"
+        title="Electricity Price",
+        description="The price of electricity in €/kWh",
+        gt=0.0,
+        le=1.0,
     )
     down_payment: float = Field(
-        title="Down Payment", description="The down payment in €"
+        title="Down Payment",
+        description="The down payment as fraction of total investment",
+        gt=0.0,
+        le=1.0,
     )
     pay_off_rate: float = Field(
-        title="Pay Off Rate", description="The pay off rate in €/kWh"
+        title="Pay Off Rate", description="The pay off rate 0...1", gt=0.0, le=1.0
     )
     interest_rate: float = Field(
-        title="Interest Rate", description="The interest rate in %"
+        title="Interest Rate", description="The interest rate 0...1", gt=0.0, le=1.0
     )
 
 
-class SimAnalysis(BaseModel):
+class SimEnergyKPIs(BaseModel):
     baseload_demand: float = Field(
         title="Baseload Demand",
         description="The annual baseload demand in kWh",
@@ -291,8 +297,8 @@ class SimEvaluationDoc(BaseModel):
         title="Simulation Model Summary",
         description="The simulation model summary",
     )
-    sim_analysis: SimAnalysis = Field(
-        title="Simulation Analysis",
+    energy_kpis: SimEnergyKPIs = Field(
+        title="Simulation Energy KPIs",
         description="The simulation analysis",
     )
     financial_analysis: SimFinancialAnalysis = Field(
