@@ -9,7 +9,7 @@ from database.models import (
     SimUserInputForm,
 )
 from database.mongodb import MongoClient
-from utils.user_input_funcs import (
+from utils.sim_funcs import (
     process_sim_user_input,
     start_ferntree_simulation,
     evaluate_simulation_results,
@@ -63,7 +63,7 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.post("/dashboard/pv-calc")
+@app.post("/dashboard/pv-calc")  # TODO: add response_model = ... for data validation
 async def pv_calc(
     sim_user_input: SimUserInputForm,
     # = SimUserInputForm(
