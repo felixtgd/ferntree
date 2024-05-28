@@ -117,6 +117,17 @@ async def start_ferntree_simulation(sim_id: str, model_id: str) -> bool:
 
 
 async def get_model_summary(sim_user_input: SimUserInputForm) -> SimModelSummary:
+    """Creates a model summary with the most important model specifications.
+    - Extracts the most important model specifications from the user input form
+    - Creates a SimModelSummary response model with the model specifications
+
+    Args:
+        sim_user_input (SimUserInputForm): The user input form.
+
+    Returns:
+        SimModelSummary: The model summary with the most important model specifications.
+
+    """
     # Create SimModelSummary response model with sim model specifications
     model_summary = SimModelSummary(
         electr_cons=sim_user_input.electr_cons,  # [kWh]
@@ -134,6 +145,18 @@ async def get_model_summary(sim_user_input: SimUserInputForm) -> SimModelSummary
 async def calc_energy_kpis(
     db_client: mongodb.MongoClient, sim_id: str
 ) -> SimEnergyKPIs:
+    """Calculates the energy KPIs of the simulation results.
+    - Reads the simulation results from the database
+    - Calculates various energy KPIs, e.g. annual pv generation, self-consumption, self-sufficiency
+
+    Args:
+        db_client (MongoClient): The MongoDB client.
+        sim_id (str): The simulation ID.
+
+    Returns:
+        SimEnergyKPIs: The energy KPIs of the simulation results.
+
+    """
     # Read sim results from db into dataframe
     sim_results = await db_client.find_one_by_id("simulation_timeseries", sim_id)
     sim_results_df = pd.DataFrame(sim_results["timeseries_data"])
@@ -185,6 +208,20 @@ async def calc_energy_kpis(
 async def calc_financial_analysis(
     model_summary: SimModelSummary, sim_energy_kpis: SimEnergyKPIs
 ) -> SimFinancialAnalysis:
+    """Calculates the financial analysis of the energy system based on the model summary and energy KPIs.
+    - Sets assumptions for financial performance calculation
+    - Calculates investment costs for PV and battery system
+    - Calculates financial performance of energy system over 30 years
+    - Calculates financial KPIs, e.g. break-even year
+
+    Args:
+        model_summary (SimModelSummary): The model summary.
+        sim_energy_kpis (SimEnergyKPIs): The energy KPIs.
+
+    Returns:
+        SimFinancialAnalysis: The financial analysis of the energy system.
+
+    """
     # Assumptions for financial performance calculation
     financial_assumptions = SimFinancialAssumptions(
         price_increase=0.025,  # annual (electricity) price increase 2.5%
