@@ -1,6 +1,6 @@
 import React from 'react';
-import { PvData } from '@/app/lib/definitions';
+import { SimEvaluation } from '@/app/lib/definitions';
 
-const PvDataContext = React.createContext<PvData | null>(null);
+const SimDataContext = React.createContext<SimEvaluation | null>(null);
 
-export default PvDataContext;
+export default SimDataContext;

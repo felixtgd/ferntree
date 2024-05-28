@@ -10,21 +10,14 @@ pay off rate in percent (number).*/
 
 'use client';
 
-import Link from 'next/link';
-import {
-  CheckIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  UserCircleIcon,
-} from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
-import { useFormState } from 'react-dom';
+// import { useFormState } from 'react-dom'; // maybe useful later? instead of useState
 import React, { useState } from 'react';
 
-import { PvData } from '@/app/lib/definitions';
+import { SimEvaluation } from '@/app/lib/definitions';
 
 
-export default function PvForm({ setData }: { setData: (data: PvData) => void }) {
+export default function PvForm({ setData }: { setData: (data: SimEvaluation) => void }) {
 
   const [formData, setFormData] = useState({
     location: 'Aarau',
@@ -37,7 +30,7 @@ export default function PvForm({ setData }: { setData: (data: PvData) => void })
     down_payment: 20,
     pay_off_rate: 5,
     interest_rate: 3,
-  });
+  }); // put this in a data model?
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;

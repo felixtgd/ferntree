@@ -112,8 +112,11 @@ async def pv_calc(
         f"break_even_year: {int(sim_evaluation.financial_analysis.kpis.break_even_year)}"
     )
 
-    return {
-        "status": "Simulation finished",
-        "total_investment": int(sim_evaluation.financial_analysis.investment.total),
-        "break_even_year": int(sim_evaluation.financial_analysis.kpis.break_even_year),
-    }
+    return sim_evaluation
+
+
+# {
+#         "status": "Simulation finished",
+#         "total_investment": int(sim_evaluation.financial_analysis.investment.total),
+#         "break_even_year": int(sim_evaluation.financial_analysis.kpis.break_even_year),
+#     }
