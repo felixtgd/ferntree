@@ -202,9 +202,9 @@ async def calc_financial_analysis(
     )
     total_investment = pv_investment + battery_investment
     investment = SimFinancialInvestment(
-        pv_investment=pv_investment,
-        battery_investment=battery_investment,
-        total_investment=total_investment,
+        pv=pv_investment,
+        battery=battery_investment,
+        total=total_investment,
     )
 
     # Dataframe for fincancial calculations
@@ -282,13 +282,15 @@ async def evaluate_simulation_results(
 
     """
     # Get model summary with most important models specs
-    model_summary = get_model_summary(sim_user_input)
+    model_summary = await get_model_summary(sim_user_input)
 
     # Evaluate simulation results and calculate energy KPIs
-    sim_energy_kpis = calc_energy_kpis(db_client, sim_id)
+    sim_energy_kpis = await calc_energy_kpis(db_client, sim_id)
 
     # Use model specs and energy KPIs to calc financial analysis of energy system
-    sim_financial_analysis = calc_financial_analysis(model_summary, sim_energy_kpis)
+    sim_financial_analysis = await calc_financial_analysis(
+        model_summary, sim_energy_kpis
+    )
 
     # Collect all results in one document to store in database
     sim_evaluation = SimEvaluationDoc(
