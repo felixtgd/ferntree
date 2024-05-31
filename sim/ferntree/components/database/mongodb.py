@@ -42,7 +42,7 @@ class pyMongoClient:
 
     def load_simulation_input(self) -> dict:
         # Load simulation input data from database
-        collection = self.db["simulation_timeseries"]
+        collection = self.db["sim_timeseries"]
         result = collection.find_one({"_id": self.sim_id})
 
         return result
@@ -67,7 +67,7 @@ class pyMongoClient:
             self.data_buffer = []
 
     def write_batch(self, batch: list):
-        collection = self.db["simulation_timeseries"]
+        collection = self.db["sim_timeseries"]
         # Find document with id sim_id and push batch to timeseries_data
         collection.update_one(
             {"_id": self.sim_id}, {"$push": {"timeseries_data": {"$each": batch}}}
@@ -84,7 +84,7 @@ class pyMongoClient:
             self.data_buffer = []
 
         # Delete input arrays T_amb and G_i from document
-        collection = self.db["simulation_timeseries"]
+        collection = self.db["sim_timeseries"]
         collection.update_one(
             {"_id": self.sim_id}, {"$unset": {"T_amb": "", "G_i": ""}}
         )

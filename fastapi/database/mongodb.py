@@ -39,5 +39,10 @@ class MongoClient:
         # Return the document
         return document
 
+    async def clean_collection(self, collection: str):
+        # Delete all documents in the collection
+        collection = self.db[collection]
+        await collection.delete_many({})
+
     async def close(self):
         self.client.close()

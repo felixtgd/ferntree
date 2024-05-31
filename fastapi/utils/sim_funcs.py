@@ -50,7 +50,7 @@ async def process_sim_user_input(
     except Exception as ex:
         raise ValueError(f"Error fetching solar data: {ex}")
 
-    # Write sim input data as one document to simulation_timeseries collection in MongoDB, return sim_id
+    # Write sim input data as one document to sim_timeseries collection in MongoDB, return sim_id
     created_at = datetime.now().isoformat()
     document_solar_data = SimTimeSeriesDoc(
         user_id=user_id,
@@ -59,7 +59,7 @@ async def process_sim_user_input(
         G_i=G_i,
     )
     sim_id = await db_client.insert_one(
-        collection="simulation_timeseries", document=document_solar_data.model_dump()
+        collection="sim_timeseries", document=document_solar_data.model_dump()
     )
 
     # Determine timezone based on coordinates
@@ -158,7 +158,7 @@ async def calc_energy_kpis(
 
     """
     # Read sim results from db into dataframe
-    sim_results = await db_client.find_one_by_id("simulation_timeseries", sim_id)
+    sim_results = await db_client.find_one_by_id("sim_timeseries", sim_id)
     sim_results_df = pd.DataFrame(sim_results["timeseries_data"])
 
     # Set time column to datetime, measured in seconds
