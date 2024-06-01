@@ -10,9 +10,22 @@ pay off rate in percent (number).*/
 
 'use client';
 
-import { Button } from '@/app/ui/button';
+// import { Button } from '@/app/ui/button';
 // import { useFormState } from 'react-dom'; // maybe useful later? instead of useState
 import React, { useState } from 'react';
+import { Card, NumberInput, Select, SelectItem, TextInput, Button } from '@tremor/react';
+import {
+  RiArrowUpWideLine,
+  RiBankLine,
+  RiBattery2ChargeLine,
+  RiCoinsLine,
+  RiCompassLine,
+  RiCurrencyLine,
+  RiHandCoinLine,
+  RiHome4Line,
+  RiLightbulbFlashLine,
+  RiSunLine
+} from '@remixicon/react';
 
 import { SimEvaluation } from '@/app/lib/definitions';
 
@@ -37,6 +50,14 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleRoofInclChange = (value: string) => {
+    setFormData({ ...formData, roof_incl: parseInt(value) });
+  }
+
+  const handleRoofAzChange = (value: string) => {
+    setFormData({ ...formData, roof_azimuth: parseInt(value) });
+  }
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
@@ -55,8 +76,13 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
 
 
   return (
+    <Card
+                className="sm:mx-auto sm:max-w-lg"
+                decoration="top"
+                decorationColor="blue-300"
+            >
     <form onSubmit={handleSubmit}>
-      <div className="rounded-md bg-gray-200 p-4 md:p-4 w-64">
+      {/* <div className="rounded-md bg-gray-200 p-4 md:p-4 w-64"> */}
 
         {/* Location */}
         <div className="mb-4">
@@ -64,14 +90,14 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
             Location
           </label>
           <div className="relative">
-            <input
+            <TextInput
               id="location"
               name="location"
               type="text"
+              icon={RiHome4Line}
               onChange={handleChange}
               value = {formData.location}
               placeholder="Enter location"
-              className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
             />
           </div>
         </div>
@@ -81,19 +107,16 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
           <label htmlFor="electr_cons" className="mb-2 block text-sm font-medium">
             Electricity consumption [kWh/a]
           </label>
-          <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <input
-                id="electr_cons"
-                name="electr_cons"
-                type="number"
-                step="0.01"
-                onChange = {handleChange}
-                value = {formData.electr_cons}
-                placeholder="300,000"
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-              />
-            </div>
+          <div className="relative">
+            <NumberInput
+              id="electr_cons"
+              name="electr_cons"
+              step="1"
+              icon={RiLightbulbFlashLine}
+              onChange = {handleChange}
+              value = {formData.electr_cons}
+              placeholder="300,000"
+            />
           </div>
         </div>
 
@@ -102,23 +125,18 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
           <label htmlFor="roof_incl" className="mb-2 block text-sm font-medium">
             Roof inclination
           </label>
-          <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <select
-                id="roof_incl"
-                name="roof_incl"
-                className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                onChange={handleChange}
-                value = {formData.roof_incl}
-              >
-                <option value="" disabled>
-                  Select roof inclination
-                </option>
-                <option value="0">0°</option>
-                <option value="30">30°</option>
-                <option value="45">45°</option>
-              </select>
-            </div>
+          <div className="relative">
+            <Select
+              id="roof_incl"
+              name="roof_incl"
+              icon={RiArrowUpWideLine}
+              onValueChange={handleRoofInclChange}
+              value = {formData.roof_incl.toString()}
+            >
+              <SelectItem value="0">0°</SelectItem>
+              <SelectItem value="30">30°</SelectItem>
+              <SelectItem value="45">45°</SelectItem>
+            </Select>
           </div>
         </div>
 
@@ -127,29 +145,24 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
           <label htmlFor="roof_azimuth" className="mb-2 block text-sm font-medium">
             Roof orientation
           </label>
-          <div className="relative mt-2 rounded-md">
             <div className="relative">
-              <select
+              <Select
                 id="roof_azimuth"
                 name="roof_azimuth"
-                className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
-                onChange={handleChange}
-                value = {formData.roof_azimuth}
+                icon={RiCompassLine}
+                onValueChange={handleRoofAzChange}
+                value = {formData.roof_azimuth.toString()}
               >
-                <option value="" disabled>
-                  Select roof orientation
-                </option>
-                <option value="0">South</option>
-                <option value="-45">South-East</option>
-                <option value="45">South-West</option>
-                <option value="-90">East</option>
-                <option value="90">West</option>
-                <option value="-135">North-East</option>
-                <option value="135">North-West</option>
-                <option value="180">North</option>
-              </select>
+                <SelectItem value="0">South</SelectItem>
+                <SelectItem value="-45">South-East</SelectItem>
+                <SelectItem value="45">South-West</SelectItem>
+                <SelectItem value="-90">East</SelectItem>
+                <SelectItem value="90">West</SelectItem>
+                <SelectItem value="-135">North-East</SelectItem>
+                <SelectItem value="135">North-West</SelectItem>
+                <SelectItem value="180">North</SelectItem>
+              </Select>
             </div>
-          </div>
         </div>
 
         {/* PV Peak Power */}
@@ -157,20 +170,17 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
           <label htmlFor="peak_power" className="mb-2 block text-sm font-medium">
             PV peak power [kWp]
           </label>
-          <div className="relative mt-2 rounded-md">
             <div className="relative">
-              <input
+              <NumberInput
                 id="peak_power"
                 name="peak_power"
-                type="number"
-                step="0.01"
+                step="0.1"
                 placeholder="10"
+                icon={RiSunLine}
                 onChange={handleChange}
                 value = {formData.peak_power}
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
-          </div>
         </div>
 
         {/* Battery capacity */}
@@ -178,20 +188,17 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
           <label htmlFor="battery_cap" className="mb-2 block text-sm font-medium">
             Battery capacity [kWh]
           </label>
-          <div className="relative mt-2 rounded-md">
             <div className="relative">
-              <input
+              <NumberInput
                 id="battery_cap"
                 name="battery_cap"
-                type="number"
-                step="0.01"
+                step="0.1"
                 placeholder="10"
+                icon={RiBattery2ChargeLine}
                 onChange={handleChange}
                 value = {formData.battery_cap}
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
-          </div>
         </div>
 
         {/* Electricity price */}
@@ -199,20 +206,17 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
           <label htmlFor="electr_price" className="mb-2 block text-sm font-medium">
             Electricity price [cents/kWh]
           </label>
-          <div className="relative mt-2 rounded-md">
             <div className="relative">
-              <input
+              <NumberInput
                 id="electr_price"
                 name="electr_price"
-                type="number"
-                step="0.01"
+                step="0.1"
                 placeholder="35"
+                icon={RiCoinsLine}
                 onChange={handleChange}
                 value = {formData.electr_price}
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
-          </div>
         </div>
 
         {/* Down payment */}
@@ -220,20 +224,17 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
           <label htmlFor="down_payment" className="mb-2 block text-sm font-medium">
             Down payment [%]
           </label>
-          <div className="relative mt-2 rounded-md">
             <div className="relative">
-              <input
+              <NumberInput
                 id="down_payment"
                 name="down_payment"
-                type="number"
-                step="0.01"
+                step="0.1"
                 placeholder="20"
+                icon={RiCurrencyLine}
                 onChange={handleChange}
                 value = {formData.down_payment}
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
-          </div>
         </div>
 
         {/* Pay off rate */}
@@ -241,20 +242,17 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
           <label htmlFor="pay_off_rate" className="mb-2 block text-sm font-medium">
             Pay off rate [%]
           </label>
-          <div className="relative mt-2 rounded-md">
             <div className="relative">
-              <input
+              <NumberInput
                 id="pay_off_rate"
                 name="pay_off_rate"
-                type="number"
-                step="0.01"
+                step="0.1"
                 placeholder="5"
+                icon={RiHandCoinLine}
                 onChange={handleChange}
                 value = {formData.pay_off_rate}
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
-          </div>
         </div>
 
         {/* Interest rate */}
@@ -262,28 +260,23 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
           <label htmlFor="interest_rate" className="mb-2 block text-sm font-medium">
             Interest rate [%]
           </label>
-          <div className="relative mt-2 rounded-md">
             <div className="relative">
-              <input
+              <NumberInput
                 id="interest_rate"
                 name="interest_rate"
-                type="number"
-                step="0.01"
+                step="0.1"
                 placeholder="3"
+                icon={RiBankLine}
                 onChange={handleChange}
                 value = {formData.interest_rate}
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-4 text-sm outline-2 placeholder:text-gray-500"
               />
             </div>
-          </div>
         </div>
 
         <div className="mt-6 flex justify-center gap-4">
           <Button type="submit">Calculate System</Button>
         </div>
-
-      </div>
-
-    </form>
+      </form>
+    </Card>
   );
 }
