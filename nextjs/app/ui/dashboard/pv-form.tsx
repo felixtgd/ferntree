@@ -18,6 +18,7 @@ import {
   RiArrowUpWideLine,
   RiBankLine,
   RiBattery2ChargeLine,
+  RiCalculatorLine,
   RiCoinsLine,
   RiCompassLine,
   RiCurrencyLine,
@@ -77,13 +78,11 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
 
   return (
     <Card
-                className="sm:mx-auto sm:max-w-lg"
-                decoration="top"
-                decorationColor="blue-300"
-            >
-    <form onSubmit={handleSubmit}>
-      {/* <div className="rounded-md bg-gray-200 p-4 md:p-4 w-64"> */}
-
+      className="sm:mx-auto sm:max-w-lg"
+      decoration="top"
+      decorationColor="blue-300"
+    >
+      <form onSubmit={handleSubmit}>
         {/* Location */}
         <div className="mb-4">
           <label htmlFor="location" className="mb-2 block text-sm font-medium">
@@ -274,7 +273,7 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
         </div>
 
         <div className="mt-6 flex justify-center gap-4">
-          <Button type="submit">Calculate System</Button>
+          <Button type="submit" icon={RiCalculatorLine}>Calculate System</Button>
         </div>
       </form>
     </Card>

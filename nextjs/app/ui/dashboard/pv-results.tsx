@@ -9,8 +9,8 @@ export default function PvResults() {
     <div>
       {data && (
         <>
-          <div className="flex items-start space-x-4">
-            <div className="m-4 p-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="col-span-1">
               {/* Donut chart for consumption */}
               <PvDonutChart
                 data={[
@@ -32,7 +32,7 @@ export default function PvResults() {
                 title='Consumption'
               />
             </div>
-            <div className="m-4 p-4">
+            <div className="col-span-1">
               {/* Donut chart for pv generation */}
               <PvDonutChart
                 data={[

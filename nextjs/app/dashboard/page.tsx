@@ -11,10 +11,14 @@ export default function Page() {
 
     return (
         <main>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-6 grid-cols-5">
             <SimDataContext.Provider value={data}>
-                <PvForm setData={setData} />
-                <PvResults />
+                <div className="col-span-1">
+                    <PvForm setData={setData} />
+                </div>
+                <div className="col-span-4">
+                    <PvResults />
+                </div>
             </SimDataContext.Provider>
             </div>
         </main>
