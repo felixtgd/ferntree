@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import SimDataContext from '@/app/ui/dashboard/pv-context';
 import { PvDonutChart } from '@/app/ui/dashboard/donut-chart';
+import { FinKpisCard } from '@/app/ui/dashboard/fin-kpis';
 
 export default function PvResults() {
   const data = useContext(SimDataContext);
@@ -52,6 +53,15 @@ export default function PvResults() {
                   title: data.energy_kpis.pv_generation,
                 }}
                 title='PV Generation'
+              />
+            </div>
+            <div className="col-span-1">
+              {/* Card with financial KPIs */}
+              <FinKpisCard
+                data={{
+                  investment: data.financial_analysis.investment.total,
+                  break_even: data.financial_analysis.kpis.break_even_year,
+                }}
               />
             </div>
           </div>
