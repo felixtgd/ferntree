@@ -1,6 +1,7 @@
 import os
 import certifi
 
+from datetime import datetime
 from dotenv import load_dotenv
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -43,6 +44,30 @@ class MongoClient:
         # Delete all documents in the collection
         collection = self.db[collection]
         await collection.delete_many({})
+
+    async def fetch_timeseries_data(
+        self, collection: str, sim_id: str, start_date: int, end_date: int
+    ):
+        # Fetch the timeseries data of the simulation matching the given date range
+        collection = self.db[collection]
+        query = {"_id": ObjectId(sim_id)}
+
+        document = await collection.find_one(query)
+
+        timeseries_data = document["timeseries_data"]
+
+        # Filter the timeseries data to only include data within the given date range
+        filtered_timeseries_data = [
+            data for data in timeseries_data if start_date <= data["time"] <= end_date
+        ]
+
+        # Convert "time" from seconds timestamp to ISO datetime
+        for data in filtered_timeseries_data:
+            data["time"] = datetime.fromtimestamp(data["time"]).strftime(
+                "%d-%m-%Y %H:%M"
+            )
+
+        return filtered_timeseries_data
 
     async def close(self):
         self.client.close()

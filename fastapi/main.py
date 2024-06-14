@@ -2,11 +2,12 @@ import logging
 
 from datetime import datetime
 from enum import Enum
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from database.models import (
     SimUserInputForm,
+    TimeseriesDataRequest,
 )
 from database.mongodb import MongoClient
 from utils.sim_funcs import (
@@ -64,23 +65,7 @@ async def root():
 
 
 @app.post("/dashboard/pv-calc")  # TODO: add response_model = ... for data validation
-async def pv_calc(
-    sim_user_input: SimUserInputForm,
-    # = SimUserInputForm(
-    #     **{
-    #         "location": "Rütmattstrasse 17, Aarau, Switzerland",  # "Aarau, Switzerland" "Ferntree Gully, Victoria, Australia"
-    #         "electr_cons": 3000,
-    #         "roof_incl": RoofTilt.tilted30,
-    #         "roof_azimuth": RoofAzimuth.south,
-    #         "peak_power": 5,
-    #         "battery_cap": 10,
-    #         "electr_price": 0.25,
-    #         "down_payment": 1000,
-    #         "pay_off_rate": 0.1,
-    #         "interest_rate": 5,
-    #     }
-    # ),
-):
+async def pv_calc(sim_user_input: SimUserInputForm):
     starttime = datetime.now()
 
     logger.info(f"\nReceived request: {sim_user_input}")
@@ -115,8 +100,21 @@ async def pv_calc(
     return sim_evaluation
 
 
-# {
-#         "status": "Simulation finished",
-#         "total_investment": int(sim_evaluation.financial_analysis.investment.total),
-#         "break_even_year": int(sim_evaluation.financial_analysis.kpis.break_even_year),
-#     }
+@app.post("/dashboard/fetch-timeseries-data")
+async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
+    logger.info(f"\nReceived request for timeseries data: {request_body}")
+    try:
+        start_date = datetime.fromisoformat(request_body.start_date).timestamp()
+        end_date = datetime.fromisoformat(request_body.end_date).timestamp()
+    except ValueError as e:
+        logger.error(f"Error parsing datetime: {e}")
+        raise HTTPException(status_code=400, detail="Invalid datetime format")
+
+    timeseries_data = await db_client.fetch_timeseries_data(
+        collection="sim_timeseries",
+        sim_id=request_body.sim_id,
+        start_date=start_date,
+        end_date=end_date,
+    )
+
+    return timeseries_data  # TODO: define data model for response

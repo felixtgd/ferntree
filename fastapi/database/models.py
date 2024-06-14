@@ -305,3 +305,13 @@ class SimEvaluationDoc(BaseModel):
         title="Simulation Financial Analysis",
         description="The simulation financial analysis",
     )
+
+
+class TimeseriesDataRequest(BaseModel):
+    sim_id: str = Field(title="Simulation ID", description="The ID of the simulation")
+    start_date: str = Field(
+        title="Start Date", description="The start date of the timeseries data"
+    )
+    end_date: str = Field(
+        title="End Date", description="The end date of the timeseries data"
+    )
