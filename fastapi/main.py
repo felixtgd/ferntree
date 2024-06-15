@@ -15,6 +15,7 @@ from utils.sim_funcs import (
     start_ferntree_simulation,
     evaluate_simulation_results,
 )
+from utils.data_model_helpers import format_timeseries_data
 
 
 class RoofTilt(int, Enum):
@@ -90,13 +91,6 @@ async def pv_calc(sim_user_input: SimUserInputForm):
         f"Total execution time: {(datetime.now() - starttime).total_seconds():.2f} seconds"
     )
 
-    logger.info(
-        f"total_investment: {int(sim_evaluation.financial_analysis.investment.total)}"
-    )
-    logger.info(
-        f"break_even_year: {int(sim_evaluation.financial_analysis.kpis.break_even_year)}"
-    )
-
     return sim_evaluation
 
 
@@ -117,4 +111,6 @@ async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
         end_date=end_date,
     )
 
-    return timeseries_data  # TODO: define data model for response
+    formatted_timeseries_data = format_timeseries_data(timeseries_data)
+
+    return formatted_timeseries_data  # TODO: define data model for response

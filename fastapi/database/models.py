@@ -315,3 +315,20 @@ class TimeseriesDataRequest(BaseModel):
     end_date: str = Field(
         title="End Date", description="The end date of the timeseries data"
     )
+
+
+class FilteredTimeseriesData(BaseModel):
+    time: int
+    P_base: float
+    P_pv: float
+    P_bat: float
+    Soc_bat: float
+
+
+class FormattedTimeseriesData(BaseModel):
+    time: str
+    Load: float
+    PV: float
+    Battery: float
+    Total: float
+    StateOfCharge: float

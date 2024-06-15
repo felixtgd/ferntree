@@ -35,7 +35,7 @@ export default function PvForm({ setData }: { setData: (data: SimEvaluation) => 
 
   const [formData, setFormData] = useState({
     location: 'Aarau',
-    electr_cons: 3000,
+    electr_cons: 6000,
     roof_incl: 0,
     roof_azimuth: 0,
     peak_power: 10,

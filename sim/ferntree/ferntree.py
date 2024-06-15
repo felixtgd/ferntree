@@ -86,5 +86,5 @@ if __name__ == "__main__":
     end_time = time.time()
 
     logger.info("")
-    logger.info(f"Execution time: {(end_time - start_time):.2f} seconds.")
+    logger.info(f"Simulation execution time: {(end_time - start_time):.2f} seconds.")
     logger.info("")

@@ -7,7 +7,11 @@ from database.models import (
     Battery,
     House,
     SimModelSpecs,
+    FilteredTimeseriesData,
+    FormattedTimeseriesData,
 )
+
+from datetime import datetime
 
 
 async def define_sim_model_specs(
@@ -72,3 +76,28 @@ async def define_sim_model_specs(
     )
 
     return sim_model_specs
+
+
+def format_timeseries_data(
+    timeseries_data: list[FilteredTimeseriesData],
+) -> list[FormattedTimeseriesData]:
+    """Formats the timeseries data for the frontend.
+
+    Args:
+        timeseries_data (list[FilteredTimeseriesData]): The timeseries data of simulation results.
+
+    Returns:
+        list[FormattedTimeseriesData]: The formatted timeseries data.
+
+    """
+    return [
+        FormattedTimeseriesData(
+            time=datetime.fromtimestamp(data.time).strftime("%d-%m-%Y %H:%M"),
+            Load=data.P_base,
+            PV=data.P_pv,
+            Battery=data.P_bat,
+            Total=data.P_base + data.P_pv + data.P_bat,
+            StateOfCharge=data.Soc_bat,
+        )
+        for data in timeseries_data
+    ]

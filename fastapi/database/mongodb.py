@@ -1,11 +1,12 @@
 import os
 import certifi
 
-from datetime import datetime
 from dotenv import load_dotenv
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
+
+from database.models import FilteredTimeseriesData
 
 # Use certifi to get the path of the CA file
 ca = certifi.where()
@@ -58,14 +59,10 @@ class MongoClient:
 
         # Filter the timeseries data to only include data within the given date range
         filtered_timeseries_data = [
-            data for data in timeseries_data if start_date <= data["time"] <= end_date
+            FilteredTimeseriesData(**data)
+            for data in timeseries_data
+            if start_date <= data["time"] <= end_date
         ]
-
-        # Convert "time" from seconds timestamp to ISO datetime
-        for data in filtered_timeseries_data:
-            data["time"] = datetime.fromtimestamp(data["time"]).strftime(
-                "%d-%m-%Y %H:%M"
-            )
 
         return filtered_timeseries_data
 
