@@ -5,7 +5,7 @@ const moneyFormatter = (number: number) =>
     `€ ${Math.round(number).toLocaleString()}`;
 
 const yearFormatter = (number: number) =>
-    `${Math.round(number).toLocaleString()} years`;
+    `${number.toFixed(1).toLocaleString()} years`;
 
 export function FinKpisCard({ data }: { data: { investment: number; break_even: number}}) {
 
@@ -24,6 +24,18 @@ export function FinKpisCard({ data }: { data: { investment: number; break_even: 
           <ListItem key={data.investment}>
             <span>Break-even</span>
             <span>{yearFormatter(data.break_even)}</span>
+          </ListItem>
+          <ListItem key={data.investment}>
+            <span>Cumulative profit over 25 years</span>
+            <span>X</span>
+          </ListItem>
+          <ListItem key={data.investment}>
+            <span>Levelised cost of electricity</span>
+            <span>X</span>
+          </ListItem>
+          <ListItem key={data.investment}>
+            <span>Solar interest</span>
+            <span>X</span>
           </ListItem>
       </List>
     </Card>

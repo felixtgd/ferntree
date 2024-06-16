@@ -286,9 +286,13 @@ async def calc_financial_analysis(
     # For now only one financial KPI: Break-even year
     # TODO: Add more KPIs in the future
     break_even_year = df[df["cumulative_profit"] > total_investment]["year"].iloc[0]
+    # Interpolate break-even year
+    break_even_year_exact = (break_even_year - 1) + (
+        total_investment - df.iloc[break_even_year - 1]["cumulative_profit"]
+    ) / df.iloc[break_even_year]["profit"]
 
     financial_kpis = SimFinancialKPIs(
-        break_even_year=break_even_year,
+        break_even_year=break_even_year_exact,
     )
 
     # Collect everything in one response model

@@ -270,7 +270,7 @@ class SimFinancialInvestment(BaseModel):
 
 
 class SimFinancialKPIs(BaseModel):
-    break_even_year: int = Field(
+    break_even_year: float = Field(
         title="Break-even Year",
         description="The break-even year",
     )
