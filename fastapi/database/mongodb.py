@@ -6,7 +6,6 @@ from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 
-from database.models import FilteredTimeseriesData
 
 # Use certifi to get the path of the CA file
 ca = certifi.where()
@@ -46,25 +45,16 @@ class MongoClient:
         collection = self.db[collection]
         await collection.delete_many({})
 
-    async def fetch_timeseries_data(
-        self, collection: str, sim_id: str, start_date: int, end_date: int
-    ):
+    async def fetch_timeseries_data(self, sim_id: str) -> list[dict]:
         # Fetch the timeseries data of the simulation matching the given date range
-        collection = self.db[collection]
+        collection = self.db["sim_timeseries"]
         query = {"_id": ObjectId(sim_id)}
 
         document = await collection.find_one(query)
 
         timeseries_data = document["timeseries_data"]
 
-        # Filter the timeseries data to only include data within the given date range
-        filtered_timeseries_data = [
-            FilteredTimeseriesData(**data)
-            for data in timeseries_data
-            if start_date <= data["time"] <= end_date
-        ]
-
-        return filtered_timeseries_data
+        return timeseries_data
 
     async def close(self):
         self.client.close()

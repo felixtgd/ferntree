@@ -8,12 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from database.models import (
     SimUserInputForm,
     TimeseriesDataRequest,
+    FilteredTimeseriesData,
 )
 from database.mongodb import MongoClient
 from utils.sim_funcs import (
     process_sim_user_input,
     start_ferntree_simulation,
     evaluate_simulation_results,
+    calc_monthly_pv_gen_data,
 )
 from utils.data_model_helpers import format_timeseries_data
 
@@ -94,7 +96,7 @@ async def pv_calc(sim_user_input: SimUserInputForm):
     return sim_evaluation
 
 
-@app.post("/dashboard/fetch-timeseries-data")
+@app.post("/dashboard/sim-timeseries-data")
 async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
     logger.info(f"\nReceived request for timeseries data: {request_body}")
     try:
@@ -104,13 +106,31 @@ async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
         logger.error(f"Error parsing datetime: {e}")
         raise HTTPException(status_code=400, detail="Invalid datetime format")
 
-    timeseries_data = await db_client.fetch_timeseries_data(
-        collection="sim_timeseries",
-        sim_id=request_body.sim_id,
-        start_date=start_date,
-        end_date=end_date,
-    )
+    # Fetch the timeseries data of the simulation
+    timeseries_data = await db_client.fetch_timeseries_data(sim_id=request_body.sim_id)
 
-    formatted_timeseries_data = format_timeseries_data(timeseries_data)
+    # Filter the timeseries data to only include data within the given date range
+    filtered_timeseries_data = [
+        FilteredTimeseriesData(**data)
+        for data in timeseries_data
+        if start_date <= data["time"] <= end_date
+    ]
+
+    formatted_timeseries_data = format_timeseries_data(filtered_timeseries_data)
 
     return formatted_timeseries_data  # TODO: define data model for response
+
+
+@app.get("/dashboard/pv-monthly-gen")
+async def fetch_pv_monthly_gen_data(sim_id: str):
+    logger.info(
+        f"\nReceived request for monthly PV generation data for sim_id: {sim_id}"
+    )
+
+    # Fetch the timeseries data of the simulation
+    timeseries_data = await db_client.fetch_timeseries_data(sim_id=sim_id)
+
+    # Calculate the monthly PV generation data
+    monthly_pv_gen_data = await calc_monthly_pv_gen_data(timeseries_data)
+
+    return monthly_pv_gen_data

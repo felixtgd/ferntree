@@ -6,6 +6,7 @@ import PvResults from '@/app/ui/dashboard/pv-results';
 import { SimEvaluation } from '@/app/lib/definitions';
 import { useState } from 'react';
 import { PowerProfilePlots } from '@/app/ui/dashboard/power-plots';
+import { GenBarPlot } from '../ui/dashboard/pv-gen-bar-plot';
 
 export default function Page() {
     const [data, setData] = useState<SimEvaluation | null>(null);
@@ -23,6 +24,9 @@ export default function Page() {
                     </div>
                     <div className='mt-4'>
                         <PowerProfilePlots />
+                    </div>
+                    <div className='mt-4'>
+                        <GenBarPlot />
                     </div>
                 </div>
             </div>

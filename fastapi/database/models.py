@@ -332,3 +332,8 @@ class FormattedTimeseriesData(BaseModel):
     Battery: float
     Total: float
     StateOfCharge: float
+
+
+class PVMonthlyGenData(BaseModel):
+    month: str
+    PVGeneration: float

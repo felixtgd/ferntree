@@ -14,6 +14,7 @@ from database.models import (
     SimFinancialAssumptions,
     SimFinancialInvestment,
     SimFinancialKPIs,
+    PVMonthlyGenData,
 )
 from database import mongodb
 from solar_data import pvgis_api, geolocator
@@ -343,3 +344,52 @@ async def evaluate_simulation_results(
     )
 
     return sim_eval_id, sim_evaluation
+
+
+async def calc_monthly_pv_gen_data(timeseries_data: list[dict]):
+    """Calculates the monthly PV generation data from the timeseries data.
+
+    Args:
+        timeseries_data (list[dict]): The timeseries data.
+
+    Returns:
+        list[dict]: The monthly PV generation data.
+
+    """
+    # Convert timeseries data to dataframe
+    df = pd.DataFrame(timeseries_data)
+
+    # Set time column to datetime, measured in seconds
+    df["time"] = pd.to_datetime(df["time"], unit="s")
+    # Set time column as index
+    df.set_index("time", inplace=True)
+
+    # Group by month and sum P_pv values
+    df["month"] = df.index.month
+    monthly_pv_df = df.groupby("month")["P_pv"].sum()
+
+    # # Resample timeseries data to monthly data
+    # monthly_pv_df = df["P_pv"].resample("M").sum()  # [kWh]
+
+    month_mapping = {
+        1: "Jan",
+        2: "Feb",
+        3: "Mar",
+        4: "Apr",
+        5: "May",
+        6: "Jun",
+        7: "Jul",
+        8: "Aug",
+        9: "Sep",
+        10: "Oct",
+        11: "Nov",
+        12: "Dec",
+    }
+
+    # Convert monthly PV generation data to list of dictionaries
+    monthly_pv_gen_data = [
+        PVMonthlyGenData(month=month_mapping[index], PVGeneration=-1 * pv_gen)
+        for index, pv_gen in monthly_pv_df.items()
+    ]
+
+    return monthly_pv_gen_data
