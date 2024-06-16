@@ -368,9 +368,6 @@ async def calc_monthly_pv_gen_data(timeseries_data: list[dict]):
     df["month"] = df.index.month
     monthly_pv_df = df.groupby("month")["P_pv"].sum()
 
-    # # Resample timeseries data to monthly data
-    # monthly_pv_df = df["P_pv"].resample("M").sum()  # [kWh]
-
     month_mapping = {
         1: "Jan",
         2: "Feb",

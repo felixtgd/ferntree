@@ -13,8 +13,8 @@ export function PowerProfilePlots() {
 
   // Date range picker value
   const [dateValue, setdateValue] = useState<DateRangePickerValue>({
-    from: new Date(2023, 4, 1),
-    to: new Date(2023, 4, 8),
+    from: new Date(2023, 5, 19),
+    to: new Date(2023, 5, 24),
   });
 
   // Chart data: power profiles of system components
@@ -98,7 +98,7 @@ export function PowerProfilePlots() {
                     Winter
                   </DateRangePickerItem>
                 </DateRangePicker>
-                <h3 className="text-center mt-2">Power Profiles</h3>
+                <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mt-2">Power Profiles</h3>
                 <LineChart
                     className="h-60"
                     data={chartData}
@@ -110,8 +110,9 @@ export function PowerProfilePlots() {
                     onValueChange={(v) => console.log(v)}
                     showAnimation={true}
                     startEndOnly={true}
+                    showXAxis={false}
                 />
-                <h3 className="text-center mt-2">Battery State of Charge</h3>
+                <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mt-2">Battery State of Charge</h3>
                 <LineChart
                     className="h-40"
                     data={chartData}
@@ -124,6 +125,7 @@ export function PowerProfilePlots() {
                     showAnimation={true}
                     startEndOnly={true}
                     showLegend={false}
+                    showXAxis={false}
                 />
               </Card>
             </div>

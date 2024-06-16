@@ -45,7 +45,7 @@ export function GenBarPlot() {
                 decoration="top"
                 decorationColor="blue-300"
               >
-                <h3 className="text-center mt-2">Monthly PV Generation</h3>
+                <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Monthly PV Generation</h3>
                 <BarChart
                   className="h-60"
                   data={chartData}

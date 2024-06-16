@@ -35,7 +35,7 @@ export function PvDonutChart({
                 decoration="top"
                 decorationColor="blue-300"
             >
-                <h3 className="text-center text-tremor-default font-medium text-tremor-content-strong dark:text-dark-tremor-content-strong mb-4">
+                <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-4">
                     {`${title}: ${valueFormatter(labels.title)} `}
                 </h3>
                 <DonutChart
