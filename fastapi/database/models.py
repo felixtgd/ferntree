@@ -270,9 +270,25 @@ class SimFinancialInvestment(BaseModel):
 
 
 class SimFinancialKPIs(BaseModel):
+    investment: SimFinancialInvestment = Field(
+        title="Investment",
+        description="The investment costs",
+    )
     break_even_year: float = Field(
         title="Break-even Year",
         description="The break-even year",
+    )
+    cum_profit_25yrs: float = Field(
+        title="Cumulative Profit over 25 Years",
+        description="The cumulative profit over 25 years",
+    )
+    lcoe: float = Field(
+        title="Levelized Cost of Electricity",
+        description="The levelized cost of electricity in cents/kWh",
+    )
+    solar_interest_rate: float = Field(
+        title="Solar Interest Rate",
+        description="The solar interest rate",
     )
 
 
@@ -280,10 +296,6 @@ class SimFinancialAnalysis(BaseModel):
     assumptions: SimFinancialAssumptions = Field(
         title="Financial Assumptions",
         description="The assumptions for the financial performance calculation",
-    )
-    investment: SimFinancialInvestment = Field(
-        title="Investment",
-        description="The investment costs",
     )
     kpis: SimFinancialKPIs = Field(
         title="Key Performance Indicators",

@@ -1,4 +1,5 @@
 import { Card, List, ListItem } from '@tremor/react';
+import { SimFinancialKPIs } from '@/app/lib/definitions';
 
 
 const moneyFormatter = (number: number) =>
@@ -7,7 +8,13 @@ const moneyFormatter = (number: number) =>
 const yearFormatter = (number: number) =>
     `${number.toFixed(1).toLocaleString()} years`;
 
-export function FinKpisCard({ data }: { data: { investment: number; break_even: number}}) {
+const interestFormatter = (number: number) =>
+  `${number.toFixed(1).toLocaleString()} %`;
+
+const lcoeFormatter = (number: number) =>
+  `${number.toFixed(1).toLocaleString()} cents/kWh`;
+
+export function FinKpisCard({ kpis }: { kpis: SimFinancialKPIs }) {
 
   return (
     <Card
@@ -17,25 +24,25 @@ export function FinKpisCard({ data }: { data: { investment: number; break_even: 
     >
       <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Financial KPIs</h3>
       <List className="mt-2">
-          <ListItem key={data.investment}>
+          <ListItem key={kpis.investment.total}>
             <span>Total investment</span>
-            <span>{moneyFormatter(data.investment)}</span>
+            <span>{moneyFormatter(kpis.investment.total)}</span>
           </ListItem>
-          <ListItem key={data.investment}>
+          <ListItem key={kpis.break_even_year}>
             <span>Break-even</span>
-            <span>{yearFormatter(data.break_even)}</span>
+            <span>{yearFormatter(kpis.break_even_year)}</span>
           </ListItem>
-          <ListItem key={data.investment}>
+          <ListItem key={kpis.cum_profit_25yrs}>
             <span>Cumulative profit over 25 years</span>
-            <span>X</span>
+            <span>{moneyFormatter(kpis.cum_profit_25yrs)}</span>
           </ListItem>
-          <ListItem key={data.investment}>
+          <ListItem key={kpis.lcoe}>
             <span>Levelised cost of electricity</span>
-            <span>X</span>
+            <span>{lcoeFormatter(kpis.lcoe)}</span>
           </ListItem>
-          <ListItem key={data.investment}>
-            <span>Solar interest</span>
-            <span>X</span>
+          <ListItem key={kpis.solar_interest_rate}>
+            <span>Solar interest rate</span>
+            <span>{interestFormatter(kpis.solar_interest_rate)}</span>
           </ListItem>
       </List>
     </Card>

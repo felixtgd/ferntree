@@ -58,10 +58,7 @@ export default function PvResults() {
             <div className="col-span-1">
               {/* Card with financial KPIs */}
               <FinKpisCard
-                data={{
-                  investment: data.financial_analysis.investment.total,
-                  break_even: data.financial_analysis.kpis.break_even_year,
-                }}
+                kpis={data.financial_analysis.kpis}
               />
             </div>
           </div>

@@ -226,7 +226,7 @@ async def calc_financial_analysis(
     # Assumptions for financial performance calculation
     financial_assumptions = SimFinancialAssumptions(
         price_increase=0.025,  # annual (electricity) price increase 2.5%
-        pv_costs_per_kWp=1700,  # €/kWp for PV system (1563 - 2167) TODO: model this as a function of peak_power
+        pv_costs_per_kWp=1500,  # €/kWp for PV system (1563 - 2167) TODO: model this as a function of peak_power
         battery_costs_per_kWh=650,  # €/kWh for battery system (570 - 732) TODO: model this as a function of battery_cap
         module_degradation=0.01,  # annual module degradation 1%
         operation_costs=0.015,  # annual operation costs 1.5% (insurance, maintenance, etc.)
@@ -247,8 +247,9 @@ async def calc_financial_analysis(
 
     # Dataframe for fincancial calculations
     df = pd.DataFrame()
-    # Calculate financial performance of energy system over 30 years
-    df["year"] = range(31)
+    # Calculate financial performance of energy system over 25 years
+    years_financial_analysis = 25
+    df["year"] = range(years_financial_analysis + 1)
     # Energy consumption assumed to stay constant
     df["consumption"] = sim_energy_kpis.baseload_demand  # [kWh]
     # Electricity price increases annually by price_increase
@@ -283,22 +284,35 @@ async def calc_financial_analysis(
     )  # [€]
     df["cumulative_profit"] = df["profit"].cumsum()  # [€]
 
-    # For now only one financial KPI: Break-even year
-    # TODO: Add more KPIs in the future
+    # Financial KPI:
+    # Break-even year
     break_even_year = df[df["cumulative_profit"] > total_investment]["year"].iloc[0]
-    # Interpolate break-even year
     break_even_year_exact = (break_even_year - 1) + (
         total_investment - df.iloc[break_even_year - 1]["cumulative_profit"]
     ) / df.iloc[break_even_year]["profit"]
+    # Cumulative profit over 25 years
+    cum_profit_25yrs = df["cumulative_profit"].iloc[-1]
+    # Levelised cost of electricity
+    lcoe = (
+        (total_investment + df["operation_costs"].sum())
+        / df["pv_generation"].sum()
+        * 100
+    )  # [cents/kWh]
+    # Solar interest rate: average annual return on investment
+    df["solar_interest_rate"] = df["profit"] / total_investment * 100
+    solar_interest_rate = df["solar_interest_rate"].mean()
 
     financial_kpis = SimFinancialKPIs(
+        investment=investment,
         break_even_year=break_even_year_exact,
+        cum_profit_25yrs=cum_profit_25yrs,
+        lcoe=lcoe,
+        solar_interest_rate=solar_interest_rate,
     )
 
     # Collect everything in one response model
     financial_analysis = SimFinancialAnalysis(
         assumptions=financial_assumptions,
-        investment=investment,
         kpis=financial_kpis,
     )
 
