@@ -10,7 +10,7 @@ export default function PvResults() {
     <div>
       {data && (
         <>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div className="col-span-1">
               {/* Donut chart for consumption */}
               <PvDonutChart
@@ -55,7 +55,7 @@ export default function PvResults() {
                 title='PV Generation'
               />
             </div>
-            <div className="col-span-1">
+            <div className="col-span-2">
               {/* Card with financial KPIs */}
               <FinKpisCard
                 kpis={data.financial_analysis.kpis}

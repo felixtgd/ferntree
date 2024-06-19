@@ -292,6 +292,12 @@ async def calc_financial_analysis(
     ) / df.iloc[break_even_year]["profit"]
     # Cumulative profit over 25 years
     cum_profit_25yrs = df["cumulative_profit"].iloc[-1]
+    # Cumulative cost savings over 25 years
+    cum_cost_savings_25yrs = df["electr_cost_savings"].sum()
+    # Cumulative feed-in revenue over 25 years
+    cum_feed_in_revenue_25yrs = df["feed_in_remuneration"].sum()
+    # Cumulative operation costs over 25 years
+    cum_operation_costs_25yrs = df["operation_costs"].sum()
     # Levelised cost of electricity
     lcoe = (
         (total_investment + df["operation_costs"].sum())
@@ -306,6 +312,9 @@ async def calc_financial_analysis(
         investment=investment,
         break_even_year=break_even_year_exact,
         cum_profit_25yrs=cum_profit_25yrs,
+        cum_cost_savings_25yrs=cum_cost_savings_25yrs,
+        cum_feed_in_revenue_25yrs=cum_feed_in_revenue_25yrs,
+        cum_operation_costs_25yrs=cum_operation_costs_25yrs,
         lcoe=lcoe,
         solar_interest_rate=solar_interest_rate,
     )

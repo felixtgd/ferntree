@@ -282,6 +282,18 @@ class SimFinancialKPIs(BaseModel):
         title="Cumulative Profit over 25 Years",
         description="The cumulative profit over 25 years",
     )
+    cum_cost_savings_25yrs: float = Field(
+        title="Cumulative Cost Electricity Savings over 25 Years",
+        description="The cumulative electricity cost savings over 25 years",
+    )
+    cum_feed_in_revenue_25yrs: float = Field(
+        title="Cumulative Feed-in Revenue over 25 Years",
+        description="The cumulative feed-in revenue over 25 years",
+    )
+    cum_operation_costs_25yrs: float = Field(
+        title="Cumulative Operation Costs over 25 Years",
+        description="The cumulative operation costs over 25 years",
+    )
     lcoe: float = Field(
         title="Levelized Cost of Electricity",
         description="The levelized cost of electricity in cents/kWh",
