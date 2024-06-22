@@ -51,86 +51,80 @@ export function PowerProfilePlots() {
   return (
     <div>
       {simData && (
-        <>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-2">
-              <Card
-                  className="sm:mx-auto" // sm:max-w-lg
-                  decoration="top"
-                  decorationColor="blue-300"
-              >
-                <DateRangePicker
-                  className="mx-auto max-w-md"
-                  value={dateValue}
-                  onValueChange={setdateValue}
-                  locale={enGB}
-                >
-                  <DateRangePickerItem
-                    key="spring"
-                    value="spring"
-                    from={new Date(2023, 2, 19)}
-                    to={new Date(2023, 2, 24)}
-                  >
-                    Spring
-                  </DateRangePickerItem>
-                  <DateRangePickerItem
-                    key="summer"
-                    value="summer"
-                    from={new Date(2023, 5, 19)}
-                    to={new Date(2023, 5, 24)}
-                  >
-                    Summer
-                  </DateRangePickerItem>
-                  <DateRangePickerItem
-                    key="autumn"
-                    value="autumn"
-                    from={new Date(2023, 8, 19)}
-                    to={new Date(2023, 8, 24)}
-                  >
-                    Autumn
-                  </DateRangePickerItem>
-                  <DateRangePickerItem
-                    key="winter"
-                    value="winter"
-                    from={new Date(2023, 11, 19)}
-                    to={new Date(2023, 11, 24)}
-                  >
-                    Winter
-                  </DateRangePickerItem>
-                </DateRangePicker>
-                <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mt-2">Power Profiles</h3>
-                <LineChart
-                    className="h-60"
-                    data={chartData}
-                    index="time"
-                    categories={['Load', 'PV', 'Battery', 'Total']}
-                    colors={['rose', 'amber', 'teal', 'indigo']}
-                    valueFormatter={dataFormatterkW}
-                    yAxisWidth={80}
-                    onValueChange={(v) => console.log(v)}
-                    showAnimation={true}
-                    startEndOnly={true}
-                    showXAxis={false}
-                />
-                <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mt-2">Battery State of Charge</h3>
-                <LineChart
-                    className="h-40"
-                    data={chartData}
-                    index="time"
-                    categories={['StateOfCharge']}
-                    colors={['teal']}
-                    valueFormatter={dataFormatterkWh}
-                    yAxisWidth={80}
-                    onValueChange={(v) => console.log(v)}
-                    showAnimation={true}
-                    startEndOnly={true}
-                    showLegend={false}
-                    showXAxis={false}
-                />
-              </Card>
-            </div>
-          </div>
-        </>
+        <Card
+            className="sm:mx-auto" // sm:max-w-lg
+            decoration="top"
+            decorationColor="blue-300"
+        >
+          <DateRangePicker
+            className="mx-auto max-w-md"
+            value={dateValue}
+            onValueChange={setdateValue}
+            locale={enGB}
+          >
+            <DateRangePickerItem
+              key="spring"
+              value="spring"
+              from={new Date(2023, 2, 19)}
+              to={new Date(2023, 2, 24)}
+            >
+              Spring
+            </DateRangePickerItem>
+            <DateRangePickerItem
+              key="summer"
+              value="summer"
+              from={new Date(2023, 5, 19)}
+              to={new Date(2023, 5, 24)}
+            >
+              Summer
+            </DateRangePickerItem>
+            <DateRangePickerItem
+              key="autumn"
+              value="autumn"
+              from={new Date(2023, 8, 19)}
+              to={new Date(2023, 8, 24)}
+            >
+              Autumn
+            </DateRangePickerItem>
+            <DateRangePickerItem
+              key="winter"
+              value="winter"
+              from={new Date(2023, 11, 19)}
+              to={new Date(2023, 11, 24)}
+            >
+              Winter
+            </DateRangePickerItem>
+          </DateRangePicker>
+          <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mt-2">Power Profiles</h3>
+          <LineChart
+              className="h-60"
+              data={chartData}
+              index="time"
+              categories={['Load', 'PV', 'Battery', 'Total']}
+              colors={['rose', 'amber', 'teal', 'indigo']}
+              valueFormatter={dataFormatterkW}
+              yAxisWidth={80}
+              onValueChange={(v) => console.log(v)}
+              showAnimation={true}
+              startEndOnly={true}
+              showXAxis={false}
+          />
+          <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mt-2">Battery State of Charge</h3>
+          <LineChart
+              className="h-40"
+              data={chartData}
+              index="time"
+              categories={['StateOfCharge']}
+              colors={['teal']}
+              valueFormatter={dataFormatterkWh}
+              yAxisWidth={80}
+              onValueChange={(v) => console.log(v)}
+              showAnimation={true}
+              startEndOnly={true}
+              showLegend={false}
+              showXAxis={false}
+          />
+        </Card>
       )}
     </div>
   );

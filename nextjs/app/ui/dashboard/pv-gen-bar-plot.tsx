@@ -6,7 +6,7 @@ import { SimEvaluation } from '@/app/lib/definitions';
 
 const dataFormatterkWh: ValueFormatter = (number: number) => `${Math.round(number).toLocaleString()} kWh`;
 
-export function GenBarPlot() {
+export function PvGenBarPlot() {
   // Data context from the simulation
   const simData = useContext(SimDataContext);
 
@@ -37,31 +37,25 @@ export function GenBarPlot() {
   return (
     <div>
       {simData && (
-        <>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-2">
-              <Card
-                className="sm:mx-auto" // sm:max-w-lg
-                decoration="top"
-                decorationColor="blue-300"
-              >
-                <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Monthly PV Generation</h3>
-                <BarChart
-                  className="h-60"
-                  data={chartData}
-                  index="month"
-                  categories={['PVGeneration']}
-                  colors={['amber']}
-                  valueFormatter={dataFormatterkWh}
-                  yAxisWidth={80}
-                  onValueChange={(v) => console.log(v)}
-                  showLegend={false}
-                  showAnimation={true}
-                />
-              </Card>
-            </div>
-          </div>
-        </>
+        <Card
+          className="sm:mx-auto" // sm:max-w-lg
+          decoration="top"
+          decorationColor="blue-300"
+        >
+          <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Monthly PV Generation</h3>
+          <BarChart
+            className="h-60"
+            data={chartData}
+            index="month"
+            categories={['PVGeneration']}
+            colors={['amber']}
+            valueFormatter={dataFormatterkWh}
+            yAxisWidth={80}
+            onValueChange={(v) => console.log(v)}
+            showLegend={false}
+            showAnimation={true}
+          />
+        </Card>
       )}
     </div>
   );

@@ -2,11 +2,12 @@
 
 import PvForm from '@/app/ui/dashboard/pv-form';
 import SimDataContext from '@/app/ui/dashboard/pv-context';
-import PvResults from '@/app/ui/dashboard/pv-results';
+import { PvDonutCharts } from '@/app/ui/dashboard/pv-donut-charts';
+import { FinKpis } from '@/app/ui/dashboard/fin-kpis';
 import { SimEvaluation } from '@/app/lib/definitions';
 import { useState } from 'react';
 import { PowerProfilePlots } from '@/app/ui/dashboard/power-plots';
-import { GenBarPlot } from '../ui/dashboard/pv-gen-bar-plot';
+import { PvGenBarPlot } from '../ui/dashboard/pv-gen-bar-plot';
 
 export default function Page() {
     const [data, setData] = useState<SimEvaluation | null>(null);
@@ -19,14 +20,19 @@ export default function Page() {
                     <PvForm setData={setData} />
                 </div>
                 <div className="col-span-4">
-                    <div>
-                        <PvResults />
-                    </div>
-                    <div className='mt-4'>
-                        <PowerProfilePlots />
-                    </div>
-                    <div className='mt-4'>
-                        <GenBarPlot />
+                    <div className="grid gap-4 grid-cols-3">
+                        <div className="col-span-2">
+                            <PvDonutCharts />
+                        </div>
+                        <div className="col-span-1">
+                            <PvGenBarPlot />
+                        </div>
+                        <div className="col-span-1">
+                            <FinKpis />
+                        </div>
+                        <div className='col-span-2'>
+                            <PowerProfilePlots />
+                        </div>
                     </div>
                 </div>
             </div>
