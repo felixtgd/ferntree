@@ -31,7 +31,7 @@ export function PvDonutChart({
     return (
         <>
             <Card
-                className="sm:mx-auto sm:max-w-lg"
+                className="sm:mx-auto sm:max-w-lg h-full"
                 decoration="top"
                 decorationColor="blue-300"
             >

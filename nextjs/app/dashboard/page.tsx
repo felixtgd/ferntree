@@ -15,24 +15,24 @@ export default function Page() {
     return (
         <main>
         <SimDataContext.Provider value={data}>
-            <div className="grid gap-6 grid-cols-5">
+            <div className="grid gap-4 grid-cols-5">
                 <div className="col-span-1">
                     <PvForm setData={setData} />
                 </div>
                 <div className="col-span-4">
-                    <div className="grid gap-4 grid-cols-3">
-                        <div className="col-span-2">
-                            <PvDonutCharts />
-                        </div>
-                        <div className="col-span-1">
-                            <PvGenBarPlot />
-                        </div>
-                        <div className="col-span-1">
-                            <FinKpis />
-                        </div>
-                        <div className='col-span-2'>
-                            <PowerProfilePlots />
-                        </div>
+                        <div className="grid gap-4 grid-rows-3 grid-cols-3">
+                            <div className="col-span-2 row-span-1">
+                                <PvDonutCharts />
+                            </div>
+                            <div className="col-span-1 row-span-1">
+                                <PvGenBarPlot />
+                            </div>
+                            <div className="col-span-1 row-span-2">
+                                <FinKpis />
+                            </div>
+                            <div className='col-span-2 row-span-2'>
+                                <PowerProfilePlots />
+                            </div>
                     </div>
                 </div>
             </div>

@@ -97,7 +97,7 @@ export function PowerProfilePlots() {
           </DateRangePicker>
           <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mt-2">Power Profiles</h3>
           <LineChart
-              className="h-60"
+              className="max-h-64"
               data={chartData}
               index="time"
               categories={['Load', 'PV', 'Battery', 'Total']}
@@ -111,7 +111,7 @@ export function PowerProfilePlots() {
           />
           <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mt-2">Battery State of Charge</h3>
           <LineChart
-              className="h-40"
+              className="max-h-32"
               data={chartData}
               index="time"
               categories={['StateOfCharge']}

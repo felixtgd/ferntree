@@ -41,14 +41,14 @@ export function FinKpis() {
     <div>
       {kpis && (
         <>
-        <div className="grid grid-cols-1 gap-4">
-          <div className="col-span-1">
+        <div className="grid grid-rows-2 gap-4">
+          <div className="row-span-1">
             <Card
-                className="sm:mx-auto"  //sm:max-w-lg
+                className="sm:mx-auto sm:max-w-lg"
                 decoration="top"
                 decorationColor="blue-300"
             >
-                <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Financial KPIs</h3>
+                <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Financial KPIs</h3>
                 <List className="mt-2">
                     <ListItem key={kpis.investment.total}>
                       <span>Total investment</span>
@@ -74,15 +74,15 @@ export function FinKpis() {
             </Card>
           </div>
 
-          <div className="col-span-1">
+          <div className="row-span-1">
             <Card
-                className="sm:mx-auto"  //sm:max-w-lg
+                className="sm:mx-auto sm:max-w-lg"
                 decoration="top"
                 decorationColor="blue-300"
             >
-              <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Financial Perfomance over 25 years</h3>
+              <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Financial Perfomance over 25 years</h3>
               <BarChart
-                className="h-60"
+                className="mt-2 h-40"
                 data={ getChartData(kpis) }
                 index="type"
                 categories={['Cost savings', 'Feed-in revenue', 'Operation costs', 'PV', 'Battery']}

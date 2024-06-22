@@ -35,22 +35,22 @@ export function PvGenBarPlot() {
   }, [simData]);
 
   return (
-    <div>
+    <div className="h-full">
       {simData && (
         <Card
-          className="sm:mx-auto" // sm:max-w-lg
+          className="sm:mx-auto sm:max-w-lg h-full" // sm:max-w-lg
           decoration="top"
           decorationColor="blue-300"
         >
           <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Monthly PV Generation</h3>
           <BarChart
-            className="h-60"
+            className="max-h-60 mt-2"
             data={chartData}
             index="month"
             categories={['PVGeneration']}
             colors={['amber']}
             valueFormatter={dataFormatterkWh}
-            yAxisWidth={80}
+            yAxisWidth={85}
             onValueChange={(v) => console.log(v)}
             showLegend={false}
             showAnimation={true}
