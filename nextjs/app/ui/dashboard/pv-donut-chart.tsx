@@ -1,5 +1,8 @@
 // 'use client';
+import { SimEvaluation } from '@/app/lib/definitions';
 import { Card, DonutChart, List, ListItem } from '@tremor/react';
+import { useContext } from 'react';
+import SimDataContext from '@/app/ui/dashboard/pv-context';
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ');
@@ -11,16 +14,72 @@ const valueFormatter = (number: number) =>
 const shareFormatter = (number: number) =>
     `${Math.round(number * 100).toString()}%`;
 
-export function PvDonutChart({
-    data,
-    labels,
-    title
-}: {
-    data: { name: string; value: number; share: number }[],
-    labels: { center: number; title: number },
-    title: string
+type ChartData = {
+    data: { name: string; value: number; share: number; }[];
+    labels: { center: number; title: number; };
+    title: string;
 }
-) {
+
+function getChartData(chartType: string, simData: SimEvaluation|null): ChartData {
+    const chartData: ChartData = {
+        data: [ {name: '', value: 0, share: 0} ],
+        labels: {center: 0, title: 0},
+        title: ''
+    }
+    if (simData) {
+        switch (chartType) {
+            case 'consumption':
+                chartData.data=[
+                {
+                    name: 'PV',
+                    value: simData.energy_kpis.self_consumption,
+                    share: simData.energy_kpis.self_consumption/simData.energy_kpis.baseload_demand
+                },
+                {
+                    name: 'Grid',
+                    value: simData.energy_kpis.grid_consumption,
+                    share: simData.energy_kpis.grid_consumption/simData.energy_kpis.baseload_demand
+                },
+                ]
+
+                chartData.labels={
+                center: simData.energy_kpis.self_sufficiency,
+                title: simData.energy_kpis.baseload_demand,
+                }
+
+                chartData.title='Consumption'
+
+            case 'generation':
+                chartData.data=[
+                {
+                    name: 'Self-consumption',
+                    value: simData.energy_kpis.self_consumption,
+                    share: simData.energy_kpis.self_consumption/simData.energy_kpis.pv_generation
+                },
+                {
+                    name: 'Grid Feed-in',
+                    value: simData.energy_kpis.grid_feed_in,
+                    share: simData.energy_kpis.grid_feed_in/simData.energy_kpis.pv_generation
+                },
+                ]
+
+                chartData.labels={
+                center: simData.energy_kpis.self_consumption_rate,
+                title: simData.energy_kpis.pv_generation,
+                }
+
+                chartData.title='PV Generation'
+        }
+    }
+    return chartData;
+}
+
+export function PvDonutChart(chartType: string) {
+
+    const simData = useContext(SimDataContext);
+
+    const {data, labels, title} = getChartData(chartType, simData);
+
     const colors = ['cyan', 'blue', 'indigo', 'violet', 'fuchsia'];
 
     const dataWithColors = data.map((item, index) => ({
@@ -31,7 +90,7 @@ export function PvDonutChart({
     return (
         <>
             <Card
-                className="sm:mx-auto sm:max-w-lg h-full"
+                className="sm:mx-auto sm:max-w-lg max-h-80"
                 decoration="top"
                 decorationColor="blue-300"
             >

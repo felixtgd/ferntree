@@ -1,13 +1,14 @@
 import { Card, BarChart } from '@tremor/react';
 import { SimFinancialKPIs } from '@/app/lib/definitions';
+import { useContext } from 'react';
+import SimDataContext from '@/app/ui/dashboard/pv-context';
 
 
 const moneyFormatter = (number: number) =>
     `€ ${Math.round(number).toLocaleString()}`;
 
-export function FinKpisCard({ kpis }: { kpis: SimFinancialKPIs }) {
-
-  const chartData = [
+const getChartData = (kpis: SimFinancialKPIs) => {
+  return [
     {
       type: 'Investment',
       'PV': kpis.investment.pv,
@@ -20,27 +21,37 @@ export function FinKpisCard({ kpis }: { kpis: SimFinancialKPIs }) {
       'Operation costs': -1 * kpis.cum_operation_costs_25yrs,
     },
   ];
+}
+
+export function FinBarChart() {
+
+  const simData = useContext(SimDataContext);
+  const kpis = simData?.financial_analysis.kpis;
 
   return (
-    <Card
-        className="sm:mx-auto"  //sm:max-w-lg
-        decoration="top"
-        decorationColor="blue-300"
-    >
-      <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Financial Perfomance over 25 years</h3>
-      <BarChart
-        className="h-60"
-        data={chartData}
-        index="type"
-        categories={['Cost savings', 'Feed-in revenue', 'Operation costs', 'PV', 'Battery']}
-        colors={['blue', 'cyan', 'purple', 'emerald', 'lime']}
-        valueFormatter={moneyFormatter}
-        yAxisWidth={80}
-        onValueChange={(v) => console.log(v)}
-        showLegend={false}
-        showAnimation={true}
-        stack={true}
-      />
-    </Card>
+    <div>
+      {kpis && (
+        <Card
+            className="sm:mx-auto sm:max-w-lg"
+            decoration="top"
+            decorationColor="blue-300"
+        >
+          <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Financial Perfomance over 25 years</h3>
+          <BarChart
+            className="mt-2 max-h-40"
+            data={ getChartData(kpis) }
+            index="type"
+            categories={['Cost savings', 'Feed-in revenue', 'Operation costs', 'PV', 'Battery']}
+            colors={['blue', 'cyan', 'purple', 'emerald', 'lime']}
+            valueFormatter={moneyFormatter}
+            yAxisWidth={80}
+            onValueChange={(v) => console.log(v)}
+            showLegend={false}
+            showAnimation={true}
+            stack={true}
+          />
+        </Card>
+      )}
+    </div>
   );
 }

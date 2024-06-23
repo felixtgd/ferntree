@@ -31,7 +31,7 @@ import {
 import { SimEvaluation } from '@/app/lib/definitions';
 
 
-export default function PvForm({ setData }: { setData: (data: SimEvaluation) => void }) {
+export function PvForm({ setData }: { setData: (data: SimEvaluation) => void }) {
 
   const [formData, setFormData] = useState({
     location: 'Aarau',

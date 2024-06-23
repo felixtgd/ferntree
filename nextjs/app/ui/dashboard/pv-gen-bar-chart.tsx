@@ -6,7 +6,7 @@ import { SimEvaluation } from '@/app/lib/definitions';
 
 const dataFormatterkWh: ValueFormatter = (number: number) => `${Math.round(number).toLocaleString()} kWh`;
 
-export function PvGenBarPlot() {
+export function PvGenBarChart() {
   // Data context from the simulation
   const simData = useContext(SimDataContext);
 
@@ -35,16 +35,14 @@ export function PvGenBarPlot() {
   }, [simData]);
 
   return (
-    <div className="h-full">
-      {simData && (
         <Card
-          className="sm:mx-auto sm:max-w-lg h-full" // sm:max-w-lg
+          className="sm:mx-auto sm:max-w-lg max-h-80"
           decoration="top"
           decorationColor="blue-300"
         >
           <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Monthly PV Generation</h3>
           <BarChart
-            className="max-h-60 mt-2"
+            className="mt-2 max-h-60"
             data={chartData}
             index="month"
             categories={['PVGeneration']}
@@ -56,7 +54,5 @@ export function PvGenBarPlot() {
             showAnimation={true}
           />
         </Card>
-      )}
-    </div>
   );
 }
