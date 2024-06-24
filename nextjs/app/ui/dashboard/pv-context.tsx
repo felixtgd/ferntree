@@ -1,6 +1,6 @@
-import React from 'react';
+import { createContext } from 'react';
 import { SimEvaluation } from '@/app/lib/definitions';
 
-const SimDataContext = React.createContext<SimEvaluation | null>(null);
+const SimDataContext = createContext<SimEvaluation | null>(null);
 
 export default SimDataContext;
