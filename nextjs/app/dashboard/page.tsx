@@ -26,7 +26,7 @@ export default function Page() {
 
                             <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
                                 {/* Donut chart for consumption */}
-                                <PvDonutChart chartType="consumption"
+                                <PvDonutChart chartType='consumption'
                                 />
                             </div>
 

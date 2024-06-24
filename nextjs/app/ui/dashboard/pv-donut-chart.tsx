@@ -48,6 +48,7 @@ function getChartData(chartType: string, simData: SimEvaluation|null): ChartData
                 }
 
                 chartData.title='Consumption'
+                break;
 
             case 'generation':
                 chartData.data=[
@@ -69,12 +70,13 @@ function getChartData(chartType: string, simData: SimEvaluation|null): ChartData
                 }
 
                 chartData.title='PV Generation'
+                break;
         }
     }
     return chartData;
 }
 
-export function PvDonutChart(chartType: string) {
+export function PvDonutChart({chartType}: {chartType: string}) {
 
     const simData = useContext(SimDataContext);
 
