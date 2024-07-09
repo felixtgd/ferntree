@@ -85,8 +85,8 @@ async def pv_calc(user_input: UserInputForm):
 @app.get("/dashboard/run-simulation")
 async def run_simulation(model_id: str):
     # Fetch the model specifications
-    model_specs = await db_client.find_one_by_id("model_specs", model_id)
-    sim_id = model_specs["sim_id"]
+    sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
+    sim_id = sim_model_specs["sim_id"]
 
     # Start ferntree simulation
     sim_run = await run_ferntree_simulation(sim_id, model_id)
@@ -99,12 +99,12 @@ async def run_simulation(model_id: str):
 @app.get("/dashboard/simulation-results")
 async def fetch_simulation_results(model_id: str):
     # Fetch the model specifications TODO: stupid to do this again here!!!
-    model_specs = await db_client.find_one_by_id("model_specs", model_id)
-    sim_id = model_specs["sim_id"]
+    sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
+    sim_id = sim_model_specs["sim_id"]
 
     # Evaluate simulation results
     sim_eval_id, sim_evaluation = await evaluate_simulation_results(
-        db_client, sim_id, model_specs
+        db_client, sim_id, sim_model_specs["sim_model_specs"]
     )
 
     return sim_evaluation
@@ -138,8 +138,8 @@ async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
 @app.get("/dashboard/pv-monthly-gen")
 async def fetch_pv_monthly_gen_data(model_id: str):
     # Fetch the model specifications TODO: stupid to do this again here!!!
-    model_specs = await db_client.find_one_by_id("model_specs", model_id)
-    sim_id = model_specs["sim_id"]
+    sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
+    sim_id = sim_model_specs["sim_id"]
 
     logger.info(
         f"\nReceived request for monthly PV generation data for sim_id: {sim_id}"

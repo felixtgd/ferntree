@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: "Sustainable Energy Solutions",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

@@ -1,6 +1,6 @@
 import { PvForm } from './pv-form';
 
-export default function Page() {
+export default async function Page() {
     return (
         <main>
             <div className="grid gap-4 grid-cols-5">

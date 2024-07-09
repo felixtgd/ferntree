@@ -68,14 +68,14 @@ async def process_user_input(
     timezone = await geolocator.get_timezone(coordinates)
 
     # Define model_specs for the simulation and write to database
-    model_specs = await data_model_helpers.define_model_specs(
+    sim_model_specs = await data_model_helpers.define_model_specs(
         user_input, coordinates, timezone
     )
     document_model_specs = ModelSpecsDoc(
         user_id=user_id,
         sim_id=sim_id,
         created_at=created_at,
-        model_specs=model_specs,
+        sim_model_specs=sim_model_specs,
     )
 
     # Write model_specs to model_specs_coll in MongoDB
@@ -118,13 +118,13 @@ async def run_ferntree_simulation(sim_id: str, model_id: str) -> bool:
     return True
 
 
-async def get_model_summary(model_specs: ModelSpecs) -> SimModelSummary:
+async def get_model_summary(sim_model_specs: ModelSpecs) -> SimModelSummary:
     """Creates a model summary with the most important model specifications.
     - Extracts the most important model specifications from the user input form
     - Creates a SimModelSummary response model with the model specifications
 
     Args:
-        model_specs (ModelSpecs): The model specifications.
+        sim_model_specs (ModelSpecs): The model specifications.
 
     Returns:
         SimModelSummary: The model summary with the most important model specifications.
@@ -132,16 +132,16 @@ async def get_model_summary(model_specs: ModelSpecs) -> SimModelSummary:
     """
     # Create SimModelSummary response model with sim model specifications
     model_summary = SimModelSummary(
-        electr_cons=model_specs.house.baseload.annual_consumption,  # [kWh]
-        pv_power=model_specs.house.pv.peak_power,  # [kWp]
-        battery_capacity=model_specs.house.battery.capacity,  # [kWh]
-        electr_price=model_specs.finance.electr_price
+        electr_cons=sim_model_specs.house.baseload.annual_consumption,  # [kWh]
+        pv_power=sim_model_specs.house.pv.peak_power,  # [kWp]
+        battery_capacity=sim_model_specs.house.battery.capacity,  # [kWh]
+        electr_price=sim_model_specs.finance.electr_price
         / 100,  # user input in cents, need €
-        down_payment=model_specs.finance.down_payment
+        down_payment=sim_model_specs.finance.down_payment
         / 100,  # user input in %, need 0...1
-        pay_off_rate=model_specs.finance.pay_off_rate
+        pay_off_rate=sim_model_specs.finance.pay_off_rate
         / 100,  # user input in %, need 0...1
-        interest_rate=model_specs.finance.interest_rate
+        interest_rate=sim_model_specs.finance.interest_rate
         / 100,  # user input in %, need 0...1
     )
 
@@ -334,7 +334,7 @@ async def calc_financial_analysis(
 
 
 async def evaluate_simulation_results(
-    db_client: mongodb.MongoClient, sim_id: str, model_specs: ModelSpecsDoc
+    db_client: mongodb.MongoClient, sim_id: str, sim_model_specs: ModelSpecs
 ) -> tuple[str, SimEvaluationDoc]:
     """Evaluates the simulation results and writes the evaluation to the database.
     - Reads the timeseries simulation results from the database
@@ -345,14 +345,15 @@ async def evaluate_simulation_results(
     Args:
         db_client (MongoClient): The MongoDB client.
         sim_id (str): The simulation ID.
-        model_specs (ModelSpecsDoc): The model specifications.
+        sim_model_specs (ModelSpecs): The model specifications.
+        (keep sim_ prefix due to name space conflict with FastAPI)
 
     Returns:
         tuple[str, SimEvaluationDoc]: The simulation evaluation ID and the simulation evaluation document.
 
     """
     # Get model summary with most important models specs
-    model_summary = await get_model_summary(model_specs)
+    model_summary = await get_model_summary(sim_model_specs)
 
     # Evaluate simulation results and calculate energy KPIs
     sim_energy_kpis = await calc_energy_kpis(db_client, sim_id)

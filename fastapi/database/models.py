@@ -149,21 +149,19 @@ class House(BaseModel):
 class Finance(BaseModel):
     electr_price: float = Field(
         title="Electricity Price",
-        description="The price of electricity in €/kWh",
-        gt=0.0,
-        le=1.0,
+        description="The price of electricity in cents/kWh",
     )
     down_payment: float = Field(
         title="Down Payment",
-        description="The down payment as fraction of total investment",
-        gt=0.0,
-        le=1.0,
+        description="The down payment in %",
     )
     pay_off_rate: float = Field(
-        title="Pay Off Rate", description="The pay off rate 0...1", gt=0.0, le=1.0
+        title="Pay Off Rate",
+        description="The pay off rate in %",
     )
     interest_rate: float = Field(
-        title="Interest Rate", description="The interest rate 0...1", gt=0.0, le=1.0
+        title="Interest Rate",
+        description="The interest rate in %",
     )
 
 
@@ -183,7 +181,7 @@ class ModelSpecsDoc(BaseModel):
     created_at: str = Field(
         title="Created At", description="The timestamp of the simulation"
     )
-    model_specs: ModelSpecs = Field(
+    sim_model_specs: ModelSpecs = Field(
         title="Simulation Model Specifications",
         description="The simulation model specifications",
     )

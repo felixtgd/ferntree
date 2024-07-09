@@ -1,4 +1,4 @@
-import { fetchSimData } from './actions';
+import { fetchSimResults } from './actions';
 import { SimEvaluation } from '@/app/lib/definitions';
 import { Card, DonutChart, List, ListItem } from '@tremor/react';
 
@@ -18,31 +18,31 @@ type ChartData = {
     title: string;
 }
 
-function getChartData(chartType: string, simData: SimEvaluation|null): ChartData {
+function getChartData(chartType: string, simResults: SimEvaluation|null): ChartData {
     const chartData: ChartData = {
         data: [ {name: '', value: 0, share: 0} ],
         labels: {center: 0, title: 0},
         title: ''
     }
-    if (simData) {
+    if (simResults) {
         switch (chartType) {
             case 'consumption':
                 chartData.data=[
                 {
                     name: 'PV',
-                    value: simData.energy_kpis.self_consumption,
-                    share: simData.energy_kpis.self_consumption/simData.energy_kpis.baseload_demand
+                    value: simResults.energy_kpis.self_consumption,
+                    share: simResults.energy_kpis.self_consumption/simResults.energy_kpis.baseload_demand
                 },
                 {
                     name: 'Grid',
-                    value: simData.energy_kpis.grid_consumption,
-                    share: simData.energy_kpis.grid_consumption/simData.energy_kpis.baseload_demand
+                    value: simResults.energy_kpis.grid_consumption,
+                    share: simResults.energy_kpis.grid_consumption/simResults.energy_kpis.baseload_demand
                 },
                 ]
 
                 chartData.labels={
-                center: simData.energy_kpis.self_sufficiency,
-                title: simData.energy_kpis.baseload_demand,
+                center: simResults.energy_kpis.self_sufficiency,
+                title: simResults.energy_kpis.baseload_demand,
                 }
 
                 chartData.title='Consumption'
@@ -52,19 +52,19 @@ function getChartData(chartType: string, simData: SimEvaluation|null): ChartData
                 chartData.data=[
                 {
                     name: 'Self-consumption',
-                    value: simData.energy_kpis.self_consumption,
-                    share: simData.energy_kpis.self_consumption/simData.energy_kpis.pv_generation
+                    value: simResults.energy_kpis.self_consumption,
+                    share: simResults.energy_kpis.self_consumption/simResults.energy_kpis.pv_generation
                 },
                 {
                     name: 'Grid Feed-in',
-                    value: simData.energy_kpis.grid_feed_in,
-                    share: simData.energy_kpis.grid_feed_in/simData.energy_kpis.pv_generation
+                    value: simResults.energy_kpis.grid_feed_in,
+                    share: simResults.energy_kpis.grid_feed_in/simResults.energy_kpis.pv_generation
                 },
                 ]
 
                 chartData.labels={
-                center: simData.energy_kpis.self_consumption_rate,
-                title: simData.energy_kpis.pv_generation,
+                center: simResults.energy_kpis.self_consumption_rate,
+                title: simResults.energy_kpis.pv_generation,
                 }
 
                 chartData.title='PV Generation'
@@ -76,9 +76,9 @@ function getChartData(chartType: string, simData: SimEvaluation|null): ChartData
 
 export async function PvDonutChart({chartType, modelId}: {chartType: string, modelId: string}) {
 
-    const simData = await fetchSimData(modelId);
+    const simResults = await fetchSimResults(modelId);
 
-    const {data, labels, title} = getChartData(chartType, simData);
+    const {data, labels, title} = getChartData(chartType, simResults);
 
     const colors = ['cyan', 'blue', 'indigo', 'violet', 'fuchsia'];
 

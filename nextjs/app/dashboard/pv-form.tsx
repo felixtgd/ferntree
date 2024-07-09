@@ -1,18 +1,5 @@
-/* Create a form to input the following data for the PV system:
-location (text),
-annual electricity consumption in kWh (number),
-roof inclination and orientation in degrees (number),
-system size in kWp (number),
-battery capacity in kWh (number),
-electricity price in cents/kWh (number),
-down payment in percent (number),
-pay off rate in percent (number).*/
+'use client'
 
-'use client';
-
-// import { Button } from '@/app/ui/button';
-// import { useFormState } from 'react-dom'; // maybe useful later? instead of useState
-// import React, { useState } from 'react';
 import { Card, NumberInput, Select, SelectItem, TextInput, Button } from '@tremor/react';
 import {
   RiArrowUpWideLine,
@@ -28,10 +15,7 @@ import {
   RiSunLine
 } from '@remixicon/react';
 
-// import { SimEvaluation } from '@/app/lib/definitions';
 import { submitForm } from './actions';
-
-
 import { useFormStatus } from 'react-dom'
 
 function SubmitButton() {

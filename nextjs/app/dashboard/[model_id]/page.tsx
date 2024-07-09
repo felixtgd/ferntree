@@ -1,11 +1,11 @@
 import { PvForm } from '../pv-form';
 import { PvDonutChart } from './pv-donut-chart';
-import { PvPowerChart } from '@/app/ui/dashboard/pv-power-chart';
-import { PvGenBarChart } from '@/app/ui/dashboard/pv-gen-bar-chart';
-import { FinKpis } from '@/app/ui/dashboard/fin-kpis';
-import { FinBarChart } from '@/app/ui/dashboard/fin-bar-chart';
+import { PvPowerChart } from './pv-power-chart';
+import { PvGenBarChart } from './pv-gen-bar-chart';
+import { FinKpis } from './fin-kpis';
+import { FinBarChart } from './fin-bar-chart';
 
-export default function Page({ params }: { params: { model_id: string } }) {
+export default async function Page({ params }: { params: { model_id: string } }) {
 
     return (
         <main>
@@ -29,18 +29,19 @@ export default function Page({ params }: { params: { model_id: string } }) {
                         </div>
 
                         <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
-                            <PvGenBarChart />
+                            <PvGenBarChart modelId={params.model_id}
+                            />
                         </div>
 
                         <div className="col-span-1 row-span-2 flex flex-col flex-grow w-full">
                             <div className='grid grid-rows-2 gap-4'>
-                                <FinKpis />
-                                <FinBarChart />
+                                <FinKpis modelId={params.model_id} />
+                                <FinBarChart modelId={params.model_id} />
                             </div>
                         </div>
 
                         <div className="col-span-2 row-span-2 flex flex-col flex-grow w-full">
-                            <PvPowerChart />
+                            <PvPowerChart modelId={params.model_id} />
                         </div>
 
                     </div>

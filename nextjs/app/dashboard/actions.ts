@@ -48,13 +48,16 @@ export async function submitForm(formData: FormData) {
         return;
     }
 
+    // Log each field in validated fields
+
+
     let model_id;
 
     try {
         const response = await fetch('http://localhost:8000/dashboard/submit-model', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(validatedFields),
+            body: JSON.stringify(validatedFields.data),
         });
         model_id = await response.json();
 
