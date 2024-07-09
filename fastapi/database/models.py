@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 # User input for simulation
-class SimUserInputForm(BaseModel):
+class UserInputForm(BaseModel):
     location: str = Field(
         title="Location", description="The location of the simulation"
     )
@@ -146,20 +146,44 @@ class House(BaseModel):
     battery: Battery = Field(title="Battery", description="The battery settings")
 
 
-class SimModelSpecs(BaseModel):
+class Finance(BaseModel):
+    electr_price: float = Field(
+        title="Electricity Price",
+        description="The price of electricity in €/kWh",
+        gt=0.0,
+        le=1.0,
+    )
+    down_payment: float = Field(
+        title="Down Payment",
+        description="The down payment as fraction of total investment",
+        gt=0.0,
+        le=1.0,
+    )
+    pay_off_rate: float = Field(
+        title="Pay Off Rate", description="The pay off rate 0...1", gt=0.0, le=1.0
+    )
+    interest_rate: float = Field(
+        title="Interest Rate", description="The interest rate 0...1", gt=0.0, le=1.0
+    )
+
+
+class ModelSpecs(BaseModel):
     sim_params: SimParams = Field(
         title="Simulation Parameters", description="The simulation parameters"
     )
     house: House = Field(title="House", description="The house settings")
+    finance: Finance = Field(
+        title="Finance parameters", description="The finance user input"
+    )
 
 
-class SimModelSpecsDoc(BaseModel):
+class ModelSpecsDoc(BaseModel):
     user_id: int = Field(title="User ID", description="The ID of the user")
     sim_id: str = Field(title="Simulation ID", description="The ID of the simulation")
     created_at: str = Field(
         title="Created At", description="The timestamp of the simulation"
     )
-    sim_model_specs: SimModelSpecs = Field(
+    model_specs: ModelSpecs = Field(
         title="Simulation Model Specifications",
         description="The simulation model specifications",
     )

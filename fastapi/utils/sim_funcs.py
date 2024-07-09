@@ -4,9 +4,10 @@ import subprocess
 import pandas as pd
 
 from database.models import (
-    SimUserInputForm,
+    UserInputForm,
     SimTimeSeriesDoc,
-    SimModelSpecsDoc,
+    ModelSpecs,
+    ModelSpecsDoc,
     SimEvaluationDoc,
     SimModelSummary,
     SimEnergyKPIs,
@@ -21,8 +22,8 @@ from solar_data import pvgis_api, geolocator
 from utils import data_model_helpers
 
 
-async def process_sim_user_input(
-    db_client: mongodb.MongoClient, sim_user_input: SimUserInputForm, user_id: int
+async def process_user_input(
+    db_client: mongodb.MongoClient, user_input: UserInputForm, user_id: int
 ) -> tuple[str, str]:
     """Processes the user input for the simulation.
     - Fetches solar data for the location from PVGIS API
@@ -35,13 +36,13 @@ async def process_sim_user_input(
         user_id (int): The user ID.
 
     Returns:
-        tuple[str, str]: The simulation ID and model ID.
+        str: The model ID.
 
     """
     # Get address, roof azimuth and tilt from model specs
-    location = sim_user_input.location
-    roof_azimuth = sim_user_input.roof_azimuth
-    roof_incl = sim_user_input.roof_incl
+    location = user_input.location
+    roof_azimuth = user_input.roof_azimuth
+    roof_incl = user_input.roof_incl
 
     # Pass parameters to pvgis_api to query solar data for sim input
     try:
@@ -67,14 +68,14 @@ async def process_sim_user_input(
     timezone = await geolocator.get_timezone(coordinates)
 
     # Define model_specs for the simulation and write to database
-    sim_model_specs = await data_model_helpers.define_sim_model_specs(
-        sim_user_input, coordinates, timezone
+    model_specs = await data_model_helpers.define_model_specs(
+        user_input, coordinates, timezone
     )
-    document_model_specs = SimModelSpecsDoc(
+    document_model_specs = ModelSpecsDoc(
         user_id=user_id,
         sim_id=sim_id,
         created_at=created_at,
-        sim_model_specs=sim_model_specs,
+        model_specs=model_specs,
     )
 
     # Write model_specs to model_specs_coll in MongoDB
@@ -82,10 +83,10 @@ async def process_sim_user_input(
         collection="model_specs", document=document_model_specs.model_dump()
     )
 
-    return sim_id, model_id
+    return model_id
 
 
-async def start_ferntree_simulation(sim_id: str, model_id: str) -> bool:
+async def run_ferntree_simulation(sim_id: str, model_id: str) -> bool:
     """Starts the Ferntree simulation with the given sim_id and model_id.
 
     Args:
@@ -117,13 +118,13 @@ async def start_ferntree_simulation(sim_id: str, model_id: str) -> bool:
     return True
 
 
-async def get_model_summary(sim_user_input: SimUserInputForm) -> SimModelSummary:
+async def get_model_summary(model_specs: ModelSpecs) -> SimModelSummary:
     """Creates a model summary with the most important model specifications.
     - Extracts the most important model specifications from the user input form
     - Creates a SimModelSummary response model with the model specifications
 
     Args:
-        sim_user_input (SimUserInputForm): The user input form.
+        model_specs (ModelSpecs): The model specifications.
 
     Returns:
         SimModelSummary: The model summary with the most important model specifications.
@@ -131,13 +132,17 @@ async def get_model_summary(sim_user_input: SimUserInputForm) -> SimModelSummary
     """
     # Create SimModelSummary response model with sim model specifications
     model_summary = SimModelSummary(
-        electr_cons=sim_user_input.electr_cons,  # [kWh]
-        pv_power=sim_user_input.peak_power,  # [kWp]
-        battery_capacity=sim_user_input.battery_cap,  # [kWh]
-        electr_price=sim_user_input.electr_price / 100,  # user input in cents, need €
-        down_payment=sim_user_input.down_payment / 100,  # user input in %, need 0...1
-        pay_off_rate=sim_user_input.pay_off_rate / 100,  # user input in %, need 0...1
-        interest_rate=sim_user_input.interest_rate / 100,  # user input in %, need 0...1
+        electr_cons=model_specs.house.baseload.annual_consumption,  # [kWh]
+        pv_power=model_specs.house.pv.peak_power,  # [kWp]
+        battery_capacity=model_specs.house.battery.capacity,  # [kWh]
+        electr_price=model_specs.finance.electr_price
+        / 100,  # user input in cents, need €
+        down_payment=model_specs.finance.down_payment
+        / 100,  # user input in %, need 0...1
+        pay_off_rate=model_specs.finance.pay_off_rate
+        / 100,  # user input in %, need 0...1
+        interest_rate=model_specs.finance.interest_rate
+        / 100,  # user input in %, need 0...1
     )
 
     return model_summary
@@ -329,7 +334,7 @@ async def calc_financial_analysis(
 
 
 async def evaluate_simulation_results(
-    db_client: mongodb.MongoClient, sim_id: str, sim_user_input: SimUserInputForm
+    db_client: mongodb.MongoClient, sim_id: str, model_specs: ModelSpecsDoc
 ) -> tuple[str, SimEvaluationDoc]:
     """Evaluates the simulation results and writes the evaluation to the database.
     - Reads the timeseries simulation results from the database
@@ -340,14 +345,14 @@ async def evaluate_simulation_results(
     Args:
         db_client (MongoClient): The MongoDB client.
         sim_id (str): The simulation ID.
-        sim_user_input (SimUserInputForm): The user input form.
+        model_specs (ModelSpecsDoc): The model specifications.
 
     Returns:
         tuple[str, SimEvaluationDoc]: The simulation evaluation ID and the simulation evaluation document.
 
     """
     # Get model summary with most important models specs
-    model_summary = await get_model_summary(sim_user_input)
+    model_summary = await get_model_summary(model_specs)
 
     # Evaluate simulation results and calculate energy KPIs
     sim_energy_kpis = await calc_energy_kpis(db_client, sim_id)

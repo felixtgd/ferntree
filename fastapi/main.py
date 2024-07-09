@@ -6,14 +6,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from database.models import (
-    SimUserInputForm,
+    UserInputForm,
     TimeseriesDataRequest,
     FilteredTimeseriesData,
 )
 from database.mongodb import MongoClient
 from utils.sim_funcs import (
-    process_sim_user_input,
-    start_ferntree_simulation,
+    process_user_input,
+    run_ferntree_simulation,
     evaluate_simulation_results,
     calc_monthly_pv_gen_data,
 )
@@ -67,30 +67,44 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.post("/dashboard/pv-calc")  # TODO: add response_model = ... for data validation
-async def pv_calc(sim_user_input: SimUserInputForm):
-    starttime = datetime.now()
-
-    logger.info(f"\nReceived request: {sim_user_input}")
+@app.post(
+    "/dashboard/submit-model"
+)  # TODO: add response_model = ... for data validation
+async def pv_calc(user_input: UserInputForm):
+    logger.info(f"\nReceived request: {user_input}")
 
     # Determine user_id
     user_id = 123
 
     # Process user input and write to database
-    sim_id, model_id = await process_sim_user_input(db_client, sim_user_input, user_id)
+    model_id = await process_user_input(db_client, user_input, user_id)
+
+    return model_id
+
+
+@app.get("/dashboard/run-simulation")
+async def run_simulation(model_id: str):
+    # Fetch the model specifications
+    model_specs = await db_client.find_one_by_id("model_specs", model_id)
+    sim_id = model_specs["sim_id"]
 
     # Start ferntree simulation
-    sim_run = await start_ferntree_simulation(sim_id, model_id)
-    if not sim_run:
-        return {"status": "Ferntree simulation failed."}
+    sim_run = await run_ferntree_simulation(sim_id, model_id)
+    if sim_run:
+        return {"sim_run_success": True}
+    else:
+        return {"sim_run_success": False}
+
+
+@app.get("/dashboard/simulation-results")
+async def fetch_simulation_results(model_id: str):
+    # Fetch the model specifications TODO: stupid to do this again here!!!
+    model_specs = await db_client.find_one_by_id("model_specs", model_id)
+    sim_id = model_specs["sim_id"]
 
     # Evaluate simulation results
     sim_eval_id, sim_evaluation = await evaluate_simulation_results(
-        db_client, sim_id, sim_user_input
-    )
-
-    logger.info(
-        f"Total execution time: {(datetime.now() - starttime).total_seconds():.2f} seconds"
+        db_client, sim_id, model_specs
     )
 
     return sim_evaluation
@@ -122,7 +136,11 @@ async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
 
 
 @app.get("/dashboard/pv-monthly-gen")
-async def fetch_pv_monthly_gen_data(sim_id: str):
+async def fetch_pv_monthly_gen_data(model_id: str):
+    # Fetch the model specifications TODO: stupid to do this again here!!!
+    model_specs = await db_client.find_one_by_id("model_specs", model_id)
+    sim_id = model_specs["sim_id"]
+
     logger.info(
         f"\nReceived request for monthly PV generation data for sim_id: {sim_id}"
     )
