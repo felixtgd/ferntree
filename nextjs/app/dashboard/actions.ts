@@ -52,17 +52,26 @@ export async function submitForm(formData: FormData) {
 
 
     let model_id;
+    let sim_run_success;
 
     try {
-        const response = await fetch('http://localhost:8000/dashboard/submit-model', {
+        const response_submit_form = await fetch('http://localhost:8000/dashboard/submit-model', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(validatedFields.data),
         });
-        model_id = await response.json();
+        model_id = await response_submit_form.json();
 
-        console.log(`PV form submitted. Model ID: ${model_id}`);
-        console.log(`Response status: ${response.status}`);
+        console.log(`POST dashboard/submit-model: PV form submitted (${response_submit_form.status}). Model ID: ${model_id}`);
+
+        // TEMPORARY: there must be a better place fir this fetch
+        const response_sim_run = await fetch(`http://localhost:8000/dashboard/run-simulation?model_id=${model_id}`).then((res) => res.json());
+        sim_run_success = response_sim_run.sim_run_success;
+        if (sim_run_success) {
+            console.log(`GET dashboard/run-simulation: Simulation run successful for model ID: ${model_id}`);
+        } else {
+            console.error(`GET dashboard/run-simulation: Simulation run failed for model ID: ${model_id}`);
+        }
 
     } catch (error) {
         console.error(`Failed to submit form: ${error}`);
@@ -70,6 +79,10 @@ export async function submitForm(formData: FormData) {
 
     // revalidatePath('/dashboard');
     // redirect user to dashboard/{model_id}
-    redirect(`/dashboard/${model_id}`)
+    if (sim_run_success) {
+        redirect(`/dashboard/${model_id}`)
+    } else {
+        redirect('/dashboard')
+    }
 
 };

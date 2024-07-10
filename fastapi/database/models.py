@@ -354,7 +354,7 @@ class SimEvaluationDoc(BaseModel):
 
 
 class TimeseriesDataRequest(BaseModel):
-    sim_id: str = Field(title="Simulation ID", description="The ID of the simulation")
+    s_model_id: str = Field(title="Model ID", description="The ID of the model")
     start_date: str = Field(
         title="Start Date", description="The start date of the timeseries data"
     )

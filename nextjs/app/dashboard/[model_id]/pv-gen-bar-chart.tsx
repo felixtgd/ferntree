@@ -1,8 +1,8 @@
 import { BarChart, Card,  } from '@tremor/react';
-import { ValueFormatter } from '@tremor/react';
+// import { ValueFormatter } from '@tremor/react';
 import { fetchPvMonthlyData } from './actions';
 
-const dataFormatterkWh: ValueFormatter = (number: number) => `${Math.round(number).toLocaleString()} kWh`;
+// const dataFormatterkWh: ValueFormatter = (number: number) => `${Math.round(number).toLocaleString()} kWh`;
 
 export async function PvGenBarChart({modelId}: {modelId: string}) {
 
@@ -21,9 +21,9 @@ export async function PvGenBarChart({modelId}: {modelId: string}) {
             index="month"
             categories={['PVGeneration']}
             colors={['amber']}
-            valueFormatter={dataFormatterkWh}
+            // valueFormatter={dataFormatterkWh}
             yAxisWidth={85}
-            onValueChange={(v) => console.log(v)}
+            // onValueChange={(v) => console.log(v)}
             showLegend={false}
             showAnimation={true}
           />

@@ -87,6 +87,11 @@ export async function PvDonutChart({chartType, modelId}: {chartType: string, mod
         color: colors[index % colors.length],
     }));
 
+    // const formattedData = dataWithColors.map(item => ({
+    //     ...item,
+    //     value: valueFormatter(item.value),
+    //   }));
+
     return (
         <>
             <Card
@@ -102,7 +107,7 @@ export async function PvDonutChart({chartType, modelId}: {chartType: string, mod
                     category="value"
                     index="name"
                     label={shareFormatter(labels.center)}
-                    valueFormatter={valueFormatter}
+                    // valueFormatter={valueFormatter}
                     colors={dataWithColors.map((item) => item.color)}
                 />
                 <List className="mt-2">

@@ -3,8 +3,8 @@ import { SimFinancialKPIs } from '@/app/lib/definitions';
 import { fetchSimResults } from './actions';
 
 
-const moneyFormatter = (number: number) =>
-    `€ ${Math.round(number).toLocaleString()}`;
+// const moneyFormatter = (number: number) =>
+//     `€ ${Math.round(number).toLocaleString()}`;
 
 const getChartData = (kpis: SimFinancialKPIs) => {
   return [
@@ -41,9 +41,9 @@ export async function FinBarChart({modelId}: {modelId: string}) {
           index="type"
           categories={['Cost savings', 'Feed-in revenue', 'Operation costs', 'PV', 'Battery']}
           colors={['blue', 'cyan', 'purple', 'emerald', 'lime']}
-          valueFormatter={moneyFormatter}
+          // valueFormatter={moneyFormatter}
           yAxisWidth={80}
-          onValueChange={(v) => console.log(v)}
+          // onValueChange={(v) => console.log(v)}
           showLegend={false}
           showAnimation={true}
           stack={true}

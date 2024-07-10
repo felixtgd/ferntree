@@ -4,6 +4,9 @@ import { PvPowerChart } from './pv-power-chart';
 import { PvGenBarChart } from './pv-gen-bar-chart';
 import { FinKpis } from './fin-kpis';
 import { FinBarChart } from './fin-bar-chart';
+import { Suspense } from 'react';
+// import { CardSkeleton } from './skeletons';
+
 
 export default async function Page({ params }: { params: { model_id: string } }) {
 
@@ -18,8 +21,10 @@ export default async function Page({ params }: { params: { model_id: string } })
 
                         <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
                             {/* Donut chart for consumption */}
-                            <PvDonutChart chartType='consumption' modelId={params.model_id}
-                            />
+                            {/* <Suspense fallback={<CardSkeleton/>}> */}
+                            <Suspense key={params.model_id}  fallback={<div>Loading...</div>}>
+                                <PvDonutChart chartType='consumption' modelId={params.model_id}/>
+                            </Suspense>
                         </div>
 
                         <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">

@@ -22,7 +22,7 @@ export function PvPowerChart({modelId}: {modelId: string}) {
   const fetchData = useCallback(async (dateRange: DateRangePickerValue) => {
       try {
         const requestBody = {
-          model_id: modelId,
+          s_model_id: modelId,
           start_date: dateRange.from?.toISOString(),
           end_date: dateRange.to?.toISOString(),
         };
