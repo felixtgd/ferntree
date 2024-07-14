@@ -1,6 +1,7 @@
 import { fetchSimResults } from './actions';
-import { SimEvaluation } from '@/app/lib/definitions';
-import { Card, DonutChart, List, ListItem } from '@tremor/react';
+import { SimEvaluation, DonutChartData } from '@/app/lib/definitions';
+import { Card, List, ListItem } from '@tremor/react';
+import { BaseDonutChart } from './base-charts';
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ');
@@ -12,14 +13,9 @@ const valueFormatter = (number: number) =>
 const shareFormatter = (number: number) =>
     `${Math.round(number * 100).toString()}%`;
 
-type ChartData = {
-    data: { name: string; value: number; share: number; }[];
-    labels: { center: number; title: number; };
-    title: string;
-}
 
-function getChartData(chartType: string, simResults: SimEvaluation|null): ChartData {
-    const chartData: ChartData = {
+function getChartData(chartType: string, simResults: SimEvaluation|null): DonutChartData {
+    const chartData: DonutChartData = {
         data: [ {name: '', value: 0, share: 0} ],
         labels: {center: 0, title: 0},
         title: ''
@@ -87,11 +83,6 @@ export async function PvDonutChart({chartType, modelId}: {chartType: string, mod
         color: colors[index % colors.length],
     }));
 
-    // const formattedData = dataWithColors.map(item => ({
-    //     ...item,
-    //     value: valueFormatter(item.value),
-    //   }));
-
     return (
         <>
             <Card
@@ -102,12 +93,9 @@ export async function PvDonutChart({chartType, modelId}: {chartType: string, mod
                 <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-4">
                     {`${title}: ${valueFormatter(labels.title)} `}
                 </h3>
-                <DonutChart
+                <BaseDonutChart
                     data={dataWithColors}
-                    category="value"
-                    index="name"
                     label={shareFormatter(labels.center)}
-                    // valueFormatter={valueFormatter}
                     colors={dataWithColors.map((item) => item.color)}
                 />
                 <List className="mt-2">

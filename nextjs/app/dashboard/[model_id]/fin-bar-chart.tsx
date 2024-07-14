@@ -1,12 +1,10 @@
-import { Card, BarChart } from '@tremor/react';
-import { SimEvaluation, SimFinancialKPIs } from '@/app/lib/definitions';
+import { Card } from '@tremor/react';
+import { FinBarChartItem, SimEvaluation, SimFinancialKPIs } from '@/app/lib/definitions';
 import { fetchSimResults } from './actions';
+import { BaseFinBarChart } from './base-charts';
 
 
-// const moneyFormatter = (number: number) =>
-//     `€ ${Math.round(number).toLocaleString()}`;
-
-const getChartData = (kpis: SimFinancialKPIs) => {
+function getChartData(kpis: SimFinancialKPIs) {
   return [
     {
       type: 'Investment',
@@ -26,6 +24,7 @@ export async function FinBarChart({modelId}: {modelId: string}) {
 
   const simResults : SimEvaluation = await fetchSimResults(modelId);
   const kpis : SimFinancialKPIs = simResults.financial_analysis.kpis;
+  const chartData : FinBarChartItem[] = getChartData(kpis);
 
   return (
     <div>
@@ -35,19 +34,7 @@ export async function FinBarChart({modelId}: {modelId: string}) {
           decorationColor="blue-300"
       >
         <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Financial Perfomance over 25 years</h3>
-        <BarChart
-          className="mt-2 max-h-40"
-          data={ getChartData(kpis) }
-          index="type"
-          categories={['Cost savings', 'Feed-in revenue', 'Operation costs', 'PV', 'Battery']}
-          colors={['blue', 'cyan', 'purple', 'emerald', 'lime']}
-          // valueFormatter={moneyFormatter}
-          yAxisWidth={80}
-          // onValueChange={(v) => console.log(v)}
-          showLegend={false}
-          showAnimation={true}
-          stack={true}
-        />
+        <BaseFinBarChart data={chartData} />
       </Card>
     </div>
   );
