@@ -76,7 +76,7 @@ function getChartData(chartType: string, simResults: SimEvaluation|null): ChartD
 
 export async function PvDonutChart({chartType, modelId}: {chartType: string, modelId: string}) {
 
-    const simResults = await fetchSimResults(modelId);
+    const simResults : SimEvaluation = await fetchSimResults(modelId);
 
     const {data, labels, title} = getChartData(chartType, simResults);
 

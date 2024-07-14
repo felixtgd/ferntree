@@ -26,6 +26,10 @@ export function PvPowerChart({modelId}: {modelId: string}) {
           start_date: dateRange.from?.toISOString(),
           end_date: dateRange.to?.toISOString(),
         };
+
+        // Wait 3 seconds
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
         const response = await fetch('http://localhost:8000/dashboard/sim-timeseries-data', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

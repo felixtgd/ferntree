@@ -55,6 +55,7 @@ export async function submitForm(formData: FormData) {
     let sim_run_success;
 
     try {
+        // Submit user input form with model parameters
         const response_submit_form = await fetch('http://localhost:8000/dashboard/submit-model', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -65,6 +66,7 @@ export async function submitForm(formData: FormData) {
         console.log(`POST dashboard/submit-model: PV form submitted (${response_submit_form.status}). Model ID: ${model_id}`);
 
         // TEMPORARY: there must be a better place fir this fetch
+        // Start simulation of model
         const response_sim_run = await fetch(`http://localhost:8000/dashboard/run-simulation?model_id=${model_id}`).then((res) => res.json());
         sim_run_success = response_sim_run.sim_run_success;
         if (sim_run_success) {

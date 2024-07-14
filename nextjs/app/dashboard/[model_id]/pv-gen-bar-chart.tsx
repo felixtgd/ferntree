@@ -22,7 +22,7 @@ export async function PvGenBarChart({modelId}: {modelId: string}) {
             categories={['PVGeneration']}
             colors={['amber']}
             // valueFormatter={dataFormatterkWh}
-            yAxisWidth={85}
+            yAxisWidth={80}
             // onValueChange={(v) => console.log(v)}
             showLegend={false}
             showAnimation={true}

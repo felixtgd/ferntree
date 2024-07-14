@@ -1,5 +1,6 @@
 import { Card, List, ListItem } from '@tremor/react';
 import { fetchSimResults } from './actions';
+import { SimEvaluation, SimFinancialKPIs } from '@/app/lib/definitions';
 
 const moneyFormatter = (number: number) =>
     `€ ${Math.round(number).toLocaleString()}`;
@@ -16,8 +17,8 @@ const lcoeFormatter = (number: number) =>
 
 export async function FinKpis({modelId}: {modelId: string}) {
 
-  const simResults = await fetchSimResults(modelId);
-  const kpis = simResults.financial_analysis.kpis;
+  const simResults : SimEvaluation = await fetchSimResults(modelId);
+  const kpis : SimFinancialKPIs = simResults.financial_analysis.kpis;
 
   return (
     <div>

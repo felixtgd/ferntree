@@ -1,5 +1,5 @@
 import { Card, BarChart } from '@tremor/react';
-import { SimFinancialKPIs } from '@/app/lib/definitions';
+import { SimEvaluation, SimFinancialKPIs } from '@/app/lib/definitions';
 import { fetchSimResults } from './actions';
 
 
@@ -24,8 +24,8 @@ const getChartData = (kpis: SimFinancialKPIs) => {
 
 export async function FinBarChart({modelId}: {modelId: string}) {
 
-  const simResults = await fetchSimResults(modelId);
-  const kpis = simResults.financial_analysis.kpis;
+  const simResults : SimEvaluation = await fetchSimResults(modelId);
+  const kpis : SimFinancialKPIs = simResults.financial_analysis.kpis;
 
   return (
     <div>
