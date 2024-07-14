@@ -1,7 +1,7 @@
 import { Card } from '@tremor/react';
 import { fetchPvMonthlyData } from './actions';
 import { PVMonthlyGenData } from '@/app/lib/definitions';
-import { BasePvBarChart } from './base-charts';
+import { BasePvBarChart } from './base-comps';
 
 
 export async function PvGenBarChart({modelId}: {modelId: string}) {

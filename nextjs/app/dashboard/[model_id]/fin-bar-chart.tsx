@@ -1,7 +1,7 @@
 import { Card } from '@tremor/react';
 import { FinBarChartItem, SimEvaluation, SimFinancialKPIs } from '@/app/lib/definitions';
 import { fetchSimResults } from './actions';
-import { BaseFinBarChart } from './base-charts';
+import { BaseFinBarChart } from './base-comps';
 
 
 function getChartData(kpis: SimFinancialKPIs) {
