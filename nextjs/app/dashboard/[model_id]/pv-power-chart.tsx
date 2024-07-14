@@ -8,12 +8,13 @@ import { PowerTimeseriesItem } from '@/app/lib/definitions';
 export async function PvPowerChart({ modelId, searchParams }:
   {
     modelId: string;
-    searchParams: { dateFrom : string; dateTo : string };
+    searchParams: Record<string, string | string[] | undefined>;
   }
 ) {
+
   const selectedDateRange: DateRangePickerValue = {
-    from: searchParams ? new Date(searchParams.dateFrom) : new Date(2023, 5, 19),
-    to: searchParams ? new Date(searchParams.dateTo) : new Date(2023, 5, 24)
+    from: searchParams.dateFrom ? new Date(searchParams.dateFrom as string) : new Date(2023, 5, 19),
+    to: searchParams.dateTo ? new Date(searchParams.dateTo as string) : new Date(2023, 5, 24)
   };
 
   // Validate that dateRange values are valid dates

@@ -8,7 +8,11 @@ import { Suspense } from 'react';
 import { BarSkeleton, DonutSkeleton, FinBarSkeleton, FinKpiSkeleton } from './skeletons';
 
 
-export default async function Page({ params }: { params: { model_id: string } }) {
+export default async function Page({ params, searchParams }:
+    {
+        params: { model_id: string },
+        searchParams: Record<string, string | string[] | undefined>
+    }) {
 
     return (
         <main>
@@ -52,7 +56,7 @@ export default async function Page({ params }: { params: { model_id: string } })
 
                         <div className="col-span-2 row-span-2 flex flex-col flex-grow w-full">
                             <Suspense key={params.model_id}  fallback={<div>Loading...</div>}>
-                                <PvPowerChart modelId={params.model_id}/>
+                                <PvPowerChart modelId={params.model_id} searchParams={searchParams}/>
                             </Suspense>
                         </div>
                     </div>

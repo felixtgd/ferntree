@@ -29,8 +29,8 @@ export async function fetchSimResults(modelId: string) {
         //     return null;
         // }
 
-        // Wait 3 seconds
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // // Wait 3 seconds
+        // await new Promise(resolve => setTimeout(resolve, 3000));
 
         const simResults = await fetch(`http://localhost:8000/dashboard/simulation-results?model_id=${modelId}`).then((res) => res.json());;
 
@@ -52,8 +52,8 @@ export async function fetchPvMonthlyData(modelId: string) {
         //     console.error(`Simulation run failed for model ID: ${modelId}`);
         // }
 
-        // Wait 3 seconds
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // // Wait 3 seconds
+        // await new Promise(resolve => setTimeout(resolve, 3000));
 
         const pv_monthly_gen_data = await fetch(`http://localhost:8000/dashboard/pv-monthly-gen?model_id=${modelId}`).then((res) => res.json());;
 
@@ -75,8 +75,8 @@ try {
     end_date: dateRange.to?.toISOString(),
     };
 
-    // Wait 3 seconds
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // // Wait 3 seconds
+    // await new Promise(resolve => setTimeout(resolve, 3000));
 
     const response = await fetch('http://localhost:8000/dashboard/sim-timeseries-data', {
     method: 'POST',
