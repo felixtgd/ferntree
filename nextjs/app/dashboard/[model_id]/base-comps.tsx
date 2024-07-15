@@ -12,6 +12,7 @@ import {
     DateRangePickerValue,
     DateRangePickerItem,
     LineChart,
+    Card,
 } from '@tremor/react';
 
 
@@ -28,6 +29,20 @@ const kWhFormatter2d: ValueFormatter = (number: number) =>
     `${number.toFixed(2)} kWh`;
 
 
+export function BaseCard({ title, children } : { title: string, children: React.ReactNode }) {
+    return (
+        <Card
+            className="flex flex-grow flex-col items-center justify-center w-full h-full max-h-80"
+            decoration="top"
+            decorationColor="blue-300"
+        >
+            <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-4">
+                { title }
+            </h3>
+        { children }
+        </Card>
+    )
+}
 
 export function BaseDonutChart( { data, label, colors }:
     { data: { name: string; value: number; share: number; }[];
@@ -36,6 +51,7 @@ export function BaseDonutChart( { data, label, colors }:
 } ) {
     return (
         <DonutChart
+            className="mt-2 h-[90%]"
             data={data}
             category="value"
             index="name"
@@ -49,7 +65,7 @@ export function BaseDonutChart( { data, label, colors }:
 export function BasePvBarChart( { data }: { data: PVMonthlyGenData[]; } ) {
     return (
         <BarChart
-            className="mt-2 max-h-60"
+            className="mt-2 h-[90%]"
             data={data}
             index="month"
             categories={['PVGeneration']}
@@ -65,11 +81,11 @@ export function BasePvBarChart( { data }: { data: PVMonthlyGenData[]; } ) {
 export function BaseFinBarChart( { data }: { data: FinBarChartItem[]; } ) {
     return (
         <BarChart
-            className="mt-2 max-h-40"
+            className="mt-2 h-[90%]"
             data={ data }
             index="type"
-            categories={['Cost savings', 'Feed-in revenue', 'Operation costs', 'PV', 'Battery']}
-            colors={['blue', 'cyan', 'purple', 'emerald', 'lime']}
+            categories={[ 'Operation costs', 'Feed-in revenue', 'Cost savings', 'PV', 'Battery']}
+            colors={['green-600', 'green-500', 'green-400', 'red-700', 'red-500']}
             valueFormatter={moneyFormatter}
             yAxisWidth={70}
             showLegend={false}
@@ -143,33 +159,37 @@ export function BaseDateRangePicker({ dateRange } : { dateRange: DateRangePicker
 export function BaseLineChart({ data } : { data: PowerTimeseriesItem[]; }) {
     return (
         <>
-        <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mt-2">Power Profiles</h3>
-        <LineChart
-          className="max-h-64"
-          data={data}
-          index="time"
-          categories={['Load', 'PV', 'Battery', 'Total']}
-          colors={['rose', 'amber', 'teal', 'indigo']}
-          valueFormatter={kWFormatter2d}
-          yAxisWidth={80}
-          showAnimation={true}
-          startEndOnly={true}
-          showXAxis={false}
-      />
-      <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mt-2">Battery State of Charge</h3>
-      <LineChart
-          className="max-h-32"
-          data={data}
-          index="time"
-          categories={['StateOfCharge']}
-          colors={['teal']}
-          valueFormatter={kWhFormatter2d}
-          yAxisWidth={80}
-          showAnimation={true}
-          startEndOnly={true}
-          showLegend={false}
-          showXAxis={false}
-      />
-      </>
+            <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium m-4">
+                Power Profiles
+            </h3>
+            <LineChart
+                className="h-[50%] w-full"
+                data={data}
+                index="time"
+                categories={['Load', 'PV', 'Battery', 'Total']}
+                colors={['rose', 'amber', 'teal', 'indigo']}
+                valueFormatter={kWFormatter2d}
+                yAxisWidth={80}
+                showAnimation={true}
+                startEndOnly={true}
+                showXAxis={false}
+            />
+            <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium m-4">
+                Battery State of Charge
+            </h3>
+            <LineChart
+                className="h-[25%] w-full"
+                data={data}
+                index="time"
+                categories={['StateOfCharge']}
+                colors={['teal']}
+                valueFormatter={kWhFormatter2d}
+                yAxisWidth={80}
+                showAnimation={true}
+                startEndOnly={true}
+                showLegend={false}
+                showXAxis={false}
+            />
+        </>
     )
 }

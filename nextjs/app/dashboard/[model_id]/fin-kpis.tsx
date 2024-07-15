@@ -1,6 +1,7 @@
-import { Card, List, ListItem } from '@tremor/react';
+import { List, ListItem } from '@tremor/react';
 import { fetchSimResults } from './actions';
 import { SimEvaluation, SimFinancialKPIs } from '@/app/lib/definitions';
+import { BaseCard } from './base-comps';
 
 const moneyFormatter = (number: number) =>
     `€ ${Math.round(number).toLocaleString()}`;
@@ -22,35 +23,30 @@ export async function FinKpis({modelId}: {modelId: string}) {
 
   return (
     <div>
-      <Card
-          className="sm:mx-auto sm:max-w-lg"
-          decoration="top"
-          decorationColor="blue-300"
-      >
-          <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Financial KPIs</h3>
-          <List className="mt-2">
-              <ListItem key={kpis.investment.total}>
-                <span>Total investment</span>
-                <span>{moneyFormatter(kpis.investment.total)}</span>
-              </ListItem>
-              <ListItem key={kpis.break_even_year}>
-                <span>Break-even</span>
-                <span>{yearFormatter(kpis.break_even_year)}</span>
-              </ListItem>
-              <ListItem key={kpis.cum_profit_25yrs}>
-                <span>Cumulative profit over 25 years</span>
-                <span>{moneyFormatter(kpis.cum_profit_25yrs)}</span>
-              </ListItem>
-              <ListItem key={kpis.lcoe}>
-                <span>Levelised cost of electricity</span>
-                <span>{lcoeFormatter(kpis.lcoe)}</span>
-              </ListItem>
-              <ListItem key={kpis.solar_interest_rate}>
-                <span>Solar interest rate</span>
-                <span>{interestFormatter(kpis.solar_interest_rate)}</span>
-              </ListItem>
-          </List>
-      </Card>
+      <BaseCard title="Financial KPIs">
+        <List className="mt-2">
+            <ListItem key={kpis.investment.total}>
+              <span>Total investment</span>
+              <span><strong>{moneyFormatter(kpis.investment.total)}</strong></span>
+            </ListItem>
+            <ListItem key={kpis.break_even_year}>
+              <span>Break-even</span>
+              <span><strong>{yearFormatter(kpis.break_even_year)}</strong></span>
+            </ListItem>
+            <ListItem key={kpis.cum_profit_25yrs}>
+              <span>Cumulative profit over 25 years</span>
+              <span><strong>{moneyFormatter(kpis.cum_profit_25yrs)}</strong></span>
+            </ListItem>
+            <ListItem key={kpis.lcoe}>
+              <span>Levelised cost of electricity</span>
+              <span><strong>{lcoeFormatter(kpis.lcoe)}</strong></span>
+            </ListItem>
+            <ListItem key={kpis.solar_interest_rate}>
+              <span>Solar interest rate</span>
+              <span><strong>{interestFormatter(kpis.solar_interest_rate)}</strong></span>
+            </ListItem>
+        </List>
+      </BaseCard>
     </div>
   );
 }

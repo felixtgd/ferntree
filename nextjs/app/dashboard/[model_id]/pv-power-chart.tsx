@@ -39,9 +39,9 @@ export async function PvPowerChart({ modelId, searchParams }:
 
   return (
     <Card
-        className="sm:mx-auto max-h-160" // sm:max-w-lg
-        decoration="top"
-        decorationColor="blue-300"
+      className="flex flex-grow flex-col items-center justify-center w-full max-h-120"
+      decoration="top"
+      decorationColor="blue-300"
     >
       <BaseDateRangePicker dateRange={dateRange.data} />
       <BaseLineChart data={chartData} />

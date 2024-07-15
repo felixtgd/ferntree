@@ -1,7 +1,6 @@
-import { Card } from '@tremor/react';
 import { FinBarChartItem, SimEvaluation, SimFinancialKPIs } from '@/app/lib/definitions';
 import { fetchSimResults } from './actions';
-import { BaseFinBarChart } from './base-comps';
+import { BaseCard, BaseFinBarChart } from './base-comps';
 
 
 function getChartData(kpis: SimFinancialKPIs) {
@@ -27,15 +26,8 @@ export async function FinBarChart({modelId}: {modelId: string}) {
   const chartData : FinBarChartItem[] = getChartData(kpis);
 
   return (
-    <div>
-      <Card
-          className="sm:mx-auto sm:max-w-lg"
-          decoration="top"
-          decorationColor="blue-300"
-      >
-        <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">Financial Perfomance over 25 years</h3>
-        <BaseFinBarChart data={chartData} />
-      </Card>
-    </div>
+    <BaseCard title="Financial Perfomance over 25 years">
+      <BaseFinBarChart data={chartData} />
+    </BaseCard>
   );
 }
