@@ -108,7 +108,6 @@ export function BaseDateRangePicker({ dateRange } : { dateRange: DateRangePicker
             dateTo: selectedDateRange.to?.toISOString() ?? '',
         });
         router.replace(`?${urlSearchParams.toString()}`, { scroll: false });
-        router.refresh();
     }
 
     return (
