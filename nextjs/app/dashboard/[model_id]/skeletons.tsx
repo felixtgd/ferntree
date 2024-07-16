@@ -89,19 +89,12 @@ export function FinBarSkeleton() {
 export function LineChartSkeleton() {
   return (
     <BaseSkeleton>
-      <div className="flex flex-col flex-grow items-centre justify-between py-2 px-10 mt-1 w-full">
+      <div className="flex flex-col flex-grow items-center py-2 px-10 mt-1 w-full">
         {/* First line chart */}
-        <div className="flex flex-grow justify-center items-centre p-2 w-full">
-          <svg className="flex flex-grow w-[80%] h-[20%]" viewBox="0 0 50 10">
-            <path d="M2,2 L8,6 L12,6 L16,8 L20,4 L24,5 L28,3 L32,1 L36,2 L40,5 L44,9 L48,7" stroke="gray" strokeWidth="1" fill="none" />
-          </svg>
+        <div className="flex flex-grow flex-col justify-center items-center p-2 w-full">
+          <div className="h-[50%] w-full rounded-md bg-gray-200 m-4" />
+          <div className="h-[25%] w-full rounded-md bg-gray-200 m-4" />
         </div>
-        {/* Second line chart */}
-        {/* <div className="flex justify-center items-centre p-2 w-full">
-          <svg className="w-[80%] h-auto" viewBox="0 0 24 24">
-            <path d="M1,6 L8,12 L15,1 L23,15" stroke="gray" strokeWidth="1" fill="none" />
-          </svg>
-        </div> */}
       </div>
     </BaseSkeleton>
   )

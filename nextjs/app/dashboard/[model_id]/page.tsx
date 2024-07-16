@@ -69,7 +69,6 @@ export default async function Page({ params, searchParams }:
                             <Suspense key={params.model_id}  fallback={<LineChartSkeleton/>}>
                                 <PvPowerChart modelId={params.model_id} searchParams={searchParams}/>
                             </Suspense>
-                            {/* <LineChartSkeleton/> */}
                         </div>
 
                     </div>
