@@ -25,12 +25,12 @@ function getChartData(chartType: string, simResults: SimEvaluation|null): DonutC
             case 'consumption':
                 chartData.data=[
                 {
-                    name: 'PV',
+                    name: 'From: PV',
                     value: simResults.energy_kpis.self_consumption,
                     share: simResults.energy_kpis.self_consumption/simResults.energy_kpis.baseload_demand
                 },
                 {
-                    name: 'Grid',
+                    name: 'From: Grid',
                     value: simResults.energy_kpis.grid_consumption,
                     share: simResults.energy_kpis.grid_consumption/simResults.energy_kpis.baseload_demand
                 },
@@ -47,12 +47,12 @@ function getChartData(chartType: string, simResults: SimEvaluation|null): DonutC
             case 'generation':
                 chartData.data=[
                 {
-                    name: 'Self-consumption',
+                    name: 'To: Self-consumption',
                     value: simResults.energy_kpis.self_consumption,
                     share: simResults.energy_kpis.self_consumption/simResults.energy_kpis.pv_generation
                 },
                 {
-                    name: 'Grid Feed-in',
+                    name: 'To: Grid Feed-in',
                     value: simResults.energy_kpis.grid_feed_in,
                     share: simResults.energy_kpis.grid_feed_in/simResults.energy_kpis.pv_generation
                 },
