@@ -45,36 +45,6 @@ export function PvForm() {
     interest_rate: 3,
   }); // put this in a data model?
 
-  // const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-  //   const { name, value } = event.target;
-  //   setFormData({ ...formData, [name]: value });
-  // };
-
-  // const handleRoofInclChange = (value: string) => {
-  //   setFormData({ ...formData, roof_incl: parseInt(value) });
-  // }
-
-  // const handleRoofAzChange = (value: string) => {
-  //   setFormData({ ...formData, roof_azimuth: parseInt(value) });
-  // }
-
-  // const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-  //   event.preventDefault();
-  //   try {
-  //     const response = await fetch('http://localhost:8000/dashboard/pv-calc', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify(formData),
-  //     });
-  //     const data = await response.json();
-  //     setData(data);
-  //     console.log(data);
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
-
-
   return (
     <Card
       className="sm:mx-auto sm:max-w-lg"
