@@ -76,6 +76,11 @@ __pypackages__/
 *.hdf5
 .dat
 
+# Ruff
+.ruff/
+.ruffconfig
+.ruff_cache/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
