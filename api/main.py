@@ -1,4 +1,7 @@
+import os
 import logging
+
+from dotenv import load_dotenv
 
 from datetime import datetime
 from enum import Enum
@@ -49,9 +52,13 @@ app = FastAPI()
 # Create a MongoDB client
 db_client = MongoClient()
 
+# Load config from .env file:
+load_dotenv("../.env")
+FRONTEND_BASE_URI = os.environ["FRONTEND_BASE_URI"]
+
 # Configure CORS
 origins = [
-    "http://localhost:3000",
+    FRONTEND_BASE_URI,
 ]
 
 app.add_middleware(
