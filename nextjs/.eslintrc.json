@@ -8,7 +8,7 @@
   "parserOptions": {
     "ecmaVersion": 2020,
     "sourceType": "module",
-    "project": "./nextjs/tsconfig.json"
+    "project": "./tsconfig.json"
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
