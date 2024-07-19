@@ -1,5 +1,5 @@
 import { fetchSimResults } from './actions';
-import { SimEvaluation, DonutChartData } from '@/app/lib/definitions';
+import { SimEvaluation, DonutChartData } from '@/app/data/definitions';
 import { List, ListItem } from '@tremor/react';
 import { BaseCard, BaseDonutChart } from './base-comps';
 

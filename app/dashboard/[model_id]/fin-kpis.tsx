@@ -1,6 +1,6 @@
 import { List, ListItem } from '@tremor/react';
 import { fetchSimResults } from './actions';
-import { SimEvaluation, SimFinancialKPIs } from '@/app/lib/definitions';
+import { SimEvaluation, SimFinancialKPIs } from '@/app/data/definitions';
 import { BaseCard } from './base-comps';
 
 const moneyFormatter = (number: number) =>

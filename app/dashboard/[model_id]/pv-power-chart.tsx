@@ -3,7 +3,7 @@ import { fetchPowerData } from './actions';
 import { z } from "zod";
 import { redirect } from 'next/navigation';
 import { BaseDateRangePicker, BaseLineChart } from './base-comps';
-import { PowerTimeseriesItem } from '@/app/lib/definitions';
+import { PowerTimeseriesItem } from '@/app/data/definitions';
 
 export async function PvPowerChart({ modelId, searchParams }:
   {

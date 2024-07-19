@@ -1,5 +1,5 @@
 import { fetchPvMonthlyData } from './actions';
-import { PVMonthlyGenData } from '@/app/lib/definitions';
+import { PVMonthlyGenData } from '@/app/data/definitions';
 import { BaseCard, BasePvBarChart } from './base-comps';
 
 

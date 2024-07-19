@@ -1,4 +1,4 @@
-import { FinBarChartItem, SimEvaluation, SimFinancialKPIs } from '@/app/lib/definitions';
+import { FinBarChartItem, SimEvaluation, SimFinancialKPIs } from '@/app/data/definitions';
 import { fetchSimResults } from './actions';
 import { BaseCard, BaseFinBarChart } from './base-comps';
 

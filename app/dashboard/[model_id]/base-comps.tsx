@@ -1,6 +1,6 @@
 'use client';
 
-import { FinBarChartItem, PowerTimeseriesItem, PVMonthlyGenData } from '@/app/lib/definitions';
+import { FinBarChartItem, PowerTimeseriesItem, PVMonthlyGenData } from '@/app/data/definitions';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react'
 import { enGB } from 'date-fns/locale';
