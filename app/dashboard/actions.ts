@@ -2,9 +2,18 @@
 
 'use server';
 
-// import { revalidatePath } from "next/cache";
 import { redirect } from 'next/navigation'
 import { z } from "zod";
+
+const loadBackendBaseUri = () => {
+    // Load backend base URI
+    const BACKEND_BASE_URI = process.env.BACKEND_BASE_URI;
+    if (!BACKEND_BASE_URI) {
+        console.error('BACKEND_BASE_URI is not defined');
+        throw new Error('Backend base URI is not defined.');
+    }
+    return BACKEND_BASE_URI;
+}
 
 const formSchema = z.object({
     location: z.string(),
@@ -23,11 +32,6 @@ export async function submitForm(formData: FormData) {
     // When invoked in a form, the action automatically receives the FormData object.
     // You don't need to use React useState to manage fields, instead, you can extract
     // the data using the native FormData methods.
-
-    // Log the form data and print types of each field
-    // formData.forEach((value, key) => {
-    //     console.log(`${key}: ${value} (${typeof value})`);
-    // });
 
     // Validate that formData has schema of SimulationModel
     const validatedFields = formSchema.safeParse({
@@ -48,15 +52,13 @@ export async function submitForm(formData: FormData) {
         return;
     }
 
-    // Log each field in validated fields
-
-
     let model_id;
     let sim_run_success;
 
     try {
         // Submit user input form with model parameters
-        const response_submit_form = await fetch('http://localhost:8000/dashboard/submit-model', {
+        const BACKEND_BASE_URI = loadBackendBaseUri();
+        const response_submit_form = await fetch(`${BACKEND_BASE_URI}/dashboard/submit-model`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(validatedFields.data),
@@ -67,7 +69,7 @@ export async function submitForm(formData: FormData) {
 
         // TEMPORARY: there must be a better place fir this fetch
         // Start simulation of model
-        const response_sim_run = await fetch(`http://localhost:8000/dashboard/run-simulation?model_id=${model_id}`).then((res) => res.json());
+        const response_sim_run = await fetch(`${BACKEND_BASE_URI}/dashboard/run-simulation?model_id=${model_id}`).then((res) => res.json());
         sim_run_success = response_sim_run.sim_run_success;
         if (sim_run_success) {
             console.log(`GET dashboard/run-simulation: Simulation run successful for model ID: ${model_id}`);
@@ -79,12 +81,9 @@ export async function submitForm(formData: FormData) {
         console.error(`Failed to submit form: ${error}`);
     }
 
-    // revalidatePath('/dashboard');
-    // redirect user to dashboard/{model_id}
     if (sim_run_success) {
         redirect(`/dashboard/${model_id}`)
     } else {
         redirect('/dashboard')
     }
-
 };
