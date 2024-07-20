@@ -70,12 +70,12 @@ app.add_middleware(
 )
 
 
-@app.get("/api/")
+@app.get("/")
 async def root():
     return {"message": "Hello World"}
 
 
-@app.post("/api/dashboard/submit-model")
+@app.post("/dashboard/submit-model")
 # TODO: add response_model = ... for data validation
 async def pv_calc(user_input: UserInputForm):
     logger.info(
@@ -99,7 +99,7 @@ async def pv_calc(user_input: UserInputForm):
     return model_id
 
 
-@app.get("/api/dashboard/run-simulation")
+@app.get("/dashboard/run-simulation")
 async def run_simulation(model_id: str):
     logger.info(
         f"\nGET:\t/dashboard/run-simulation --> Received request: model_id={model_id}"
@@ -124,7 +124,7 @@ async def run_simulation(model_id: str):
         )
 
 
-@app.get("/api/dashboard/simulation-results")
+@app.get("/dashboard/simulation-results")
 async def fetch_simulation_results(model_id: str):
     logger.info(
         f"\nGET:\t/dashboard/simulation-results --> Received request: model_id={model_id}"
@@ -154,7 +154,7 @@ async def fetch_simulation_results(model_id: str):
     return sim_evaluation
 
 
-@app.post("/api/dashboard/sim-timeseries-data")
+@app.post("/dashboard/sim-timeseries-data")
 async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
     logger.info(
         f"\nPOST:\t/dashboard/sim-timeseries-data --> Received request: {request_body}"
@@ -192,7 +192,7 @@ async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
     return formatted_timeseries_data  # TODO: define data model for response
 
 
-@app.get("/api/dashboard/pv-monthly-gen")
+@app.get("/dashboard/pv-monthly-gen")
 async def fetch_pv_monthly_gen_data(model_id: str):
     logger.info(
         f"\nGET:\t/dashboard/pv-monthly-gen --> Received request: model_id={model_id}"
