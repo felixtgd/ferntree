@@ -1,7 +1,7 @@
 import aiohttp
 import logging
 
-from api.solar_data.geolocator import get_location_coordinates
+from backend.solar_data.geolocator import get_location_coordinates
 
 
 # Set up logger
