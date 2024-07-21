@@ -3,7 +3,7 @@ import os
 import subprocess
 import pandas as pd
 
-from database.models import (
+from api.database.models import (
     UserInputForm,
     SimTimeSeriesDoc,
     ModelSpecs,
@@ -17,9 +17,9 @@ from database.models import (
     SimFinancialKPIs,
     PVMonthlyGenData,
 )
-from database import mongodb
-from solar_data import pvgis_api, geolocator
-from utils import data_model_helpers
+from api.database import mongodb
+from api.solar_data import pvgis_api, geolocator
+from api.utils import data_model_helpers
 
 
 async def process_user_input(
