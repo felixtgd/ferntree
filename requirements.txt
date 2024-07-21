@@ -1,6 +1,6 @@
 aiohttp == 3.9.5
 certifi == 2024.2.2
-# cvxpy == 1.4.2
+cvxpy == 1.4.2
 datetime==5.5.0
 fastapi == 0.110.2
 # h5py == 3.10.0
