@@ -1,5 +1,6 @@
 from datetime import datetime
-import os
+
+# import os
 import subprocess
 import pandas as pd
 
@@ -97,17 +98,18 @@ async def run_ferntree_simulation(sim_id: str, model_id: str) -> bool:
         bool: True if the simulation was successful.
 
     """
-    script_dir = os.path.dirname(__file__)
-    ferntree_sim_dir = os.path.join(script_dir, "../../sim/ferntree/")
+    # script_dir = os.path.dirname(__file__)
+    # ferntree_sim_dir = os.path.join(script_dir, "../../sim/ferntree/")
     command = [
         "python",
-        "ferntree.py",
+        "sim/ferntree/ferntree.py",
         "--sim_id",
         sim_id,
         "--model_id",
         model_id,
     ]
-    completed_process = subprocess.run(command, cwd=ferntree_sim_dir)
+    # completed_process = subprocess.run(command, cwd=ferntree_sim_dir)
+    completed_process = subprocess.run(command)
 
     # Check if the simulation has finished successfully
     if completed_process.returncode != 0:
