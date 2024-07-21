@@ -1,4 +1,4 @@
-from dev import device
+from sim.ferntree.components.dev import device
 
 
 class HeatingCtrl(device.Device):

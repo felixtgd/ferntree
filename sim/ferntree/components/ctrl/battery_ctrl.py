@@ -1,7 +1,7 @@
 import numpy as np
 import cvxpy as cp
 
-from dev import device
+from sim.ferntree.components.dev import device
 
 import logging
 

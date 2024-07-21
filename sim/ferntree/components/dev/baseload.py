@@ -1,8 +1,8 @@
 import logging
 import numpy as np
 
-from dev import device
-from host import sim_host
+from sim.ferntree.components.dev import device
+from sim.ferntree.components.host import sim_host
 
 
 logger = logging.getLogger("ferntree")

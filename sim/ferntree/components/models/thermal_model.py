@@ -2,8 +2,8 @@ import numpy as np
 import logging
 import os
 
-from dev import device
-from models import linear_regression
+from sim.ferntree.components.dev import device
+from sim.ferntree.components.models import linear_regression
 
 logger = logging.getLogger("ferntree")
 

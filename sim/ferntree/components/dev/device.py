@@ -1,4 +1,4 @@
-from core import entity
+from sim.ferntree.components.core import entity
 
 
 class Device(entity.Entity):

@@ -6,7 +6,7 @@ from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 from bson.objectid import ObjectId
 
-from database.models import TimestepData
+from sim.ferntree.components.database.models import TimestepData
 
 # Use certifi to get the path of the CA file
 ca = certifi.where()
