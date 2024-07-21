@@ -4,10 +4,10 @@ import os
 from pytz import timezone
 from datetime import datetime
 
-from sim.ferntree.components.dev import sf_house
+from components.dev import sf_house
 
 # from database import database
-from sim.ferntree.components.database.mongodb import pyMongoClient
+from components.database.mongodb import pyMongoClient
 
 logger = logging.getLogger("ferntree")
 

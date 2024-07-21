@@ -1,15 +1,15 @@
 import logging
 
-from sim.ferntree.components.host import sim_host
-from sim.ferntree.components.database.mongodb import pyMongoClient
-from sim.ferntree.components.dev import (
+from components.host import sim_host
+from components.database.mongodb import pyMongoClient
+from components.dev import (
     sf_house,
     smart_meter,
     baseload,
     pv_sys,
     battery_dev,
 )
-from sim.ferntree.components.ctrl import battery_ctrl
+from components.ctrl import battery_ctrl
 
 logger = logging.getLogger("ferntree")
 

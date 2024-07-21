@@ -1,6 +1,6 @@
 import logging
 
-from sim.ferntree.components.dev import device
+from components.dev import device
 
 logger = logging.getLogger("ferntree")
 
