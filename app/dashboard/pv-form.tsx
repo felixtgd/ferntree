@@ -1,4 +1,4 @@
-'use client'
+// 'use client'
 
 import { Card, NumberInput, Select, SelectItem, TextInput, Button } from '@tremor/react';
 import {
@@ -18,7 +18,7 @@ import {
 import { submitForm } from './actions';
 import { useFormStatus } from 'react-dom'
 
-import { useState } from 'react'; // TEMPORARY make server component later!!!
+// import { useState } from 'react'; // TEMPORARY make server component later!!!
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -32,18 +32,18 @@ function SubmitButton() {
 
 export function PvForm() {
 
-  const [formData] = useState({
-    location: 'Aarau',
-    electr_cons: 6000,
-    roof_incl: 0,
-    roof_azimuth: 0,
-    peak_power: 10,
-    battery_cap: 10,
-    electr_price: 35,
-    down_payment: 20,
-    pay_off_rate: 5,
-    interest_rate: 3,
-  }); // put this in a data model?
+  // const [formData] = useState({
+  //   location: 'Aarau',
+  //   electr_cons: 6000,
+  //   roof_incl: 0,
+  //   roof_azimuth: 0,
+  //   peak_power: 10,
+  //   battery_cap: 10,
+  //   electr_price: 35,
+  //   down_payment: 20,
+  //   pay_off_rate: 5,
+  //   interest_rate: 3,
+  // }); // put this in a data model?
 
   return (
     <Card
@@ -64,7 +64,7 @@ export function PvForm() {
               type="text"
               icon={RiHome4Line}
               // onChange={handleChange}
-              value = {formData.location}
+              // value = {formData.location}
               placeholder="Enter location"
             />
           </div>
@@ -82,7 +82,7 @@ export function PvForm() {
               step="1"
               icon={RiLightbulbFlashLine}
               // onChange = {handleChange}
-              value = {formData.electr_cons}
+              // value = {formData.electr_cons}
               placeholder="300,000"
             />
           </div>
@@ -99,7 +99,7 @@ export function PvForm() {
               name="roof_incl"
               icon={RiArrowUpWideLine}
               // onValueChange={handleRoofInclChange}
-              value = {formData.roof_incl.toString()}
+              // value = {formData.roof_incl.toString()}
             >
               <SelectItem value="0">0°</SelectItem>
               <SelectItem value="30">30°</SelectItem>
@@ -119,7 +119,7 @@ export function PvForm() {
                 name="roof_azimuth"
                 icon={RiCompassLine}
                 // onValueChange={handleRoofAzChange}
-                value = {formData.roof_azimuth.toString()}
+                // value = {formData.roof_azimuth.toString()}
               >
                 <SelectItem value="0">South</SelectItem>
                 <SelectItem value="-45">South-East</SelectItem>
@@ -146,7 +146,7 @@ export function PvForm() {
                 placeholder="10"
                 icon={RiSunLine}
                 // onChange={handleChange}
-                value = {formData.peak_power}
+                // value = {formData.peak_power}
               />
             </div>
         </div>
@@ -164,7 +164,7 @@ export function PvForm() {
                 placeholder="10"
                 icon={RiBattery2ChargeLine}
                 // onChange={handleChange}
-                value = {formData.battery_cap}
+                // value = {formData.battery_cap}
               />
             </div>
         </div>
@@ -182,7 +182,7 @@ export function PvForm() {
                 placeholder="35"
                 icon={RiCoinsLine}
                 // onChange={handleChange}
-                value = {formData.electr_price}
+                // value = {formData.electr_price}
               />
             </div>
         </div>
@@ -200,7 +200,7 @@ export function PvForm() {
                 placeholder="20"
                 icon={RiCurrencyLine}
                 // onChange={handleChange}
-                value = {formData.down_payment}
+                // value = {formData.down_payment}
               />
             </div>
         </div>
@@ -218,7 +218,7 @@ export function PvForm() {
                 placeholder="5"
                 icon={RiHandCoinLine}
                 // onChange={handleChange}
-                value = {formData.pay_off_rate}
+                // value = {formData.pay_off_rate}
               />
             </div>
         </div>
@@ -236,7 +236,7 @@ export function PvForm() {
                 placeholder="3"
                 icon={RiBankLine}
                 // onChange={handleChange}
-                value = {formData.interest_rate}
+                // value = {formData.interest_rate}
               />
             </div>
         </div>
