@@ -1,4 +1,4 @@
-// 'use client'
+'use client'
 
 import { Card, NumberInput, Select, SelectItem, TextInput, Button } from '@tremor/react';
 import {
