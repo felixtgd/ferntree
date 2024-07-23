@@ -11,7 +11,7 @@ from pymongo.server_api import ServerApi
 ca = certifi.where()
 
 # Load config from .env file:
-load_dotenv("../.env")
+load_dotenv("./.env")
 MONGODB_URI = os.environ["MONGODB_URI"]
 MONGODB_DATABASE = os.environ["MONGODB_DATABASE"]
 

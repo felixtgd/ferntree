@@ -6,6 +6,7 @@ import { FinKpis } from './fin-kpis';
 import { FinBarChart } from './fin-bar-chart';
 import { Suspense } from 'react';
 import { BarSkeleton, DonutSkeleton, FinBarSkeleton, FinKpiSkeleton, LineChartSkeleton } from './skeletons';
+import { ModelSummary } from './model-summary';
 
 
 export default async function Page({ params, searchParams }:
@@ -25,8 +26,8 @@ export default async function Page({ params, searchParams }:
 
                         {/* Placeholder */}
                         <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
-                        <Suspense key={params.model_id}  fallback={<FinKpiSkeleton/>}>
-                                <FinKpiSkeleton/>
+                            <Suspense key={params.model_id}  fallback={<FinKpiSkeleton/>}>
+                                <ModelSummary modelId={params.model_id}/>
                             </Suspense>
                         </div>
 
