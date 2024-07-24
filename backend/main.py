@@ -155,6 +155,30 @@ async def fetch_simulation_results(model_id: str):
     return sim_evaluation
 
 
+@app.get("/dashboard/model-summary")
+async def fetch_model_summary(model_id: str):
+    logger.info(
+        f"\nGET:\t/dashboard/model-summary --> Received request: model_id={model_id}"
+    )
+
+    # Fetch the model specifications TODO: stupid to do this again here!!!
+    sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
+    sim_model_specs_doc = ModelSpecsDoc(**sim_model_specs)
+    model_summary = {
+        "location": sim_model_specs_doc.sim_model_specs.sim_params.location,
+        "electr_cons": sim_model_specs_doc.sim_model_specs.house.baseload.annual_consumption,
+        "roof_incl": sim_model_specs_doc.sim_model_specs.house.pv.roof_tilt,
+        "roof_azimuth": sim_model_specs_doc.sim_model_specs.house.pv.roof_azimuth,
+        "peak_power": sim_model_specs_doc.sim_model_specs.house.pv.peak_power,
+        "battery_cap": sim_model_specs_doc.sim_model_specs.house.battery.capacity,
+    }
+
+    logger.info(
+        f"\nGET:\t/dashboard/model-summary --> Return Model Summary: {model_summary}"
+    )
+    return model_summary
+
+
 @app.post("/dashboard/sim-timeseries-data")
 async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
     logger.info(

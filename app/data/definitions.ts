@@ -110,3 +110,12 @@ export type PowerTimeseriesItem = {
   Total: number;
   StateOfCharge: number;
 };
+
+export type ModelSummary = {
+  location: string;
+  electr_cons: number;
+  roof_incl: number;
+  roof_azimuth: number;
+  peak_power: number;
+  battery_cap: number;
+};
