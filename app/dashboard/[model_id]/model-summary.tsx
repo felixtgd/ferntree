@@ -42,7 +42,7 @@ export async function ModelSummary({modelId}: {modelId: string}) {
   return (
     <div>
       <BaseCard title="Model Summary">
-      <div className="flex flex-row justify-between w-full h-full">
+      <div className="flex flex-row justify-between w-full">
         <List className="mt-2 px-6">
           <ListItem key={modelSummary.location}>
             <RiHome4Line />

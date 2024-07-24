@@ -16,40 +16,77 @@ const loadBackendBaseUri = () => {
 }
 
 const formSchema = z.object({
-    location: z.string(),
-    electr_cons: z.number(),
-    roof_incl: z.number(),
-    roof_azimuth: z.number(),
-    peak_power: z.number(),
-    battery_cap: z.number(),
-    electr_price: z.number(),
-    down_payment: z.number(),
-    pay_off_rate: z.number(),
-    interest_rate: z.number(),
-  });
+    location: z.string()
+        .max(100, { message: 'Location must be at most 100 characters long' })
+        .min(1, { message: 'Please specify a location' }),
+    roof_incl: z.coerce
+        .number()
+        .gte(0, { message: 'Must be at least 0°' })
+        .lte(90, { message: 'Must be at most 90°' }),
+    roof_azimuth: z.coerce
+        .number()
+        .gte(-180, { message: 'Must be at least -180°' })
+        .lte(180, { message: 'Must be at most 180°' }),
+    electr_cons: z.coerce
+        .number()
+        .gte(0, { message: 'Must be at least 0 kWh' })
+        .lte(100000, { message: 'Must be at most 100,000 kWh' }),
+    peak_power: z.coerce
+        .number()
+        .gte(0, { message: 'Must be at least 0 kWp' })
+        .lte(100000, { message: 'Must be at most 100,000 kWp' }),
+    battery_cap: z.coerce
+        .number()
+        .gte(0, { message: 'Must be at least 0 kWh' })
+        .lte(100000, { message: 'Must be at most 100,000 kWh' }),
+    electr_price: z.coerce
+        .number()
+        .gte(0, { message: 'Must be at least 0 cents/kWh' })
+        .lte(100, { message: 'Must be at most 1,000 cents/kWh' }),
+    down_payment: z.coerce
+        .number()
+        .gte(0, { message: 'Must be at least 0%' })
+        .lte(100, { message: 'Must be at most 100%' }),
+    pay_off_rate: z.coerce
+        .number()
+        .gte(0, { message: 'Must be at least 0%' })
+        .lte(100, { message: 'Must be at most 100%' }),
+    interest_rate: z.coerce
+        .number()
+        .gte(0, { message: 'Must be at least 0%' })
+        .lte(100, { message: 'Must be at most 100%' }),
+});
 
-export async function submitForm(formData: FormData) {
+export type State = {
+    errors?: Record<string, string[]>;
+    message?: string | null;
+};
+
+export async function submitForm(prevState: State, formData: FormData) {
     // When invoked in a form, the action automatically receives the FormData object.
     // You don't need to use React useState to manage fields, instead, you can extract
     // the data using the native FormData methods.
 
     // Validate that formData has schema of SimulationModel
     const validatedFields = formSchema.safeParse({
-        location: formData.get('location'),
-        electr_cons: Number(formData.get('electr_cons')),
-        roof_incl: Number(formData.get('roof_incl')),
-        roof_azimuth: Number(formData.get('roof_azimuth')),
-        peak_power: Number(formData.get('peak_power')),
-        battery_cap: Number(formData.get('battery_cap')),
-        electr_price: Number(formData.get('electr_price')),
-        down_payment: Number(formData.get('down_payment')),
-        pay_off_rate: Number(formData.get('pay_off_rate')),
-        interest_rate: Number(formData.get('interest_rate')),
+        location:       formData.get('location'),
+        roof_incl:      formData.get('roof_incl'),
+        roof_azimuth:   formData.get('roof_azimuth'),
+        electr_cons:    formData.get('electr_cons'),
+        peak_power:     formData.get('peak_power'),
+        battery_cap:    formData.get('battery_cap'),
+        electr_price:   formData.get('electr_price'),
+        down_payment:   formData.get('down_payment'),
+        pay_off_rate:   formData.get('pay_off_rate'),
+        interest_rate:  formData.get('interest_rate'),
     });
 
     if (!validatedFields.success) {
         console.error(`Invalid form data: ${validatedFields.error}`);
-        return;
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to submit form.',
+          };
     }
 
     let model_id;
