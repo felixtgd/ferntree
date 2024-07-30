@@ -1,6 +1,6 @@
 import { fetchPvMonthlyData } from './actions';
 import { PVMonthlyGenData } from '@/app/data/definitions';
-import { BaseCard, BasePvBarChart } from './base-comps';
+import { BaseCard, BasePvBarChart } from '../../components/base-comps';
 
 
 export async function PvGenBarChart({modelId}: {modelId: string}) {

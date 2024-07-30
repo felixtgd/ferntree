@@ -5,7 +5,7 @@ import { PvGenBarChart } from './pv-gen-bar-chart';
 import { FinKpis } from './fin-kpis';
 import { FinBarChart } from './fin-bar-chart';
 import { Suspense } from 'react';
-import { BarSkeleton, DonutSkeleton, FinBarSkeleton, FinKpiSkeleton, LineChartSkeleton } from './skeletons';
+import { BarSkeleton, DonutSkeleton, FinBarSkeleton, FinKpiSkeleton, LineChartSkeleton } from '../../components/skeletons';
 import { ModelSummary } from './model-summary';
 
 

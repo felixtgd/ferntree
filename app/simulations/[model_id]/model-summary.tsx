@@ -1,5 +1,5 @@
 import { List, ListItem } from '@tremor/react';
-import { BaseCard } from './base-comps';
+import { BaseCard } from '../../components/base-comps';
 import {
   RiArrowUpWideLine,
   RiBattery2ChargeLine,

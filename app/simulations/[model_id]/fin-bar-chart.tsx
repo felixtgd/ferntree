@@ -1,6 +1,6 @@
 import { FinBarChartItem, SimEvaluation, SimFinancialKPIs } from '@/app/data/definitions';
 import { fetchSimResults } from './actions';
-import { BaseCard, BaseFinBarChart } from './base-comps';
+import { BaseCard, BaseFinBarChart } from '../../components/base-comps';
 
 
 function getChartData(kpis: SimFinancialKPIs) {
