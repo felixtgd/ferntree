@@ -1,7 +1,7 @@
 import { fetchSimResults } from './actions';
 import { SimEvaluation, DonutChartData } from '@/app/data/definitions';
 import { List, ListItem } from '@tremor/react';
-import { BaseCard, BaseDonutChart } from '../../components/base-comps';
+import { BaseCard, BaseDonutChart } from '../../../components/base-comps';
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ');

@@ -1,7 +1,7 @@
 import { List, ListItem } from '@tremor/react';
 import { fetchSimResults } from './actions';
 import { SimEvaluation, SimFinancialKPIs } from '@/app/data/definitions';
-import { BaseCard } from '../../components/base-comps';
+import { BaseCard } from '../../../components/base-comps';
 
 const moneyFormatter = (number: number) =>
     `€ ${Math.round(number).toLocaleString()}`;

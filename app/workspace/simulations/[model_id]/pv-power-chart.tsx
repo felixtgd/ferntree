@@ -2,7 +2,7 @@ import { Card, DateRangePickerValue } from '@tremor/react';
 import { fetchPowerData } from './actions';
 import { z } from "zod";
 import { redirect } from 'next/navigation';
-import { BaseDateRangePicker, BaseLineChart } from '../../components/base-comps';
+import { BaseDateRangePicker, BaseLineChart } from '../../../components/base-comps';
 import { PowerTimeseriesItem } from '@/app/data/definitions';
 
 export async function PvPowerChart({ modelId, searchParams }:
