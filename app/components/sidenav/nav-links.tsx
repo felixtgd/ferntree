@@ -7,9 +7,9 @@ import { RiDashboardHorizontalLine, RiFlowChart, RiShapesLine } from '@remixicon
 
 // Map of links to display in the side navigation.
 const links = [
-  { name: 'Models', href: '/models', icon: RiShapesLine },
-  { name: 'Simulations', href: '/simulations', icon: RiFlowChart },
-  { name: 'Scenarios', href: '/scenarios', icon: RiDashboardHorizontalLine },
+  { name: 'Models', href: '/workspace/models', icon: RiShapesLine },
+  { name: 'Simulations', href: '/workspace/simulations', icon: RiFlowChart },
+  { name: 'Scenarios', href: '/workspace/scenarios', icon: RiDashboardHorizontalLine },
 ];
 
 export default function NavLinks() {
