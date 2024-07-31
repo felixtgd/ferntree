@@ -7,8 +7,8 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-    //   const isInWorkspace = nextUrl.pathname.startsWith('/workspace');
-      const isInWorkspace = nextUrl.pathname.startsWith('/test');
+      const isInWorkspace = nextUrl.pathname.startsWith('/workspace');
+      // const isInWorkspace = nextUrl.pathname.startsWith('/test');
       if (isInWorkspace) {
         if (isLoggedIn) return true;
         return false; // Redirect unauthenticated users to login page
