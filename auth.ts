@@ -1,4 +1,6 @@
 import NextAuth from 'next-auth';
+import { MongoDBAdapter } from "@auth/mongodb-adapter"
+import client from "./utils/db"
 // import { z } from 'zod';
 // import bcrypt from 'bcrypt';
 // import Credentials from 'next-auth/providers/credentials';
@@ -44,6 +46,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
   },
+
+  adapter: MongoDBAdapter(client),
 
   providers: [
     GitHub,
