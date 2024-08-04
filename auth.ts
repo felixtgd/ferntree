@@ -10,6 +10,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   adapter: MongoDBAdapter(client),
 
+  // session: { strategy: "database" },
   session: { strategy: "jwt" },
 
 });
