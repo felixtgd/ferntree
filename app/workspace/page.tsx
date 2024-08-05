@@ -18,8 +18,7 @@ export default async function Page() {
 
     return (
         <main>
-            <div className="grid gap-4 grid-cols-5">
-                <div className="col-span-1">
+            <div className="flex flew-grid flex-grow">
                     { user &&
                     <div>
                         <p> Hi {user.name} </p>
@@ -28,7 +27,6 @@ export default async function Page() {
                         <Image src={user.image as string} width={100} height={100} alt={user.name as string}/>
                     </div>
                     }
-                </div>
             </div>
         </main>
     );

@@ -1,14 +1,6 @@
 import { Card } from "@tremor/react";
-
-type ModelData = {
-    model_name: string;
-    location: string;
-    roof_incl: number;
-    roof_azimuth: number;
-    electr_cons: number;
-    peak_power: number;
-    battery_cap: number;
-};
+import { ModelFormDialog } from "./model-form-dialog";
+import { ModelData } from "@/utils/definitions";
 
 async function ModelCard({modelData}: {modelData: ModelData}) {
     return (
@@ -35,8 +27,9 @@ async function ModelCard({modelData}: {modelData: ModelData}) {
 export default async function Page() {
     return (
         <main>
-            <div>
+            <div className="flex flex-row flex-grow p-4">
                 <h1> Models </h1>
+                <ModelFormDialog />
             </div>
             <div>
                 <ModelCard modelData={{

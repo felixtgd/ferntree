@@ -1,21 +1,19 @@
 'use client'
 
-import { Card, NumberInput, Select, SelectItem, TextInput, Button } from '@tremor/react';
+import { NumberInput, Select, SelectItem, TextInput, Button } from '@tremor/react';
 import {
   RiArrowUpWideLine,
-  RiBankLine,
   RiBattery2ChargeLine,
-  RiCalculatorLine,
-  RiCoinsLine,
   RiCompassLine,
-  RiCurrencyLine,
-  RiHandCoinLine,
   RiHome4Line,
   RiLightbulbFlashLine,
+  RiSaveLine,
   RiSunLine
 } from '@remixicon/react';
 
-import { State, submitForm } from './actions';
+import { submitForm } from './actions';
+import { ModelData, FormState } from '@/utils/definitions';
+
 import { useFormStatus, useFormState } from 'react-dom'
 
 import { useState } from 'react'; // TEMPORARY make server component later!!!
@@ -24,50 +22,63 @@ function SubmitButton() {
   const { pending } = useFormStatus()
 
   return (
-    <Button type="submit" icon={RiCalculatorLine} disabled={pending}>
-      Calculate System
+    <Button type="submit" icon={RiSaveLine} disabled={pending}>
+      Save Model
     </Button>
   )
 }
 
-export function PvForm() {
+export function ModelForm() {
 
-  const [formData, setFormData] = useState({
+  const defaultModelData: ModelData = {
+    model_name: 'Aarau_10_10',
     location: 'Aarau',
     electr_cons: 6000,
     roof_incl: 0,
     roof_azimuth: 0,
     peak_power: 10,
     battery_cap: 10,
-    electr_price: 35,
-    down_payment: 20,
-    pay_off_rate: 5,
-    interest_rate: 3,
-  }); // put this in a data model?
+  };
+
+  const [formData, setFormData] = useState(defaultModelData);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleRoofInclChange = (value: string) => {
-    setFormData({ ...formData, roof_incl: parseInt(value) });
-  }
-
-  const handleRoofAzChange = (value: string) => {
-    setFormData({ ...formData, roof_azimuth: parseInt(value) });
-  }
-
-  const initialState : State = { message: null, errors: {} };
+  const initialState : FormState = { message: null, errors: {} };
   const [state, formAction] = useFormState(submitForm, initialState);
 
   return (
-    <Card
-      className="sm:mx-auto sm:max-w-lg"
-      decoration="top"
-      decorationColor="blue-300"
-    >
       <form action={formAction}>
+        {/* Model Name */}
+        <div className="mb-4">
+          <label htmlFor="model_name" className="mb-2 block text-sm font-medium">
+            Model name
+          </label>
+          <div className="relative">
+            <TextInput
+              id="model_name"
+              name="model_name"
+              type="text"
+              icon={RiHome4Line}
+              onChange={handleChange}
+              value = {formData.model_name}
+              placeholder="Enter model name"
+              required
+            />
+          </div>
+          <div id="model_name-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.model_name &&
+              state.errors.model_name.map((error: string) => (
+                <p className="mt-2 text-sm text-red-500" key={error}>
+                  {error}
+                </p>
+              ))}
+          </div>
+        </div>
+
         {/* Location */}
         <div className="mb-4">
           <label htmlFor="location" className="mb-2 block text-sm font-medium">
@@ -105,7 +116,11 @@ export function PvForm() {
               id="roof_incl"
               name="roof_incl"
               icon={RiArrowUpWideLine}
-              onValueChange={handleRoofInclChange}
+              onValueChange={
+                (value: string) => {
+                  setFormData({ ...formData, roof_incl: parseInt(value) });
+                }
+              }
               value = {formData.roof_incl.toString()}
               required
             >
@@ -134,7 +149,11 @@ export function PvForm() {
               id="roof_azimuth"
               name="roof_azimuth"
               icon={RiCompassLine}
-              onValueChange={handleRoofAzChange}
+              onValueChange={
+                (value: string) => {
+                  setFormData({ ...formData, roof_azimuth: parseInt(value) });
+                }
+              }
               value = {formData.roof_azimuth.toString()}
               required
             >
@@ -239,118 +258,9 @@ export function PvForm() {
           </div>
         </div>
 
-        {/* Electricity price */}
-        <div className="mb-4">
-          <label htmlFor="electr_price" className="mb-2 block text-sm font-medium">
-            Electricity price <span className="text-gray-400"> cents/kWh </span>
-          </label>
-          <div className="relative">
-            <NumberInput
-              id="electr_price"
-              name="electr_price"
-              step="0.1"
-              placeholder="35"
-              icon={RiCoinsLine}
-              onChange={handleChange}
-              value = {formData.electr_price}
-              required
-            />
-          </div>
-          <div id="electr_price-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.electr_price &&
-              state.errors.electr_price.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
-          </div>
-        </div>
-
-        {/* Down payment */}
-        <div className="mb-4">
-          <label htmlFor="down_payment" className="mb-2 block text-sm font-medium">
-            Down payment <span className="text-gray-400"> % </span>
-          </label>
-          <div className="relative">
-            <NumberInput
-              id="down_payment"
-              name="down_payment"
-              step="0.1"
-              placeholder="20"
-              icon={RiCurrencyLine}
-              onChange={handleChange}
-              value = {formData.down_payment}
-              required
-            />
-          </div>
-          <div id="down_payment-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.down_payment &&
-              state.errors.down_payment.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
-          </div>
-        </div>
-
-        {/* Pay off rate */}
-        <div className="mb-4">
-          <label htmlFor="pay_off_rate" className="mb-2 block text-sm font-medium">
-            Pay off rate <span className="text-gray-400"> % </span>
-          </label>
-          <div className="relative">
-            <NumberInput
-              id="pay_off_rate"
-              name="pay_off_rate"
-              step="0.1"
-              placeholder="5"
-              icon={RiHandCoinLine}
-              onChange={handleChange}
-              value = {formData.pay_off_rate}
-              required
-            />
-          </div>
-          <div id="pay_off_rate-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.pay_off_rate &&
-              state.errors.pay_off_rate.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
-          </div>
-        </div>
-
-        {/* Interest rate */}
-        <div className="mb-4">
-          <label htmlFor="interest_rate" className="mb-2 block text-sm font-medium">
-            Interest rate <span className="text-gray-400"> % </span>
-          </label>
-          <div className="relative">
-            <NumberInput
-              id="interest_rate"
-              name="interest_rate"
-              step="0.1"
-              placeholder="3"
-              icon={RiBankLine}
-              onChange={handleChange}
-              value = {formData.interest_rate}
-              required
-            />
-          </div>
-          <div id="interest_rate-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.interest_rate &&
-              state.errors.interest_rate.map((error: string) => (
-                <p className="mt-2 text-sm text-red-500" key={error}>
-                  {error}
-                </p>
-              ))}
-          </div>
-        </div>
-
         <div className="mt-6 flex justify-center gap-4">
           <SubmitButton />
         </div>
       </form>
-    </Card>
   );
 }

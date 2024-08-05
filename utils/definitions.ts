@@ -1,7 +1,67 @@
-// This file contains type definitions for your data.
-// It describes the shape of the data, and what data type each property should accept.
-// For simplicity of teaching, we're manually defining these types.
-// However, these types are generated automatically if you're using an ORM such as Prisma.
+import { z } from "zod";
+
+
+// FORM STATE for messages and errors in form submission
+export type FormState = {
+  errors?: Record<string, string[]>;
+  message?: string | null;
+};
+
+// MODEL DATA for /workspace/models
+export type ModelData = {
+  model_name: string;
+  location: string;
+  roof_incl: number;
+  roof_azimuth: number;
+  electr_cons: number;
+  peak_power: number;
+  battery_cap: number;
+};
+
+export const ModelDataSchema = z.object({
+  model_name: z.string()
+      .max(100, { message: 'Model name must be at most 100 characters long' })
+      .min(1, { message: 'Please specify a model name' }),
+  location: z.string()
+      .max(100, { message: 'Location must be at most 100 characters long' })
+      .min(1, { message: 'Please specify a location' }),
+  roof_incl: z.coerce
+      .number()
+      .gte(0, { message: 'Must be at least 0°' })
+      .lte(90, { message: 'Must be at most 90°' }),
+  roof_azimuth: z.coerce
+      .number()
+      .gte(-180, { message: 'Must be at least -180°' })
+      .lte(180, { message: 'Must be at most 180°' }),
+  electr_cons: z.coerce
+      .number()
+      .gte(0, { message: 'Must be at least 0 kWh' })
+      .lte(100000, { message: 'Must be at most 100,000 kWh' }),
+  peak_power: z.coerce
+      .number()
+      .gte(0, { message: 'Must be at least 0 kWp' })
+      .lte(100000, { message: 'Must be at most 100,000 kWp' }),
+  battery_cap: z.coerce
+      .number()
+      .gte(0, { message: 'Must be at least 0 kWh' })
+      .lte(100000, { message: 'Must be at most 100,000 kWh' }),
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ------------- OLD SHIT --------------------
 
 export type SimulationModel = {
   location: string;
