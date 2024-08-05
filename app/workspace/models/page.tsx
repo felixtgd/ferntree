@@ -27,10 +27,16 @@ async function ModelCard({modelData}: {modelData: ModelData}) {
 export default async function Page() {
     return (
         <main>
-            <div className="flex flex-row flex-grow p-4">
-                <h1> Models </h1>
-                <ModelFormDialog />
+            <div className="flex justify-between items-center p-4">
+                <h3 className="mx-auto text-2xl font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+                    Models
+                </h3>
+
+                <div className="flex items-center">
+                    <ModelFormDialog />
+                </div>
             </div>
+
             <div>
                 <ModelCard modelData={{
                     model_name: "Model 1",
