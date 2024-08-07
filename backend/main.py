@@ -4,11 +4,13 @@ import logging
 from dotenv import load_dotenv
 
 from datetime import datetime
-from enum import Enum
+
+# from enum import Enum
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.database.models import (
+    ModelData,
     UserInputForm,
     TimeseriesDataRequest,
     FilteredTimeseriesData,
@@ -24,21 +26,21 @@ from backend.utils.sim_funcs import (
 from backend.utils.data_model_helpers import format_timeseries_data
 
 
-class RoofTilt(int, Enum):
-    flat = 0
-    tilted30 = 30
-    tilted45 = 45
+# class RoofTilt(int, Enum):
+#     flat = 0
+#     tilted30 = 30
+#     tilted45 = 45
 
 
-class RoofAzimuth(int, Enum):
-    south = 0
-    south_east = -45
-    south_west = 45
-    east = -90
-    west = 90
-    north_east = -135
-    north_west = 135
-    north = 180
+# class RoofAzimuth(int, Enum):
+#     south = 0
+#     south_east = -45
+#     south_west = 45
+#     east = -90
+#     west = 90
+#     north_east = -135
+#     north_west = 135
+#     north = 180
 
 
 # Set up logger
@@ -71,6 +73,36 @@ app.add_middleware(
 )
 
 
+@app.post("/workspace/models/submit-model", response_model=str)
+async def submit_model(model_data: ModelData):
+    logger.info(
+        f"\nPOST:\t/workspace/models/submit-model --> Received request: model_data={model_data}"
+    )
+
+    # Check if user exists
+    user_exists = await db_client.find_one_by_id("users", model_data.user_id)
+    if not user_exists:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with ID {model_data.user_id} not found.",
+        )
+
+    # Insert model data into database
+    model_id = await db_client.insert_one("models", model_data.model_dump())
+    if model_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Error inserting model data into database.",
+        )
+
+    logger.info(
+        f"\nPOST:\t/workspace/models/submit-model --> Return Model ID: {model_id}"
+    )
+
+    return model_id
+
+
+# -------------- OLD SHIT -----------------
 @app.get("/")
 async def root():
     return {"message": "Hello World"}

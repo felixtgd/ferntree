@@ -1,20 +1,9 @@
-import { auth } from "@/auth";
-import { Session, User } from "next-auth";
+import { getUser } from "@/utils/helpers";
+import { User } from "next-auth";
 import Image from "next/image";
 
-async function getUser() {
-    const session: Session | null = await auth()
-
-    if (!session?.user) return null
-
-    console.log(session.user)
-
-    return session.user
-}
-
-
 export default async function Page() {
-    const user: User | null = await getUser()
+    const user: User | null = await getUser();
 
     return (
         <main>

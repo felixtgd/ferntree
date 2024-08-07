@@ -11,7 +11,7 @@ import {
   RiSunLine
 } from '@remixicon/react';
 
-import { submitForm } from './actions';
+import { submitModel } from './actions';
 import { ModelData, FormState } from '@/utils/definitions';
 
 import { useFormStatus, useFormState } from 'react-dom'
@@ -48,7 +48,7 @@ export function ModelForm() {
   };
 
   const initialState : FormState = { message: null, errors: {} };
-  const [state, formAction] = useFormState(submitForm, initialState);
+  const [state, formAction] = useFormState(submitModel, initialState);
 
   return (
       <form action={formAction}>

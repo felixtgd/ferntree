@@ -1,6 +1,23 @@
 from pydantic import BaseModel, Field
 
 
+class ModelData(BaseModel):
+    model_name: str
+    location: str
+    roof_incl: int
+    roof_azimuth: int
+    electr_cons: float
+    peak_power: float
+    battery_cap: float
+    user_id: str
+
+    class Config:
+        protected_namespaces = ()
+
+
+# ------------------ OLD SHIT --------------------
+
+
 # User input for simulation
 class UserInputForm(BaseModel):
     location: str = Field(
