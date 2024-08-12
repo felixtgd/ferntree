@@ -2,7 +2,7 @@
 
 'use server';
 
-import { ModelDataSchema, FormState } from '@/utils/definitions';
+import { ModelDataSchema, FormState, ModelData } from '@/utils/definitions';
 import { getUser } from '@/utils/helpers';
 import { User } from 'next-auth';
 import { revalidatePath } from 'next/cache';
@@ -57,7 +57,7 @@ export async function submitModel(prevState: FormState, formData: FormData) {
     try {
         // Submit user input form with model parameters
         const BACKEND_BASE_URI = loadBackendBaseUri();
-        const response_submit_model = await fetch(`${BACKEND_BASE_URI}/workspace/models/submit-model`, {
+        const response_submit_model = await fetch(`${BACKEND_BASE_URI}/workspace/models/submit-model?user_id=${user_id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
@@ -74,3 +74,23 @@ export async function submitModel(prevState: FormState, formData: FormData) {
     return state;
 
 };
+
+export async function fetchModels() {
+
+    // Get the user ID
+    const user: User | null = await getUser()
+    const user_id = user?.id;
+    if (!user || !user_id) {
+        console.error('User is not defined');
+        return null;
+    }
+
+    // Fetch models of user
+    const BACKEND_BASE_URI = loadBackendBaseUri();
+    const response_load_models = await fetch(`${BACKEND_BASE_URI}/workspace/models/fetch-models?user_id=${user_id}`);
+    const models: ModelData[] = await response_load_models.json();
+
+    console.log(`GET workspace/models/load-models: Models loaded (${response_load_models.status}).`);
+
+    return models;
+}

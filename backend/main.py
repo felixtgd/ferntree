@@ -74,17 +74,17 @@ app.add_middleware(
 
 
 @app.post("/workspace/models/submit-model", response_model=str)
-async def submit_model(model_data: ModelData):
+async def submit_model(user_id: str, model_data: ModelData):
     logger.info(
         f"\nPOST:\t/workspace/models/submit-model --> Received request: model_data={model_data}"
     )
 
     # Check if user exists
-    user_exists = await db_client.find_one_by_id("users", model_data.user_id)
+    user_exists = await db_client.find_one_by_id("users", user_id)
     if not user_exists:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with ID {model_data.user_id} not found.",
+            detail=f"User with ID {user_id} not found.",
         )
 
     # Insert model data into database
@@ -100,6 +100,36 @@ async def submit_model(model_data: ModelData):
     )
 
     return model_id
+
+
+@app.get("/workspace/models/fetch-models", response_model=list[ModelData])
+async def fetch_models(user_id: str):
+    logger.info(
+        f"\nGET:\t/workspace/models/fetch-models --> Received request: user_id={user_id}"
+    )
+
+    # TODO: Make this a decorator for all routes!!!
+    # Check if user exists
+    user_exists = await db_client.find_one_by_id("users", user_id)
+    if not user_exists:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with ID {user_id} not found.",
+        )
+
+    # Fetch all models of the user
+    models = await db_client.fetch_models(user_id)
+    # if not models:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_404_NOT_FOUND,
+    #         detail=f"No models found for user with ID {user_id}.",
+    #     )
+
+    logger.info(
+        f"\nGET:\t/workspace/models/fetch-models --> Return {len(models)} models"
+    )
+
+    return models
 
 
 # -------------- OLD SHIT -----------------

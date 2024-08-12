@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
+from typing import Union
+
+from backend.database.models import ModelData
 
 
 # Use certifi to get the path of the CA file
@@ -17,13 +20,13 @@ MONGODB_DATABASE = os.environ["MONGODB_DATABASE"]
 
 
 class MongoClient:
-    def __init__(self):
+    def __init__(self) -> None:
         self.client = AsyncIOMotorClient(
             MONGODB_URI, server_api=ServerApi("1"), tlsCAFile=ca
         )
         self.db = self.client[MONGODB_DATABASE]
 
-    async def check_user_exists(self, user_id: str):
+    async def check_user_exists(self, user_id: str) -> bool:
         query = {"_id": ObjectId(user_id)}
         collection = self.db["users"]
         user = await collection.find_one(query)
@@ -33,7 +36,7 @@ class MongoClient:
         else:
             return True
 
-    async def insert_one(self, collection: str, document: dict):
+    async def insert_one(self, collection: str, document: dict) -> Union[str, None]:
         # Insert a document into the collection
         db_collection = self.db[collection]
         result = await db_collection.insert_one(document)
@@ -42,6 +45,16 @@ class MongoClient:
             return str(result.inserted_id)
         else:
             return None
+
+    async def fetch_models(self, user_id: str) -> list[ModelData]:
+        # Fetch all models of the user
+        query = {"user_id": user_id}
+        db_collection = self.db["models"]
+        cursor = db_collection.find(query)
+
+        models = [model async for model in cursor]
+
+        return models
 
     # --------- OLD SHIT -------------
 

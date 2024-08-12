@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class ModelData(BaseModel):
+    user_id: str
     model_name: str
     location: str
     roof_incl: int
@@ -9,7 +10,6 @@ class ModelData(BaseModel):
     electr_cons: float
     peak_power: float
     battery_cap: float
-    user_id: str
 
     class Config:
         protected_namespaces = ()
