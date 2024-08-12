@@ -7,6 +7,7 @@ import {
   RiCompassLine,
   RiHome4Line,
   RiLightbulbFlashLine,
+  RiPriceTag3Line,
   RiSaveLine,
   RiSunLine
 } from '@remixicon/react';
@@ -62,7 +63,7 @@ export function ModelForm() {
               id="model_name"
               name="model_name"
               type="text"
-              icon={RiHome4Line}
+              icon={RiPriceTag3Line}
               onChange={handleChange}
               value = {formData.model_name}
               placeholder="Enter model name"
