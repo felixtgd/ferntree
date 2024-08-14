@@ -1,6 +1,7 @@
 import { Card, List, ListItem } from "@tremor/react";
 import { ModelData } from "@/utils/definitions";
 import { RiArrowUpWideLine, RiBattery2ChargeLine, RiCompassLine, RiHome4Line, RiLightbulbFlashLine, RiSunLine } from "@remixicon/react";
+import { DeleteButton, EditButton, RunButton, ViewButton } from "@/app/components/buttons";
 
 export async function ModelCard({modelData}: {modelData: ModelData}) {
     return (
@@ -50,6 +51,15 @@ export async function ModelCard({modelData}: {modelData: ModelData}) {
                             <span>{modelData.battery_cap} kWh</span>
                         </ListItem>
                     </List>
+                </div>
+                <div className="flex flex-col">
+                    {
+                        modelData.sim_id
+                            ? <ViewButton type="model" />
+                            : <RunButton type="model" />
+                    }
+                    <EditButton type="model" />
+                    <DeleteButton type="model" />
                 </div>
             </Card>
         </div>

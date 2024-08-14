@@ -16,6 +16,7 @@ export type ModelData = {
   electr_cons: number;
   peak_power: number;
   battery_cap: number;
+  sim_id?: string;
 };
 
 export const ModelDataSchema = z.object({
