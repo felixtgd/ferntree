@@ -10,7 +10,8 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.database.models import (
-    ModelData,
+    ModelDataIn,
+    ModelDataOut,
     UserInputForm,
     TimeseriesDataRequest,
     FilteredTimeseriesData,
@@ -74,7 +75,7 @@ app.add_middleware(
 
 
 @app.post("/workspace/models/submit-model", response_model=str)
-async def submit_model(user_id: str, model_data: ModelData):
+async def submit_model(user_id: str, model_data: ModelDataIn):
     logger.info(
         f"\nPOST:\t/workspace/models/submit-model --> Received request: model_data={model_data}"
     )
@@ -102,7 +103,7 @@ async def submit_model(user_id: str, model_data: ModelData):
     return model_id
 
 
-@app.get("/workspace/models/fetch-models", response_model=list[ModelData])
+@app.get("/workspace/models/fetch-models", response_model=list[ModelDataOut])
 async def fetch_models(user_id: str):
     logger.info(
         f"\nGET:\t/workspace/models/fetch-models --> Received request: user_id={user_id}"
@@ -119,17 +120,41 @@ async def fetch_models(user_id: str):
 
     # Fetch all models of the user
     models = await db_client.fetch_models(user_id)
-    # if not models:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_404_NOT_FOUND,
-    #         detail=f"No models found for user with ID {user_id}.",
-    #     )
 
     logger.info(
         f"\nGET:\t/workspace/models/fetch-models --> Return {len(models)} models"
     )
 
     return models
+
+
+@app.delete("/workspace/models/delete-model", response_model=str)
+async def delete_model(user_id: str, model_id: str):
+    logger.info(
+        f"\nDELETE:\t/workspace/models/delete-model --> Received request: user_id={user_id}, model_id={model_id}"
+    )
+
+    # Check if user exists
+    user_exists = await db_client.find_one_by_id("users", user_id)
+    if not user_exists:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with ID {user_id} not found.",
+        )
+
+    # Delete the model
+    delete_result_acknowledged = await db_client.delete_model(model_id)
+    if not delete_result_acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Model with ID {model_id} not found.",
+        )
+
+    logger.info(
+        f"\nDELETE:\t/workspace/models/delete-model --> Deleted model with ID: {model_id}"
+    )
+
+    return model_id
 
 
 # -------------- OLD SHIT -----------------

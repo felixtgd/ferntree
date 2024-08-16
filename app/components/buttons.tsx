@@ -2,6 +2,7 @@
 
 import { RemixiconComponentType, RiDeleteBin6Line, RiEyeLine, RiPencilLine, RiPlayCircleLine } from "@remixicon/react";
 import { Button, ButtonProps } from "@tremor/react";
+import { deleteModel, editModel, runSimulation, viewResults } from "../workspace/models/actions";
 
 
 function BaseButton(
@@ -9,11 +10,15 @@ function BaseButton(
         icon,
         color,
         tooltip,
+        model_id,
+        buttonAction,
     }:
     {
         tooltip: string,
         color: ButtonProps["color"],
         icon: RemixiconComponentType,
+        model_id: string,
+        buttonAction: (model_id: string) => Promise<void>,
     }
 ) {
     return (
@@ -28,12 +33,13 @@ function BaseButton(
                 loadingText="Loading"
                 tooltip={tooltip}
                 className="w-10 h-10"
+                onClick={() => buttonAction(model_id)}
             />
         </div>
     );
 }
 
-export function DeleteButton({type}: {type: string}) {
+export function DeleteButton({type, model_id}: {type: string, model_id: string}) {
 
     const tooltip=`Delete ${type}`
 
@@ -42,11 +48,13 @@ export function DeleteButton({type}: {type: string}) {
             icon={RiDeleteBin6Line}
             color="red"
             tooltip={tooltip}
+            model_id={model_id}
+            buttonAction={deleteModel}
         />
     );
 }
 
-export function EditButton({type}: {type: string}) {
+export function EditButton({type, model_id}: {type: string, model_id: string}) {
 
     const tooltip=`Edit ${type}`
 
@@ -55,11 +63,13 @@ export function EditButton({type}: {type: string}) {
             icon={RiPencilLine}
             color="orange"
             tooltip={tooltip}
+            model_id={model_id}
+            buttonAction={editModel}
         />
     );
 }
 
-export function RunButton({type}: {type: string}) {
+export function RunButton({type, model_id}: {type: string, model_id: string}) {
 
     let tooltip;
     if (type === "model") {
@@ -76,11 +86,13 @@ export function RunButton({type}: {type: string}) {
             icon={RiPlayCircleLine}
             color="blue"
             tooltip={tooltip}
+            model_id={model_id}
+            buttonAction={runSimulation}
         />
     );
 }
 
-export function ViewButton({type}: {type: string}) {
+export function ViewButton({type, model_id}: {type: string, model_id: string}) {
 
     let tooltip;
     if (type === "model") {
@@ -97,6 +109,8 @@ export function ViewButton({type}: {type: string}) {
             icon={RiEyeLine}
             color="green"
             tooltip={tooltip}
+            model_id={model_id}
+            buttonAction={viewResults}
         />
     );
 }

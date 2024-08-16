@@ -7,7 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 from typing import Union
 
-from backend.database.models import ModelData
+from backend.database.models import ModelDataOut
 
 
 # Use certifi to get the path of the CA file
@@ -46,15 +46,24 @@ class MongoClient:
         else:
             return None
 
-    async def fetch_models(self, user_id: str) -> list[ModelData]:
+    async def fetch_models(self, user_id: str) -> list[ModelDataOut]:
         # Fetch all models of the user
         query = {"user_id": user_id}
         db_collection = self.db["models"]
         cursor = db_collection.find(query)
 
-        models = [model async for model in cursor]
+        models = [
+            ModelDataOut(**model, model_id=str(model["_id"])) async for model in cursor
+        ]
 
         return models
+
+    async def delete_model(self, model_id: str):
+        query = {"_id": ObjectId(model_id)}
+        db_collection = self.db["models"]
+        delete_result = await db_collection.delete_one(query)
+
+        return delete_result.acknowledged
 
     # --------- OLD SHIT -------------
 

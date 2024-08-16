@@ -4,6 +4,11 @@ import { RiArrowUpWideLine, RiBattery2ChargeLine, RiCompassLine, RiHome4Line, Ri
 import { DeleteButton, EditButton, RunButton, ViewButton } from "@/app/components/buttons";
 
 export async function ModelCard({modelData}: {modelData: ModelData}) {
+
+    if (!modelData.model_id) {
+        throw new Error('Model ID is not defined.');
+    }
+
     return (
         <div className="p-2">
             <Card
@@ -57,11 +62,11 @@ export async function ModelCard({modelData}: {modelData: ModelData}) {
                 <div className="flex flex-col justify-center m-2">
                     {
                         modelData.sim_id
-                            ? <ViewButton type="model" />
-                            : <RunButton type="model" />
+                            ? <ViewButton type="model" model_id={modelData.model_id} />
+                            : <RunButton type="model" model_id={modelData.model_id} />
                     }
-                    <EditButton type="model" />
-                    <DeleteButton type="model" />
+                    <EditButton type="model" model_id={modelData.model_id} />
+                    <DeleteButton type="model" model_id={modelData.model_id}/>
                 </div>
             </Card>
         </div>

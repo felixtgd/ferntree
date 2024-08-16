@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
 
-class ModelData(BaseModel):
+class ModelDataIn(BaseModel):
     user_id: str
     model_name: str
     location: str
@@ -13,6 +13,10 @@ class ModelData(BaseModel):
 
     class Config:
         protected_namespaces = ()
+
+
+class ModelDataOut(ModelDataIn):
+    model_id: str
 
 
 # ------------------ OLD SHIT --------------------
