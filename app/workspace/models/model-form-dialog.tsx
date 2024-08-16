@@ -1,14 +1,29 @@
 'use client'
 
 import { Button, Dialog, DialogPanel } from '@tremor/react';
-import React from 'react';
+import { useState } from 'react';
 import { ModelForm } from './model-form';
 
-export function ModelFormDialog() {
-  const [isOpen, setIsOpen] = React.useState(false);
+export function ModelFormDialog({num_models}: {num_models: number}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  let tooltip;
+  if (num_models >= 5) {
+    tooltip = 'You have reached the maximum number of models. Delete a model to create a new one.';
+  } else {
+    tooltip = 'Create a new model';
+  }
+
   return (
     <>
-    <Button className="mx-auto block" onClick={() => setIsOpen(true)}>Create Model</Button>
+    <Button
+      className="block"
+      onClick={() => setIsOpen(true)}
+      tooltip={tooltip}
+      disabled={num_models >= 5}
+    >
+      Create Model
+    </Button>
     <Dialog open={isOpen} onClose={(val) => setIsOpen(val)} static={true}>
       <DialogPanel>
         <div className="flex justify-between items-center">

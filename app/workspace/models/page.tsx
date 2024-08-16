@@ -7,6 +7,7 @@ import { ModelData } from "@/utils/definitions";
 export default async function Page() {
 
     const models: ModelData[] | null = await fetchModels();
+    const num_models = models ? models.length : 0;
 
     return (
         <main>
@@ -16,7 +17,7 @@ export default async function Page() {
                 </h3>
 
                 <div className="flex items-center">
-                    <ModelFormDialog />
+                    <ModelFormDialog num_models={num_models} />
                 </div>
             </div>
 
