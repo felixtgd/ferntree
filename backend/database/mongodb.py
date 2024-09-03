@@ -67,30 +67,30 @@ class MongoClient:
 
     # --------- OLD SHIT -------------
 
-    async def find_one_by_id(self, collection: str, id: str):
-        query = {"_id": ObjectId(id)}
-        # Find one document in the collection that matches the query
-        collection = self.db[collection]
-        document = await collection.find_one(query)
+    # async def find_one_by_id(self, collection: str, id: str):
+    #     query = {"_id": ObjectId(id)}
+    #     # Find one document in the collection that matches the query
+    #     collection = self.db[collection]
+    #     document = await collection.find_one(query)
 
-        # Return the document
-        return document
+    #     # Return the document
+    #     return document
 
-    async def clean_collection(self, collection: str):
-        # Delete all documents in the collection
-        collection = self.db[collection]
-        await collection.delete_many({})
+    # async def clean_collection(self, collection: str):
+    #     # Delete all documents in the collection
+    #     collection = self.db[collection]
+    #     await collection.delete_many({})
 
-    async def fetch_timeseries_data(self, sim_id: str) -> list[dict]:
-        # Fetch the timeseries data of the simulation matching the given date range
-        collection = self.db["sim_timeseries"]
-        query = {"_id": ObjectId(sim_id)}
+    # async def fetch_timeseries_data(self, sim_id: str) -> list[dict]:
+    #     # Fetch the timeseries data of the simulation matching the given date range
+    #     collection = self.db["sim_timeseries"]
+    #     query = {"_id": ObjectId(sim_id)}
 
-        document = await collection.find_one(query)
+    #     document = await collection.find_one(query)
 
-        timeseries_data = document["timeseries_data"]
+    #     timeseries_data = document["timeseries_data"]
 
-        return timeseries_data
+    #     return timeseries_data
 
-    async def close(self):
-        self.client.close()
+    # async def close(self):
+    #     self.client.close()

@@ -25,6 +25,7 @@ from backend.utils.sim_funcs import (
     calc_monthly_pv_gen_data,
 )
 from backend.utils.data_model_helpers import format_timeseries_data
+from backend.utils.auth_funcs import check_user_exists
 
 
 # class RoofTilt(int, Enum):
@@ -75,18 +76,11 @@ app.add_middleware(
 
 
 @app.post("/workspace/models/submit-model", response_model=str)
+@check_user_exists(db_client)
 async def submit_model(user_id: str, model_data: ModelDataIn):
     logger.info(
         f"\nPOST:\t/workspace/models/submit-model --> Received request: model_data={model_data}"
     )
-
-    # Check if user exists
-    user_exists = await db_client.find_one_by_id("users", user_id)
-    if not user_exists:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with ID {user_id} not found.",
-        )
 
     # Insert model data into database
     model_id = await db_client.insert_one("models", model_data.model_dump())
@@ -104,19 +98,11 @@ async def submit_model(user_id: str, model_data: ModelDataIn):
 
 
 @app.get("/workspace/models/fetch-models", response_model=list[ModelDataOut])
+@check_user_exists(db_client)
 async def fetch_models(user_id: str):
     logger.info(
         f"\nGET:\t/workspace/models/fetch-models --> Received request: user_id={user_id}"
     )
-
-    # TODO: Make this a decorator for all routes!!!
-    # Check if user exists
-    user_exists = await db_client.find_one_by_id("users", user_id)
-    if not user_exists:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with ID {user_id} not found.",
-        )
 
     # Fetch all models of the user
     models = await db_client.fetch_models(user_id)
@@ -129,18 +115,11 @@ async def fetch_models(user_id: str):
 
 
 @app.delete("/workspace/models/delete-model", response_model=str)
+@check_user_exists(db_client)
 async def delete_model(user_id: str, model_id: str):
     logger.info(
         f"\nDELETE:\t/workspace/models/delete-model --> Received request: user_id={user_id}, model_id={model_id}"
     )
-
-    # Check if user exists
-    user_exists = await db_client.find_one_by_id("users", user_id)
-    if not user_exists:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"User with ID {user_id} not found.",
-        )
 
     # Delete the model
     delete_result_acknowledged = await db_client.delete_model(model_id)
