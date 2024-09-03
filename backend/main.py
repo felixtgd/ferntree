@@ -91,7 +91,7 @@ async def submit_model(user_id: str, model_data: ModelDataIn):
         )
 
     logger.info(
-        f"\nPOST:\t/workspace/models/submit-model --> Return Model ID: {model_id}"
+        f"POST:\t/workspace/models/submit-model --> Return Model ID: {model_id}"
     )
 
     return model_id
@@ -101,15 +101,13 @@ async def submit_model(user_id: str, model_data: ModelDataIn):
 @check_user_exists(db_client)
 async def fetch_models(user_id: str):
     logger.info(
-        f"\nGET:\t/workspace/models/fetch-models --> Received request: user_id={user_id}"
+        f"GET:\t/workspace/models/fetch-models --> Received request: user_id={user_id}"
     )
 
     # Fetch all models of the user
     models = await db_client.fetch_models(user_id)
 
-    logger.info(
-        f"\nGET:\t/workspace/models/fetch-models --> Return {len(models)} models"
-    )
+    logger.info(f"GET:\t/workspace/models/fetch-models --> Return {len(models)} models")
 
     return models
 
@@ -118,7 +116,7 @@ async def fetch_models(user_id: str):
 @check_user_exists(db_client)
 async def delete_model(user_id: str, model_id: str):
     logger.info(
-        f"\nDELETE:\t/workspace/models/delete-model --> Received request: user_id={user_id}, model_id={model_id}"
+        f"DELETE:\t/workspace/models/delete-model --> Received request: user_id={user_id}, model_id={model_id}"
     )
 
     # Delete the model
@@ -130,7 +128,7 @@ async def delete_model(user_id: str, model_id: str):
         )
 
     logger.info(
-        f"\nDELETE:\t/workspace/models/delete-model --> Deleted model with ID: {model_id}"
+        f"DELETE:\t/workspace/models/delete-model --> Deleted model with ID: {model_id}"
     )
 
     return model_id
