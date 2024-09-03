@@ -40,7 +40,7 @@ export function ModelFormDialog({num_models}: {num_models: number}) {
             </Button>
         </div>
 
-        <ModelForm />
+        <ModelForm setIsOpen={setIsOpen} />
 
       </DialogPanel>
     </Dialog>

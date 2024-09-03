@@ -6,8 +6,8 @@ import { ModelData } from "@/utils/definitions";
 
 export default async function Page() {
 
-    const models: ModelData[] | null = await fetchModels();
-    const num_models = models ? models.length : 0;
+    const models: ModelData[] = await fetchModels();
+    const num_models = models.length;
 
     return (
         <main>
@@ -22,7 +22,7 @@ export default async function Page() {
             </div>
 
             <div>
-                {models?.map((modelData, index) => (
+                {models.map((modelData, index) => (
                     <ModelCard key={index} modelData={modelData} />
                 ))}
             </div>

@@ -23,13 +23,17 @@ function SubmitButton() {
   const { pending } = useFormStatus()
 
   return (
-    <Button type="submit" icon={RiSaveLine} disabled={pending}>
+    <Button
+      type="submit"
+      icon={RiSaveLine}
+      disabled={pending}
+    >
       Save Model
     </Button>
   )
 }
 
-export function ModelForm() {
+export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
 
   const defaultModelData: ModelData = {
     model_name: 'Aarau_10_10',
@@ -51,6 +55,10 @@ export function ModelForm() {
   const initialState : FormState = { message: null, errors: {} };
   const [state, formAction] = useFormState(submitModel, initialState);
 
+  // Close form dialog after successful submission
+  const submit_success: boolean = state.message === 'success';
+  setIsOpen(!submit_success);
+
   return (
       <form action={formAction}>
         {/* Model Name */}
@@ -67,7 +75,7 @@ export function ModelForm() {
               onChange={handleChange}
               value = {formData.model_name}
               placeholder="Enter model name"
-              required
+              // required
             />
           </div>
           <div id="model_name-error" aria-live="polite" aria-atomic="true">

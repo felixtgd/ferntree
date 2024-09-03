@@ -45,9 +45,17 @@ export async function submitModel(prevState: FormState, formData: FormData) {
         const model_id = await response_submit_model.json();
 
         console.log(`POST workspace/models/submit-model: Model form submitted (${response_submit_model.status}). Model ID: ${model_id}`);
+        state = {
+            errors: {},
+            message: 'success',
+        };
 
     } catch (error) {
         console.error(`Failed to submit model form: ${error}`);
+        state = {
+            errors: {},
+            message: 'Failed to submit form.',
+        };
     }
 
     revalidatePath('/workspace/models');
@@ -65,7 +73,7 @@ export async function fetchModels() {
     const response_load_models = await fetch(`${BACKEND_BASE_URI}/workspace/models/fetch-models?user_id=${user_id}`);
     const models: ModelData[] = await response_load_models.json();
 
-    console.log(`GET workspace/models/load-models: Models loaded (${response_load_models.status}).`);
+    console.log(`GET workspace/models/fetch-models: Models loaded (${response_load_models.status}).`);
 
     return models;
 }
