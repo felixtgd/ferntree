@@ -54,21 +54,6 @@ export function DeleteButton({type, model_id}: {type: string, model_id: string})
     );
 }
 
-export function EditButton({type, model_id}: {type: string, model_id: string}) {
-
-    const tooltip=`Edit ${type}`
-
-    return (
-        <BaseButton
-            icon={RiPencilLine}
-            color="orange"
-            tooltip={tooltip}
-            model_id={model_id}
-            buttonAction={editModel}
-        />
-    );
-}
-
 export function RunButton({type, model_id}: {type: string, model_id: string}) {
 
     let tooltip;
@@ -111,6 +96,22 @@ export function ViewButton({type, model_id}: {type: string, model_id: string}) {
             tooltip={tooltip}
             model_id={model_id}
             buttonAction={viewResults}
+        />
+    );
+}
+
+// not used right now, maybe in the future
+export function EditButton({type, model_id}: {type: string, model_id: string}) {
+
+    const tooltip=`Edit ${type}`
+
+    return (
+        <BaseButton
+            icon={RiPencilLine}
+            color="orange"
+            tooltip={tooltip}
+            model_id={model_id}
+            buttonAction={editModel}
         />
     );
 }

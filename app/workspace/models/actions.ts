@@ -104,12 +104,6 @@ export async function deleteModel(model_id: string) {
     revalidatePath('/workspace/models');
 }
 
-export async function editModel(model_id: string) {
-    // Placeholder for editing model
-    console.log(`Edit model: ${model_id}`);
-    revalidatePath('/workspace/models');
-}
-
 export async function runSimulation(model_id: string) {
     // Placeholder for running simulation
     console.log(`Run simulation: ${model_id}`);
@@ -119,5 +113,12 @@ export async function runSimulation(model_id: string) {
 export async function viewResults(model_id: string) {
     // Placeholder for viewing results
     console.log(`View results: ${model_id}`);
+    revalidatePath('/workspace/models');
+}
+
+// not used right now, maybe in the future
+export async function editModel(model_id: string) {
+    // Placeholder for editing model
+    console.log(`Edit model: ${model_id}`);
     revalidatePath('/workspace/models');
 }

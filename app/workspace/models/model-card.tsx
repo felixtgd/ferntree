@@ -1,7 +1,7 @@
 import { Card, List, ListItem } from "@tremor/react";
 import { ModelData } from "@/utils/definitions";
 import { RiArrowUpWideLine, RiBattery2ChargeLine, RiCompassLine, RiHome4Line, RiLightbulbFlashLine, RiSunLine } from "@remixicon/react";
-import { DeleteButton, EditButton, RunButton, ViewButton } from "@/app/components/buttons";
+import { DeleteButton, RunButton, ViewButton } from "@/app/components/buttons";
 
 export async function ModelCard({modelData}: {modelData: ModelData}) {
 
@@ -65,7 +65,6 @@ export async function ModelCard({modelData}: {modelData: ModelData}) {
                             ? <ViewButton type="model" model_id={modelData.model_id} />
                             : <RunButton type="model" model_id={modelData.model_id} />
                     }
-                    <EditButton type="model" model_id={modelData.model_id} />
                     <DeleteButton type="model" model_id={modelData.model_id}/>
                 </div>
             </Card>
