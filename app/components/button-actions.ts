@@ -30,11 +30,36 @@ export async function deleteModel(model_id: string) {
     revalidatePath('/workspace/models');
 }
 
+
 export async function runSimulation(model_id: string) {
-    // Placeholder for running simulation
-    console.log(`Run simulation: ${model_id}`);
-    revalidatePath('/workspace/models');
+
+    // Get the user ID
+    const user_id = await getUserID();
+
+    let run_successful: boolean;
+    try {
+        // Fetch models of user
+        const BACKEND_BASE_URI = await loadBackendBaseUri();
+        const response_load_models = await fetch(`${BACKEND_BASE_URI}/workspace/simulations/run-sim?user_id=${user_id}&model_id=${model_id}`);
+        run_successful = await response_load_models.json();
+
+        console.log(`GET workspace/simulations/run-sim: Simulation executed (${response_load_models.status}).`);
+
+    }
+    catch (error) {
+        console.error(`Failed to run simulation: ${error}`);
+        run_successful = false;
+    }
+
+    if (run_successful) {
+        revalidatePath(`/workspace/simulations/${model_id}`);
+    }
+    else {
+        revalidatePath('/workspace/simulations');
+    }
+
 }
+
 
 export async function viewResults(model_id: string) {
     // Placeholder for viewing results
