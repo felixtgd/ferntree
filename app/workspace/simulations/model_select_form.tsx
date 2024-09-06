@@ -81,7 +81,7 @@ export function ModelSelectForm({models}: {models: ModelData[]}) {
                             <span className="flex items-center">
                                 <RiSunLine className="mr-2" />
                             </span>
-                            <span>{modelData.peak_power} kW</span>
+                            <span>{modelData.peak_power} kWp</span>
                         </ListItem>
 
                         <ListItem key="roof_azimuth">

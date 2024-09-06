@@ -48,7 +48,7 @@ export async function ModelCard({modelData}: {modelData: ModelData}) {
                                 <span className="flex items-center">
                                     <RiSunLine className="mr-2" /> PV peak power
                                 </span>
-                                <span>{modelData.peak_power} kW</span>
+                                <span>{modelData.peak_power} kWp</span>
                             </ListItem>
                             <ListItem key="roof_azimuth">
                                 <span className="flex items-center">
