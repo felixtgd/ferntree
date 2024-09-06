@@ -19,6 +19,64 @@ class ModelDataOut(ModelDataIn):
     model_id: str
 
 
+class Baseload(BaseModel):
+    annual_consumption: float
+    profile_id: int
+
+
+class PV(BaseModel):
+    roof_tilt: int
+    roof_azimuth: int
+    peak_power: float
+
+
+class BatteryCtrl(BaseModel):
+    planning_horizon: int = Field(
+        default=1, title="Planning Horizon", description="The planning horizon in days"
+    )
+    useable_capacity: float = Field(
+        title="Useable Capacity",
+        description="The useable capacity of the battery in [0 ... 1]",
+    )
+    greedy: bool = Field(
+        default=True, title="Greedy", description="Use greedy optimization"
+    )
+    opt_fill: bool = Field(
+        default=False,
+        title="Optimal Fill",
+        description="Optimize the fill level of the battery",
+    )
+
+
+class Battery(BaseModel):
+    capacity: float
+    max_power: float
+    soc_init: float
+    battery_ctrl: BatteryCtrl
+
+
+class SystemSettings(BaseModel):
+    baseload: Baseload
+    pv: PV
+    battery: Battery
+
+
+class SimDataIn(BaseModel):
+    model_id: str
+    run_time: str
+    T_amb: list[float]
+    G_i: list[float]
+    coordinates: dict[str, str]
+    timezone: str
+    timebase: int
+    planning_horizon: int
+    system_settings: SystemSettings
+
+
+class SimDataOut(SimDataIn):
+    sim_id: str
+
+
 # ------------------ OLD SHIT --------------------
 
 
@@ -88,124 +146,124 @@ class SimTimeSeriesDoc(BaseModel):
     # )
 
 
-class SimParams(BaseModel):
-    timebase: int = Field(
-        default=3600, title="Timebase", description="The timebase in seconds"
-    )
-    timezone: str = Field(
-        default="UTC", title="Timezone", description="The timezone of the simulation"
-    )
-    planning_horizon: int = Field(
-        default=1, title="Planning Horizon", description="The planning horizon in days"
-    )
-    location: str = Field(
-        title="Location", description="The location of the simulation"
-    )
-    coordinates: dict = Field(
-        title="Coordinates", description="The coordinates of the location"
-    )
+# class SimParams(BaseModel):
+#     timebase: int = Field(
+#         default=3600, title="Timebase", description="The timebase in seconds"
+#     )
+#     timezone: str = Field(
+#         default="UTC", title="Timezone", description="The timezone of the simulation"
+#     )
+#     planning_horizon: int = Field(
+#         default=1, title="Planning Horizon", description="The planning horizon in days"
+#     )
+#     location: str = Field(
+#         title="Location", description="The location of the simulation"
+#     )
+#     coordinates: dict = Field(
+#         title="Coordinates", description="The coordinates of the location"
+#     )
 
 
-class Baseload(BaseModel):
-    annual_consumption: float = Field(
-        title="Annual Consumption", description="The annual consumption in kWh"
-    )
-    profile_id: int = Field(
-        title="Profile ID", description="The profile ID of the baseload profile"
-    )
+# class Baseload(BaseModel):
+#     annual_consumption: float = Field(
+#         title="Annual Consumption", description="The annual consumption in kWh"
+#     )
+#     profile_id: int = Field(
+#         title="Profile ID", description="The profile ID of the baseload profile"
+#     )
 
 
-class PV(BaseModel):
-    roof_tilt: int = Field(
-        title="Roof Tilt", description="The tilt of the roof in degrees"
-    )
-    roof_azimuth: int = Field(
-        title="Roof Azimuth", description="The azimuth of the roof in degrees"
-    )
-    peak_power: float = Field(
-        title="Peak Power", description="The peak power of the PV system in kWp"
-    )
+# class PV(BaseModel):
+#     roof_tilt: int = Field(
+#         title="Roof Tilt", description="The tilt of the roof in degrees"
+#     )
+#     roof_azimuth: int = Field(
+#         title="Roof Azimuth", description="The azimuth of the roof in degrees"
+#     )
+#     peak_power: float = Field(
+#         title="Peak Power", description="The peak power of the PV system in kWp"
+#     )
 
 
-class BatteryCtrl(BaseModel):
-    planning_horizon: int = Field(
-        default=1, title="Planning Horizon", description="The planning horizon in days"
-    )
-    useable_capacity: float = Field(
-        title="Useable Capacity",
-        description="The useable capacity of the battery in [0 ... 1]",
-    )
-    greedy: bool = Field(
-        default=True, title="Greedy", description="Use greedy optimization"
-    )
-    opt_fill: bool = Field(
-        default=False,
-        title="Optimal Fill",
-        description="Optimize the fill level of the battery",
-    )
+# class BatteryCtrl(BaseModel):
+#     planning_horizon: int = Field(
+#         default=1, title="Planning Horizon", description="The planning horizon in days"
+#     )
+#     useable_capacity: float = Field(
+#         title="Useable Capacity",
+#         description="The useable capacity of the battery in [0 ... 1]",
+#     )
+#     greedy: bool = Field(
+#         default=True, title="Greedy", description="Use greedy optimization"
+#     )
+#     opt_fill: bool = Field(
+#         default=False,
+#         title="Optimal Fill",
+#         description="Optimize the fill level of the battery",
+#     )
 
 
-class Battery(BaseModel):
-    capacity: float = Field(
-        title="Capacity", description="The capacity of the battery in kWh"
-    )
-    max_power: float = Field(
-        title="Max Power", description="The maximum power of the battery in kW"
-    )
-    soc_init: float = Field(
-        title="Initial SOC",
-        description="The initial state of charge of the battery in kWh",
-    )
-    battery_ctrl: BatteryCtrl = Field(
-        title="Battery Control", description="The battery control"
-    )
+# class Battery(BaseModel):
+#     capacity: float = Field(
+#         title="Capacity", description="The capacity of the battery in kWh"
+#     )
+#     max_power: float = Field(
+#         title="Max Power", description="The maximum power of the battery in kW"
+#     )
+#     soc_init: float = Field(
+#         title="Initial SOC",
+#         description="The initial state of charge of the battery in kWh",
+#     )
+#     battery_ctrl: BatteryCtrl = Field(
+#         title="Battery Control", description="The battery control"
+#     )
 
 
-class House(BaseModel):
-    baseload: Baseload = Field(title="Baseload", description="The baseload settings")
-    pv: PV = Field(title="PV", description="The PV settings")
-    battery: Battery = Field(title="Battery", description="The battery settings")
+# class House(BaseModel):
+#     baseload: Baseload = Field(title="Baseload", description="The baseload settings")
+#     pv: PV = Field(title="PV", description="The PV settings")
+#     battery: Battery = Field(title="Battery", description="The battery settings")
 
 
-class Finance(BaseModel):
-    electr_price: float = Field(
-        title="Electricity Price",
-        description="The price of electricity in cents/kWh",
-    )
-    down_payment: float = Field(
-        title="Down Payment",
-        description="The down payment in %",
-    )
-    pay_off_rate: float = Field(
-        title="Pay Off Rate",
-        description="The pay off rate in %",
-    )
-    interest_rate: float = Field(
-        title="Interest Rate",
-        description="The interest rate in %",
-    )
+# class Finance(BaseModel):
+#     electr_price: float = Field(
+#         title="Electricity Price",
+#         description="The price of electricity in cents/kWh",
+#     )
+#     down_payment: float = Field(
+#         title="Down Payment",
+#         description="The down payment in %",
+#     )
+#     pay_off_rate: float = Field(
+#         title="Pay Off Rate",
+#         description="The pay off rate in %",
+#     )
+#     interest_rate: float = Field(
+#         title="Interest Rate",
+#         description="The interest rate in %",
+#     )
 
 
-class ModelSpecs(BaseModel):
-    sim_params: SimParams = Field(
-        title="Simulation Parameters", description="The simulation parameters"
-    )
-    house: House = Field(title="House", description="The house settings")
-    finance: Finance = Field(
-        title="Finance parameters", description="The finance user input"
-    )
+# class ModelSpecs(BaseModel):
+#     sim_params: SimParams = Field(
+#         title="Simulation Parameters", description="The simulation parameters"
+#     )
+#     house: House = Field(title="House", description="The house settings")
+#     finance: Finance = Field(
+#         title="Finance parameters", description="The finance user input"
+#     )
 
 
-class ModelSpecsDoc(BaseModel):
-    user_id: int = Field(title="User ID", description="The ID of the user")
-    sim_id: str = Field(title="Simulation ID", description="The ID of the simulation")
-    created_at: str = Field(
-        title="Created At", description="The timestamp of the simulation"
-    )
-    sim_model_specs: ModelSpecs = Field(
-        title="Simulation Model Specifications",
-        description="The simulation model specifications",
-    )
+# class ModelSpecsDoc(BaseModel):
+#     user_id: int = Field(title="User ID", description="The ID of the user")
+#     sim_id: str = Field(title="Simulation ID", description="The ID of the simulation")
+#     created_at: str = Field(
+#         title="Created At", description="The timestamp of the simulation"
+#     )
+#     sim_model_specs: ModelSpecs = Field(
+#         title="Simulation Model Specifications",
+#         description="The simulation model specifications",
+#     )
 
 
 class SimModelSummary(BaseModel):

@@ -28,17 +28,23 @@ class MongoClient:
 
     async def check_user_exists(self, user_id: str) -> bool:
         query = {"_id": ObjectId(user_id)}
-        collection = self.db["users"]
-        user = await collection.find_one(query)
+        db_collection = self.db["users"]
+        user = await db_collection.find_one(query)
 
         if user is None:
             return False
         else:
             return True
 
-    async def insert_one(self, collection: str, document: dict) -> Union[str, None]:
+    async def insert_one(
+        self, collection: str, document: dict, index: Union[str, None] = None
+    ) -> Union[str, None]:
         # Insert a document into the collection
         db_collection = self.db[collection]
+        if index is not None:
+            await db_collection.create_index(index)
+
+        # Insert the document
         result = await db_collection.insert_one(document)
 
         if result.acknowledged:
@@ -64,6 +70,16 @@ class MongoClient:
         delete_result = await db_collection.delete_one(query)
 
         return delete_result.acknowledged
+
+    async def fetch_model_by_id(self, model_id: str):
+        # Find one document in the collection that matches the query
+        query = {"_id": ObjectId(id)}
+        db_collection = self.db["models"]
+        model = await db_collection.find_one(query)
+
+        model = ModelDataOut(**model, model_id=str(model["_id"]))
+
+        return model
 
     # --------- OLD SHIT -------------
 

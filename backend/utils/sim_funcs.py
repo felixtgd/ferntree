@@ -5,11 +5,16 @@ import subprocess
 import pandas as pd
 
 from backend.database.models import (
-    UserInputForm,
-    SimTimeSeriesDoc,
-    ModelSpecs,
-    ModelSpecsDoc,
-    SimEvaluationDoc,
+    ModelDataOut,
+    SimDataIn,
+    Baseload,
+    PV,
+    Battery,
+    BatteryCtrl,
+    SystemSettings,
+    # UserInputForm,
+    # SimTimeSeriesDoc,
+    # SimEvaluationDoc,
     SimModelSummary,
     SimEnergyKPIs,
     SimFinancialAnalysis,
@@ -20,71 +25,139 @@ from backend.database.models import (
 )
 from backend.database import mongodb
 from backend.solar_data import pvgis_api, geolocator
-from backend.utils import data_model_helpers
+# from backend.utils import data_model_helpers
 
 
-async def process_user_input(
-    db_client: mongodb.MongoClient, user_input: UserInputForm, user_id: int
-) -> tuple[str, str]:
-    """Processes the user input for the simulation.
-    - Fetches solar data for the location from PVGIS API
-    - Writes the solar data and model specs to the database (both input for simulation)
-    - Returns the sim_id and model_id
-
-    Args:
-        db_client (MongoClient): The MongoDB client.
-        sim_user_input (SimUserInputForm): The user input form.
-        user_id (int): The user ID.
-
-    Returns:
-        str: The model ID.
-
-    """
-    # Get address, roof azimuth and tilt from model specs
-    location = user_input.location
-    roof_azimuth = user_input.roof_azimuth
-    roof_incl = user_input.roof_incl
-
+async def get_sim_input_data(model_data: ModelDataOut) -> SimDataIn:
     # Pass parameters to pvgis_api to query solar data for sim input
     try:
         T_amb, G_i, coordinates = await pvgis_api.get_solar_data_for_location(
-            location, roof_azimuth, roof_incl
+            model_data.location, model_data.roof_azimuth, model_data.roof_incl
         )
     except Exception as ex:
         raise ValueError(f"Error fetching solar data: {ex}")
 
-    # Write sim input data as one document to sim_timeseries collection in MongoDB, return sim_id
-    created_at = datetime.now().isoformat()
-    document_solar_data = SimTimeSeriesDoc(
-        user_id=user_id,
-        created_at=created_at,
+    # Determine timezone based on coordinates
+    timezone: str = await geolocator.get_timezone(coordinates)
+
+    # Define energy system settings based on model data
+    system_settings: SystemSettings = await def_system_settings(model_data)
+
+    sim_input_data = SimDataIn(
+        model_id=model_data.model_id,
+        run_time=datetime.now().isoformat(),
         T_amb=T_amb,
         G_i=G_i,
-    )
-    sim_id = await db_client.insert_one(
-        collection="sim_timeseries", document=document_solar_data.model_dump()
-    )
-
-    # Determine timezone based on coordinates
-    timezone = await geolocator.get_timezone(coordinates)
-
-    # Define model_specs for the simulation and write to database
-    sim_model_specs = await data_model_helpers.define_model_specs(
-        user_input, coordinates, timezone
-    )
-    document_model_specs = ModelSpecsDoc(
-        user_id=user_id,
-        sim_id=sim_id,
-        created_at=created_at,
-        sim_model_specs=sim_model_specs,
+        coordinates=coordinates,
+        timezone=timezone,
+        timebase=3600,
+        planning_horizon=1,
+        system_settings=system_settings,
     )
 
-    # Write model_specs to model_specs_coll in MongoDB
-    model_id = await db_client.insert_one(
-        collection="model_specs", document=document_model_specs.model_dump()
+    return sim_input_data
+
+
+async def def_system_settings(model_data: ModelDataOut) -> SystemSettings:
+    baseload = Baseload(
+        annual_consumption=model_data.electr_cons,
+        profile_id=1,  # TODO: Find better way to set profile_id
     )
 
-    return model_id
+    pv = PV(
+        roof_tilt=model_data.roof_incl,
+        roof_azimuth=model_data.roof_azimuth,
+        peak_power=model_data.peak_power,
+    )
+
+    battery_ctrl = BatteryCtrl(
+        planning_horizon=1,
+        useable_capacity=0.8,
+        greedy=True,
+        opt_fill=False,
+    )
+
+    battery = Battery(
+        capacity=model_data.battery_cap,
+        max_power=model_data.battery_cap,  # TODO: Add max_power to user input?
+        soc_init=0.0,
+        battery_ctrl=battery_ctrl,
+    )
+
+    system_settings = SystemSettings(
+        baseload=baseload,
+        pv=pv,
+        battery=battery,
+    )
+
+    return system_settings
+
+
+# ------------------ OLD SHIT --------------------
+
+
+# async def process_user_input(
+#     db_client: mongodb.MongoClient, user_input: UserInputForm, user_id: int
+# ) -> tuple[str, str]:
+#     """Processes the user input for the simulation.
+#     - Fetches solar data for the location from PVGIS API
+#     - Writes the solar data and model specs to the database (both input for simulation)
+#     - Returns the sim_id and model_id
+
+#     Args:
+#         db_client (MongoClient): The MongoDB client.
+#         sim_user_input (SimUserInputForm): The user input form.
+#         user_id (int): The user ID.
+
+#     Returns:
+#         str: The model ID.
+
+#     """
+#     # Get address, roof azimuth and tilt from model specs
+#     location = user_input.location
+#     roof_azimuth = user_input.roof_azimuth
+#     roof_incl = user_input.roof_incl
+
+#     # Pass parameters to pvgis_api to query solar data for sim input
+#     try:
+#         T_amb, G_i, coordinates = await pvgis_api.get_solar_data_for_location(
+#             location, roof_azimuth, roof_incl
+#         )
+#     except Exception as ex:
+#         raise ValueError(f"Error fetching solar data: {ex}")
+
+#     # Write sim input data as one document to sim_timeseries collection in MongoDB, return sim_id
+#     created_at = datetime.now().isoformat()
+#     document_solar_data = SimTimeSeriesDoc(
+#         user_id=user_id,
+#         created_at=created_at,
+#         T_amb=T_amb,
+#         G_i=G_i,
+#     )
+#     sim_id = await db_client.insert_one(
+#         collection="sim_timeseries", document=document_solar_data.model_dump()
+#     )
+
+#     # Determine timezone based on coordinates
+#     timezone = await geolocator.get_timezone(coordinates)
+
+#     # Define model_specs for the simulation and write to database
+#     sim_model_specs = await data_model_helpers.define_model_specs(
+#         user_input, coordinates, timezone
+#     )
+# document_model_specs = ModelSpecsDoc(
+#     user_id=user_id,
+#     sim_id=sim_id,
+#     created_at=created_at,
+#     sim_model_specs=sim_model_specs,
+# )
+
+# # Write model_specs to model_specs_coll in MongoDB
+# model_id = await db_client.insert_one(
+#     collection="model_specs", document=document_model_specs.model_dump()
+# )
+
+# return model_id
 
 
 async def run_ferntree_simulation(sim_id: str, model_id: str) -> bool:
@@ -120,34 +193,34 @@ async def run_ferntree_simulation(sim_id: str, model_id: str) -> bool:
     return True
 
 
-async def get_model_summary(sim_model_specs: ModelSpecs) -> SimModelSummary:
-    """Creates a model summary with the most important model specifications.
-    - Extracts the most important model specifications from the user input form
-    - Creates a SimModelSummary response model with the model specifications
+# async def get_model_summary(sim_model_specs: ModelSpecs) -> SimModelSummary:
+#     """Creates a model summary with the most important model specifications.
+#     - Extracts the most important model specifications from the user input form
+#     - Creates a SimModelSummary response model with the model specifications
 
-    Args:
-        sim_model_specs (ModelSpecs): The model specifications.
+#     Args:
+#         sim_model_specs (ModelSpecs): The model specifications.
 
-    Returns:
-        SimModelSummary: The model summary with the most important model specifications.
+#     Returns:
+#         SimModelSummary: The model summary with the most important model specifications.
 
-    """
-    # Create SimModelSummary response model with sim model specifications
-    model_summary = SimModelSummary(
-        electr_cons=sim_model_specs.house.baseload.annual_consumption,  # [kWh]
-        pv_power=sim_model_specs.house.pv.peak_power,  # [kWp]
-        battery_capacity=sim_model_specs.house.battery.capacity,  # [kWh]
-        electr_price=sim_model_specs.finance.electr_price
-        / 100,  # user input in cents, need €
-        down_payment=sim_model_specs.finance.down_payment
-        / 100,  # user input in %, need 0...1
-        pay_off_rate=sim_model_specs.finance.pay_off_rate
-        / 100,  # user input in %, need 0...1
-        interest_rate=sim_model_specs.finance.interest_rate
-        / 100,  # user input in %, need 0...1
-    )
+#     """
+#     # Create SimModelSummary response model with sim model specifications
+#     model_summary = SimModelSummary(
+#         electr_cons=sim_model_specs.house.baseload.annual_consumption,  # [kWh]
+#         pv_power=sim_model_specs.house.pv.peak_power,  # [kWp]
+#         battery_capacity=sim_model_specs.house.battery.capacity,  # [kWh]
+#         electr_price=sim_model_specs.finance.electr_price
+#         / 100,  # user input in cents, need €
+#         down_payment=sim_model_specs.finance.down_payment
+#         / 100,  # user input in %, need 0...1
+#         pay_off_rate=sim_model_specs.finance.pay_off_rate
+#         / 100,  # user input in %, need 0...1
+#         interest_rate=sim_model_specs.finance.interest_rate
+#         / 100,  # user input in %, need 0...1
+#     )
 
-    return model_summary
+#     return model_summary
 
 
 async def calc_energy_kpis(
@@ -335,50 +408,50 @@ async def calc_financial_analysis(
     return financial_analysis
 
 
-async def evaluate_simulation_results(
-    db_client: mongodb.MongoClient, sim_id: str, sim_model_specs: ModelSpecs
-) -> tuple[str, SimEvaluationDoc]:
-    """Evaluates the simulation results and writes the evaluation to the database.
-    - Reads the timeseries simulation results from the database
-    - Calculates energy KPIs, e.g. annual pv generation, self-consumption, self-sufficiency
-    - Calculates financial KPIs, e.g. break-even year
-    - Writes the evaluation to the database
+# async def evaluate_simulation_results(
+#     db_client: mongodb.MongoClient, sim_id: str, sim_model_specs: ModelSpecs
+# ) -> tuple[str, SimEvaluationDoc]:
+#     """Evaluates the simulation results and writes the evaluation to the database.
+#     - Reads the timeseries simulation results from the database
+#     - Calculates energy KPIs, e.g. annual pv generation, self-consumption, self-sufficiency
+#     - Calculates financial KPIs, e.g. break-even year
+#     - Writes the evaluation to the database
 
-    Args:
-        db_client (MongoClient): The MongoDB client.
-        sim_id (str): The simulation ID.
-        sim_model_specs (ModelSpecs): The model specifications.
-        (keep sim_ prefix due to name space conflict with FastAPI)
+#     Args:
+#         db_client (MongoClient): The MongoDB client.
+#         sim_id (str): The simulation ID.
+#         sim_model_specs (ModelSpecs): The model specifications.
+#         (keep sim_ prefix due to name space conflict with FastAPI)
 
-    Returns:
-        tuple[str, SimEvaluationDoc]: The simulation evaluation ID and the simulation evaluation document.
+#     Returns:
+#         tuple[str, SimEvaluationDoc]: The simulation evaluation ID and the simulation evaluation document.
 
-    """
-    # Get model summary with most important models specs
-    model_summary = await get_model_summary(sim_model_specs)
+#     """
+#     # Get model summary with most important models specs
+#     model_summary = await get_model_summary(sim_model_specs)
 
-    # Evaluate simulation results and calculate energy KPIs
-    sim_energy_kpis = await calc_energy_kpis(db_client, sim_id)
+#     # Evaluate simulation results and calculate energy KPIs
+#     sim_energy_kpis = await calc_energy_kpis(db_client, sim_id)
 
-    # Use model specs and energy KPIs to calc financial analysis of energy system
-    sim_financial_analysis = await calc_financial_analysis(
-        model_summary, sim_energy_kpis
-    )
+#     # Use model specs and energy KPIs to calc financial analysis of energy system
+#     sim_financial_analysis = await calc_financial_analysis(
+#         model_summary, sim_energy_kpis
+#     )
 
-    # Collect all results in one document to store in database
-    sim_evaluation = SimEvaluationDoc(
-        sim_id=sim_id,
-        sim_model_summary=model_summary,
-        energy_kpis=sim_energy_kpis,
-        financial_analysis=sim_financial_analysis,
-    )
+#     # Collect all results in one document to store in database
+#     sim_evaluation = SimEvaluationDoc(
+#         sim_id=sim_id,
+#         sim_model_summary=model_summary,
+#         energy_kpis=sim_energy_kpis,
+#         financial_analysis=sim_financial_analysis,
+#     )
 
-    # Write sim evaluation to database
-    sim_eval_id = await db_client.insert_one(
-        collection="sim_evaluation", document=sim_evaluation.model_dump()
-    )
+#     # Write sim evaluation to database
+#     sim_eval_id = await db_client.insert_one(
+#         collection="sim_evaluation", document=sim_evaluation.model_dump()
+#     )
 
-    return sim_eval_id, sim_evaluation
+#     return sim_eval_id, sim_evaluation
 
 
 async def calc_monthly_pv_gen_data(timeseries_data: list[dict]):

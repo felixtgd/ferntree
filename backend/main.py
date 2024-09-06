@@ -12,16 +12,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.database.models import (
     ModelDataIn,
     ModelDataOut,
-    UserInputForm,
+    SimDataIn,
+    # UserInputForm,
     TimeseriesDataRequest,
     FilteredTimeseriesData,
-    ModelSpecsDoc,
 )
 from backend.database.mongodb import MongoClient
 from backend.utils.sim_funcs import (
-    process_user_input,
+    get_sim_input_data,
+    # process_user_input,
     run_ferntree_simulation,
-    evaluate_simulation_results,
+    # evaluate_simulation_results,
     calc_monthly_pv_gen_data,
 )
 from backend.utils.data_model_helpers import format_timeseries_data
@@ -83,7 +84,9 @@ async def submit_model(user_id: str, model_data: ModelDataIn):
     )
 
     # Insert model data into database
-    model_id = await db_client.insert_one("models", model_data.model_dump())
+    model_id = await db_client.insert_one(
+        "models", model_data.model_dump(), index="user_id"
+    )
     if model_id is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -134,113 +137,152 @@ async def delete_model(user_id: str, model_id: str):
     return model_id
 
 
-# -------------- OLD SHIT -----------------
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.post("/dashboard/submit-model")
-# TODO: add response_model = ... for data validation
-async def pv_calc(user_input: UserInputForm):
+@app.get("/workspace/simulations/run-sim", response_model=bool)
+@check_user_exists(db_client)
+async def run_simulation(user_id: str, model_id: str):
     logger.info(
-        f"\nPOST:\t/dashboard/submit-model --> Received request: user_input={user_input}"
+        f"GET:\t/workspace/simulations/run-sim --> Received request: user_id={user_id}, model_id={model_id}"
     )
 
-    # Determine user_id
-    user_id = 123
+    # Fetch model data from database
+    model_data: ModelDataOut = db_client.fetch_model_by_id(model_id)
 
-    # Process user input and write to database
-    model_id = await process_user_input(db_client, user_input, user_id)
-    if not model_id:
-        logger.error("Error processing user input")
+    # Get simulation input data
+    sim_input_data: SimDataIn = get_sim_input_data(model_data)
+
+    # Insert simulation input data into database
+    sim_id = await db_client.insert_one(
+        "simulations", sim_input_data.model_dump(), index="model_id"
+    )
+    if sim_id is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Error processing user input",
+            detail="Error inserting sim data into database.",
         )
 
-    logger.info(f"\nPOST:\t/dashboard/submit-model --> Return Model ID: {model_id}")
-
-    return model_id
-
-
-@app.get("/dashboard/run-simulation")
-async def run_simulation(model_id: str):
-    logger.info(
-        f"\nGET:\t/dashboard/run-simulation --> Received request: model_id={model_id}"
-    )
-    # Fetch the model specifications
-    sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
-    sim_id = sim_model_specs["sim_id"]
-
-    # Start ferntree simulation
-    sim_run = await run_ferntree_simulation(sim_id, model_id)
+    # Run the simulation
+    sim_run: bool = await run_ferntree_simulation(sim_id, model_id)
 
     if sim_run:
         logger.info(
-            f"\nGET:\t/dashboard/run-simulation --> Sim {sim_id} ran successfully!"
+            f"GET:\t/simulations/run-simulation --> Sim {sim_id} ran successfully!"
         )
-        return {"sim_run_success": True}
+        return {"run_successful": True}
     else:
-        logger.info(f"\n/dashboard/run-simulation --> Sim {sim_id} failed!")
+        logger.info(f"/dashboard/run-simulation --> Sim {sim_id} failed!")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error running simulation",
         )
 
 
-@app.get("/dashboard/simulation-results")
-async def fetch_simulation_results(model_id: str):
-    logger.info(
-        f"\nGET:\t/dashboard/simulation-results --> Received request: model_id={model_id}"
-    )
-
-    # Fetch the model specifications TODO: stupid to do this again here!!!
-    sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
-    sim_model_specs_doc = ModelSpecsDoc(**sim_model_specs)
-    sim_id = sim_model_specs_doc.sim_id
-
-    # Evaluate simulation results
-    sim_eval_id, sim_evaluation = await evaluate_simulation_results(
-        db_client, sim_id, sim_model_specs_doc.sim_model_specs
-    )
-    if not sim_evaluation or not sim_eval_id:
-        logger.error(
-            f"Error evaluating simulation results. model_id={model_id}, sim_id={sim_id}, sim_eval_id={sim_eval_id}"
-        )
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Error evaluating simulation results",
-        )
-
-    logger.info(
-        f"\nGET:\t/dashboard/simulation-results --> Return Simulation Evaluation: {sim_evaluation.sim_id}"
-    )
-    return sim_evaluation
+# -------------- OLD SHIT -----------------
+# @app.get("/")
+# async def root():
+#     return {"message": "Hello World"}
 
 
-@app.get("/dashboard/model-summary")
-async def fetch_model_summary(model_id: str):
-    logger.info(
-        f"\nGET:\t/dashboard/model-summary --> Received request: model_id={model_id}"
-    )
+# @app.post("/dashboard/submit-model")
+# # TODO: add response_model = ... for data validation
+# async def pv_calc(user_input: UserInputForm):
+#     logger.info(
+#         f"\nPOST:\t/dashboard/submit-model --> Received request: user_input={user_input}"
+#     )
 
-    # Fetch the model specifications TODO: stupid to do this again here!!!
-    sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
-    sim_model_specs_doc = ModelSpecsDoc(**sim_model_specs)
-    model_summary = {
-        "location": sim_model_specs_doc.sim_model_specs.sim_params.location,
-        "electr_cons": sim_model_specs_doc.sim_model_specs.house.baseload.annual_consumption,
-        "roof_incl": sim_model_specs_doc.sim_model_specs.house.pv.roof_tilt,
-        "roof_azimuth": sim_model_specs_doc.sim_model_specs.house.pv.roof_azimuth,
-        "peak_power": sim_model_specs_doc.sim_model_specs.house.pv.peak_power,
-        "battery_cap": sim_model_specs_doc.sim_model_specs.house.battery.capacity,
-    }
+#     # Determine user_id
+#     user_id = 123
 
-    logger.info(
-        f"\nGET:\t/dashboard/model-summary --> Return Model Summary: {model_summary}"
-    )
-    return model_summary
+#     # Process user input and write to database
+#     model_id = await process_user_input(db_client, user_input, user_id)
+#     if not model_id:
+#         logger.error("Error processing user input")
+#         raise HTTPException(
+#             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+#             detail="Error processing user input",
+#         )
+
+#     logger.info(f"\nPOST:\t/dashboard/submit-model --> Return Model ID: {model_id}")
+
+#     return model_id
+
+
+# @app.get("/dashboard/run-simulation")
+# async def run_simulation(model_id: str):
+#     logger.info(
+#         f"\nGET:\t/dashboard/run-simulation --> Received request: model_id={model_id}"
+#     )
+#     # Fetch the model specifications
+#     sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
+#     sim_id = sim_model_specs["sim_id"]
+
+#     # Start ferntree simulation
+#     sim_run = await run_ferntree_simulation(sim_id, model_id)
+
+#     if sim_run:
+#         logger.info(
+#             f"\nGET:\t/dashboard/run-simulation --> Sim {sim_id} ran successfully!"
+#         )
+#         return {"sim_run_success": True}
+#     else:
+#         logger.info(f"\n/dashboard/run-simulation --> Sim {sim_id} failed!")
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail="Error running simulation",
+#         )
+
+
+# @app.get("/dashboard/simulation-results")
+# async def fetch_simulation_results(model_id: str):
+#     logger.info(
+#         f"\nGET:\t/dashboard/simulation-results --> Received request: model_id={model_id}"
+#     )
+
+#     # Fetch the model specifications TODO: stupid to do this again here!!!
+#     sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
+#     sim_model_specs_doc = ModelSpecsDoc(**sim_model_specs)
+#     sim_id = sim_model_specs_doc.sim_id
+
+#     # Evaluate simulation results
+#     sim_eval_id, sim_evaluation = await evaluate_simulation_results(
+#         db_client, sim_id, sim_model_specs_doc.sim_model_specs
+#     )
+#     if not sim_evaluation or not sim_eval_id:
+#         logger.error(
+#             f"Error evaluating simulation results. model_id={model_id}, sim_id={sim_id}, sim_eval_id={sim_eval_id}"
+#         )
+#         raise HTTPException(
+#             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+#             detail="Error evaluating simulation results",
+#         )
+
+#     logger.info(
+#         f"\nGET:\t/dashboard/simulation-results --> Return Simulation Evaluation: {sim_evaluation.sim_id}"
+#     )
+#     return sim_evaluation
+
+
+# @app.get("/dashboard/model-summary")
+# async def fetch_model_summary(model_id: str):
+#     logger.info(
+#         f"\nGET:\t/dashboard/model-summary --> Received request: model_id={model_id}"
+#     )
+
+#     # Fetch the model specifications TODO: stupid to do this again here!!!
+#     sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
+#     sim_model_specs_doc = ModelSpecsDoc(**sim_model_specs)
+#     model_summary = {
+#         "location": sim_model_specs_doc.sim_model_specs.sim_params.location,
+#         "electr_cons": sim_model_specs_doc.sim_model_specs.house.baseload.annual_consumption,
+#         "roof_incl": sim_model_specs_doc.sim_model_specs.house.pv.roof_tilt,
+#         "roof_azimuth": sim_model_specs_doc.sim_model_specs.house.pv.roof_azimuth,
+#         "peak_power": sim_model_specs_doc.sim_model_specs.house.pv.peak_power,
+#         "battery_cap": sim_model_specs_doc.sim_model_specs.house.battery.capacity,
+#     }
+
+#     logger.info(
+#         f"\nGET:\t/dashboard/model-summary --> Return Model Summary: {model_summary}"
+#     )
+#     return model_summary
 
 
 @app.post("/dashboard/sim-timeseries-data")
