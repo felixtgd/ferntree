@@ -57,7 +57,9 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
 
   // Close form dialog after successful submission
   const submit_success: boolean = state.message === 'success';
-  setIsOpen(!submit_success);
+  if (submit_success) {
+    setIsOpen(false);
+  }
 
   return (
       <form action={formAction}>

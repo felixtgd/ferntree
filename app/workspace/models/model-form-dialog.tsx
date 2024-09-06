@@ -36,7 +36,7 @@ export function ModelFormDialog({num_models}: {num_models: number}) {
                 className="flex items-center"
                 onClick={() => setIsOpen(false)}
             >
-                Cancel
+                Close
             </Button>
         </div>
 
