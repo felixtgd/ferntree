@@ -2,7 +2,7 @@
 
 import { RemixiconComponentType, RiDeleteBin6Line, RiEyeLine, RiPencilLine, RiPlayCircleLine } from "@remixicon/react";
 import { Button, ButtonProps } from "@tremor/react";
-import { deleteModel, editModel, runSimulation, viewResults } from "../workspace/models/actions";
+import { deleteModel, editModel, runSimulation, viewResults } from "@/app/components/button-actions";
 
 
 function BaseButton(

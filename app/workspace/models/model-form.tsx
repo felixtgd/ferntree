@@ -13,7 +13,7 @@ import {
 } from '@remixicon/react';
 
 import { submitModel } from './actions';
-import { ModelData, FormState } from '@/utils/definitions';
+import { ModelData, FormState } from '@/app/utils/definitions';
 
 import { useFormStatus, useFormState } from 'react-dom'
 

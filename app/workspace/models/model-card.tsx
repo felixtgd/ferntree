@@ -1,5 +1,5 @@
 import { Card, List, ListItem } from "@tremor/react";
-import { ModelData } from "@/utils/definitions";
+import { ModelData } from "@/app/utils/definitions";
 import { RiArrowUpWideLine, RiBattery2ChargeLine, RiCompassLine, RiHome4Line, RiLightbulbFlashLine, RiSunLine } from "@remixicon/react";
 import { DeleteButton, RunButton, ViewButton } from "@/app/components/buttons";
 

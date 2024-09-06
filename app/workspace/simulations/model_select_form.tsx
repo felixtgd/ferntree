@@ -3,7 +3,7 @@
 import { RunButton, ViewButton } from "@/app/components/buttons";
 import { Select, SelectItem, List, ListItem } from "@tremor/react";
 import { RiShapesLine } from "@remixicon/react";
-import { ModelData } from "@/utils/definitions";
+import { ModelData } from "@/app/utils/definitions";
 import { useState } from "react";
 import {
   RiArrowUpWideLine,

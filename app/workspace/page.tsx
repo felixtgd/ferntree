@@ -1,4 +1,4 @@
-import { getUser } from "@/utils/helpers";
+import { getUser } from "@/app/utils/helpers";
 import { User } from "next-auth";
 import Image from "next/image";
 
