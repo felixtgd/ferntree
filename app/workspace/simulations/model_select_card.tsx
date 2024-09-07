@@ -10,7 +10,7 @@ export async function ModelSelection() {
     return (
         <div className="p-2">
             <Card
-                className="flex w-[30%] lg:w-[20%] 2xl:w-[15%] transition-all duration-300"
+                className="flex transition-all duration-300 flex-grow flex-col items-center justify-center w-full"
             >
                 <ModelSelectForm models={models} />
 

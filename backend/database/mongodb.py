@@ -37,18 +37,31 @@ class MongoClient:
             return True
 
     async def insert_one(
-        self, collection: str, document: dict, index: Union[str, None] = None
+        self,
+        collection: str,
+        document: dict,
+        index: Union[str, None] = None,
+        unique: bool = False,
     ) -> Union[str, None]:
         # Insert a document into the collection
         db_collection = self.db[collection]
         if index is not None:
-            await db_collection.create_index(index)
+            await db_collection.create_index(index, unique=unique)
 
-        # Insert the document
-        result = await db_collection.insert_one(document)
+        # Define the query to check for existing document
+        query = {index: document[index]} if index else {}
 
-        if result.acknowledged:
-            return str(result.inserted_id)
+        # Fetch the existing document's ID if it exists
+        existing_document = await db_collection.find_one(query, {"_id": 1})
+        existing_id = str(existing_document["_id"]) if existing_document else None
+
+        # Replace the document if it exists, or insert a new one if it doesn't
+        result = await db_collection.replace_one(query, document, upsert=True)
+
+        if result.upserted_id:
+            return str(result.upserted_id)
+        elif result.modified_count > 0:
+            return existing_id
         else:
             return None
 
@@ -83,10 +96,10 @@ class MongoClient:
 
     async def fetch_sim_results_by_id(self, model_id: str) -> list[SimTimestep]:
         # Find one document in the collection that matches the query
-        query = {"model_id": ObjectId(model_id)}
+        query = {"model_id": model_id}
         db_collection = self.db["sim_results_ts"]
         doc = await db_collection.find_one(query)
-        sim_results_ts = [SimTimestep(**timestep) for timestep in doc.timeseries]
+        sim_results_ts = [SimTimestep(**timestep) for timestep in doc["timeseries"]]
 
         return sim_results_ts
 

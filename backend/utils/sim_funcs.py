@@ -138,7 +138,7 @@ async def eval_sim_results(
     sim_results = [timestep.model_dump() for timestep in sim_results]
 
     energy_kpis: EnergyKPIs = await calc_energy_kpis(sim_results)
-    pv_monthly_gen: PVMonthlyGen = await calc_pv_monthly_gen(sim_results)
+    pv_monthly_gen: list[PVMonthlyGen] = await calc_pv_monthly_gen(sim_results)
 
     sim_results_eval = SimResultsEval(
         model_id=model_id,
@@ -197,7 +197,7 @@ async def calc_energy_kpis(sim_results: list[dict]) -> EnergyKPIs:
 
     # Energy KPIs of system simulation
     energy_kpis = EnergyKPIs(
-        electr_consumption=annual_baseload_demand,
+        annual_consumption=annual_baseload_demand,
         pv_generation=annual_pv_generation,
         grid_consumption=annual_grid_consumption,
         grid_feed_in=annual_grid_feed_in,
@@ -248,7 +248,7 @@ async def calc_pv_monthly_gen(sim_results: list[dict]):
 
     # Convert monthly PV generation data to list of dictionaries
     pv_monthly_gen = [
-        PVMonthlyGen(month=month_mapping[index], PVGeneration=-1 * pv_gen)
+        PVMonthlyGen(month=month_mapping[index], pv_generation=-1 * pv_gen)
         for index, pv_gen in monthly_pv_df.items()
     ]
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { FinBarChartItem, PowerTimeseriesItem, PVMonthlyGenData } from '@/app/data/definitions';
+import { FinBarChartItem, PowerTimeseriesItem, PVMonthlyGen } from '@/app/utils/definitions';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react'
 import { enGB } from 'date-fns/locale';
@@ -62,13 +62,13 @@ export function BaseDonutChart( { data, label, colors }:
     );
 }
 
-export function BasePvBarChart( { data }: { data: PVMonthlyGenData[]; } ) {
+export function BasePvBarChart( { data }: { data: PVMonthlyGen[]; } ) {
     return (
         <BarChart
             className="mt-2 h-[90%]"
             data={data}
             index="month"
-            categories={['PVGeneration']}
+            categories={['pv_generation']}
             colors={['amber']}
             valueFormatter={kWhFormatter}
             yAxisWidth={85}
@@ -95,9 +95,9 @@ export function BaseFinBarChart( { data }: { data: FinBarChartItem[]; } ) {
     );
 }
 
-export function BaseDateRangePicker({ dateRange } : { dateRange: DateRangePickerValue }) {
+export function BaseDateRangePicker({ date_range } : { date_range: DateRangePickerValue }) {
 
-    const [selectedDateRange, setSelectedDateRange] = useState<DateRangePickerValue>(dateRange);
+    const [selectedDateRange, setSelectedDateRange] = useState<DateRangePickerValue>(date_range);
 
     const router = useRouter();
 

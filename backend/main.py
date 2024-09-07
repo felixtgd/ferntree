@@ -157,7 +157,7 @@ async def run_simulation(user_id: str, model_id: str):
 
     # Insert simulation input data into database
     sim_id = await db_client.insert_one(
-        "simulations", sim_input_data.model_dump(), index="model_id"
+        "simulations", sim_input_data.model_dump(), index="model_id", unique=True
     )
     if sim_id is None:
         raise HTTPException(
@@ -190,10 +190,13 @@ async def fetch_sim_results(user_id: str, model_id: str):
         f"GET:\t/workspace/simulations/fetch-sim-results --> Received request: user_id={user_id}, model_id={model_id}"
     )
 
-    sim_results_eval: SimResultsEval = await eval_sim_results(model_id)
+    sim_results_eval: SimResultsEval = await eval_sim_results(db_client, model_id)
     await db_client.insert_one(
         "sim_results_eval", sim_results_eval.model_dump(), index="model_id"
     )
+
+    logger.info("SimResultEval:")
+    logger.info(sim_results_eval)
 
     return sim_results_eval
 

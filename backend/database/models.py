@@ -81,8 +81,8 @@ class SimDataOut(SimDataIn):
 
 
 class EnergyKPIs(BaseModel):
-    electr_consumption: float = Field(
-        title="Electricity consumption",
+    annual_consumption: float = Field(
+        title="Annual electr. consumption",
         description="The annual electricity consumption in kWh",
     )
     pv_generation: float = Field(
@@ -113,13 +113,16 @@ class EnergyKPIs(BaseModel):
 
 class PVMonthlyGen(BaseModel):
     month: str
-    PVGeneration: float
+    pv_generation: float
 
 
 class SimResultsEval(BaseModel):
     model_id: str
     energy_kpis: EnergyKPIs
-    pv_monthly_gen: PVMonthlyGen
+    pv_monthly_gen: list[PVMonthlyGen]
+
+    class Config:
+        protected_namespaces = ()
 
 
 class SimTimestep(BaseModel):

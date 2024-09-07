@@ -7,19 +7,19 @@ import { loadBackendBaseUri, getUserID } from '@/app/utils/helpers';
 import { revalidatePath } from 'next/cache';
 
 
-export async function submitModel(prevState: FormState, formData: FormData) {
+export async function submitModel(prev_state: FormState, form_data: FormData) {
     // When invoked in a form, the action automatically receives the FormData object.
     // You don't need to use React useState to manage fields, instead, you can extract
     // the data using the native FormData methods.
 
     // Validate that formData has schema of ModelDataSchema
-    const validatedFields = ModelDataSchema.safeParse(Object.fromEntries(formData));
+    const validated_fields = ModelDataSchema.safeParse(Object.fromEntries(form_data));
 
-    let state: FormState = prevState;
-    if (!validatedFields.success) {
-        console.error(`Invalid form data: ${validatedFields.error}`);
+    let state: FormState = prev_state;
+    if (!validated_fields.success) {
+        console.error(`Invalid form data: ${validated_fields.error}`);
         state = {
-            errors: validatedFields.error.flatten().fieldErrors,
+            errors: validated_fields.error.flatten().fieldErrors,
             message: 'Missing Fields. Failed to submit form.',
           };
         return state;
@@ -30,7 +30,7 @@ export async function submitModel(prevState: FormState, formData: FormData) {
 
     // Set payload with user_id
     const payload = {
-        ...validatedFields.data,
+        ...validated_fields.data,
         user_id: user_id,
     };
 
@@ -42,7 +42,7 @@ export async function submitModel(prevState: FormState, formData: FormData) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
-        const model_id = await response_submit_model.json();
+        const model_id: string = await response_submit_model.json();
 
         console.log(`POST workspace/models/submit-model: Model form submitted (${response_submit_model.status}). Model ID: ${model_id}`);
         state = {

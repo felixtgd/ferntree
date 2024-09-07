@@ -49,14 +49,33 @@ export const ModelDataSchema = z.object({
       .lte(100000, { message: 'Must be at most 100,000 kWh' }),
 });
 
+// SIMULATION RESULTS MODELS for /workspace/simulations
+export type EnergyKPIs = {
+  annual_consumption: number;
+  pv_generation: number;
+  grid_consumption: number;
+  grid_feed_in: number;
+  self_consumption: number;
+  self_consumption_rate: number;
+  self_sufficiency: number;
+};
 
+export type PVMonthlyGen = {
+  month: string;
+  pv_generation: number;
+};
 
+export type SimResultsEval = {
+  model_id: string;
+  energy_kpis: EnergyKPIs;
+  pv_monthly_gen: PVMonthlyGen[];
+};
 
-
-
-
-
-
+export type DonutChartData = {
+  data: { name: string; value: number; share: number; }[];
+  labels: { center: number; title: number; };
+  title: string;
+}
 
 
 
@@ -144,16 +163,11 @@ export type SimEvaluation = {
   financial_analysis: SimFinancialAnalysis;
 };
 
-export type DonutChartData = {
-  data: { name: string; value: number; share: number; }[];
-  labels: { center: number; title: number; };
-  title: string;
-}
 
-export type PVMonthlyGenData = {
-  month: string;
-  PVGeneration: number;
-};
+// export type PVMonthlyGenData = {
+//   month: string;
+//   PVGeneration: number;
+// };
 
 export type FinBarChartItem = {
   type: string;

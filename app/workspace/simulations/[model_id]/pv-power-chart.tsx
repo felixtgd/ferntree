@@ -2,40 +2,40 @@ import { Card, DateRangePickerValue } from '@tremor/react';
 import { fetchPowerData } from './actions';
 import { z } from "zod";
 import { redirect } from 'next/navigation';
-import { BaseDateRangePicker, BaseLineChart } from '../../../components/base-comps';
-import { PowerTimeseriesItem } from '@/app/data/definitions';
+import { BaseDateRangePicker, BaseLineChart } from '@/app/components/base-comps';
+import { PowerTimeseriesItem } from '@/app/utils/definitions';
 
-export async function PvPowerChart({ modelId, searchParams }:
+export async function PvPowerChart({ model_id, search_params }:
   {
-    modelId: string;
-    searchParams: Record<string, string | string[] | undefined>;
+    model_id: string;
+    search_params: Record<string, string | string[] | undefined>;
   }
 ) {
 
-  const selectedDateRange: DateRangePickerValue = {
-    from: searchParams.dateFrom ? new Date(searchParams.dateFrom as string) : new Date(2023, 5, 19),
-    to: searchParams.dateTo ? new Date(searchParams.dateTo as string) : new Date(2023, 5, 24)
+  const selected_date_range: DateRangePickerValue = {
+    from: search_params.dateFrom ? new Date(search_params.dateFrom as string) : new Date(2023, 5, 19),
+    to: search_params.dateTo ? new Date(search_params.dateTo as string) : new Date(2023, 5, 24)
   };
 
   // Validate that dateRange values are valid dates
-  const dateRangeSchema = z.object({
+  const date_range_schema = z.object({
     from: z.date(),
     to: z.date()
   });
 
-  const dateRange = dateRangeSchema.safeParse(
+  const date_range = date_range_schema.safeParse(
     {
-      from: selectedDateRange.from,
-      to: selectedDateRange.to
+      from: selected_date_range.from,
+      to: selected_date_range.to
     }
   );
 
-  if (!dateRange.success) {
-    console.error(`Invalid date range: ${dateRange.error}`);
-    redirect(`/dashboard/${modelId}`);
+  if (!date_range.success) {
+    console.error(`Invalid date range: ${date_range.error}`);
+    redirect(`/workspace/simulations/${model_id}`);
   }
 
-  const chartData : PowerTimeseriesItem[] = await fetchPowerData(modelId, dateRange.data);
+  const chart_data : PowerTimeseriesItem[] = await fetchPowerData(model_id, date_range.data);
 
   return (
     <Card
@@ -43,8 +43,8 @@ export async function PvPowerChart({ modelId, searchParams }:
       decoration="top"
       decorationColor="blue-300"
     >
-      <BaseDateRangePicker dateRange={dateRange.data} />
-      <BaseLineChart data={chartData} />
+      <BaseDateRangePicker date_range={date_range.data} />
+      <BaseLineChart data={chart_data} />
     </Card>
   );
 }
