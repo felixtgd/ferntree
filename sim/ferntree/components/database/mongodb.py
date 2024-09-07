@@ -23,15 +23,21 @@ MONGODB_DATABASE = os.environ["MONGODB_DATABASE"]
 
 
 class pyMongoClient:
-    def __init__(self, sim_id: str):
+    def __init__(self, sim_id: str, model_id: str):
         self.client = MongoClient(MONGODB_URI, server_api=ServerApi("1"), tlsCAFile=ca)
 
         self.db = self.client[MONGODB_DATABASE]
         self.results_collection = self.db["sim_results_ts"]
         self.results_collection.create_index("sim_id", unique=True)
+        self.results_collection.create_index("model_id", unique=True)
         self.results_collection.update_one(
             {"sim_id": sim_id},
-            {"$set": {"run_time": datetime.now().isoformat()}},
+            {
+                "$set": {
+                    "model_id": model_id,
+                    "run_time": datetime.now().isoformat(),
+                }
+            },
             upsert=True,
         )
 

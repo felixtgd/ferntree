@@ -13,6 +13,9 @@ from backend.database.models import (
     ModelDataIn,
     ModelDataOut,
     SimDataIn,
+    SimResultsEval,
+    # EnergyKPIs,
+    # PVMonthlyGen,
     # UserInputForm,
     # TimeseriesDataRequest,
     # FilteredTimeseriesData,
@@ -22,6 +25,7 @@ from backend.utils.sim_funcs import (
     get_sim_input_data,
     # process_user_input,
     run_ferntree_simulation,
+    eval_sim_results,
     # evaluate_simulation_results,
     # calc_monthly_pv_gen_data,
 )
@@ -162,7 +166,7 @@ async def run_simulation(user_id: str, model_id: str):
         )
 
     # Run the simulation
-    sim_run: bool = await run_ferntree_simulation(sim_id)
+    sim_run: bool = await run_ferntree_simulation(sim_id, model_id)
 
     if sim_run:
         logger.info(
@@ -177,6 +181,21 @@ async def run_simulation(user_id: str, model_id: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error running simulation",
         )
+
+
+@app.get("/workspace/simulations/fetch-sim-results", response_model=SimResultsEval)
+@check_user_exists(db_client)
+async def fetch_sim_results(user_id: str, model_id: str):
+    logger.info(
+        f"GET:\t/workspace/simulations/fetch-sim-results --> Received request: user_id={user_id}, model_id={model_id}"
+    )
+
+    sim_results_eval: SimResultsEval = await eval_sim_results(model_id)
+    await db_client.insert_one(
+        "sim_results_eval", sim_results_eval.model_dump(), index="model_id"
+    )
+
+    return sim_results_eval
 
 
 # -------------- OLD SHIT -----------------

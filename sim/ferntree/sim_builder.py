@@ -15,9 +15,9 @@ logger = logging.getLogger("ferntree")
 
 
 class SimBuilder:
-    def __init__(self, sim_id: str):
+    def __init__(self, sim_id: str, model_id: str):
         # Connect to database
-        self.db_client = pyMongoClient(sim_id)
+        self.db_client = pyMongoClient(sim_id, model_id)
 
         # Load simulation config from database
         sim_config = self.db_client.load_config()

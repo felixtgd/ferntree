@@ -80,6 +80,60 @@ class SimDataOut(SimDataIn):
     sim_id: str
 
 
+class EnergyKPIs(BaseModel):
+    electr_consumption: float = Field(
+        title="Electricity consumption",
+        description="The annual electricity consumption in kWh",
+    )
+    pv_generation: float = Field(
+        title="PV Generation",
+        description="The annual PV generation in kWh",
+    )
+    grid_consumption: float = Field(
+        title="Grid Consumption",
+        description="The annual grid consumption in kWh",
+    )
+    grid_feed_in: float = Field(
+        title="Grid Feed-in",
+        description="The annual grid feed-in in kWh",
+    )
+    self_consumption: float = Field(
+        title="Self Consumption",
+        description="The annual self consumption in kWh",
+    )
+    self_consumption_rate: float = Field(
+        title="Self Consumption Rate",
+        description="The annual self consumption rate",
+    )
+    self_sufficiency: float = Field(
+        title="Self Sufficiency",
+        description="The annual self sufficiency",
+    )
+
+
+class PVMonthlyGen(BaseModel):
+    month: str
+    PVGeneration: float
+
+
+class SimResultsEval(BaseModel):
+    model_id: str
+    energy_kpis: EnergyKPIs
+    pv_monthly_gen: PVMonthlyGen
+
+
+class SimTimestep(BaseModel):
+    time: float
+    T_amb: float
+    P_solar: float
+    P_base: float
+    P_pv: float
+    P_bat: float
+    Soc_bat: float
+    fill_level: float
+    P_load_pred: float
+
+
 # ------------------ OLD SHIT --------------------
 
 

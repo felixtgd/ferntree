@@ -2,7 +2,7 @@ from datetime import datetime
 
 # import os
 import subprocess
-# import pandas as pd
+import pandas as pd
 
 from backend.database.models import (
     ModelDataOut,
@@ -12,6 +12,10 @@ from backend.database.models import (
     Battery,
     BatteryCtrl,
     SystemSettings,
+    EnergyKPIs,
+    SimTimestep,
+    SimResultsEval,
+    PVMonthlyGen,
     # UserInputForm,
     # SimTimeSeriesDoc,
     # SimEvaluationDoc,
@@ -24,7 +28,7 @@ from backend.database.models import (
     # PVMonthlyGenData,
 )
 
-# from backend.database import mongodb
+from backend.database import mongodb
 from backend.solar_data import pvgis_api, geolocator
 # from backend.utils import data_model_helpers
 
@@ -94,7 +98,7 @@ async def def_system_settings(model_data: ModelDataOut) -> SystemSettings:
     return system_settings
 
 
-async def run_ferntree_simulation(sim_id: str) -> bool:
+async def run_ferntree_simulation(sim_id: str, model_id: str) -> bool:
     """Starts the Ferntree simulation with the given sim_id and model_id.
 
     Args:
@@ -111,8 +115,8 @@ async def run_ferntree_simulation(sim_id: str) -> bool:
         "sim/ferntree/ferntree.py",
         "--sim_id",
         sim_id,
-        # "--model_id",
-        # model_id,
+        "--model_id",
+        model_id,
     ]
     # completed_process = subprocess.run(command, cwd=ferntree_sim_dir)
     completed_process = subprocess.run(command)
@@ -124,6 +128,131 @@ async def run_ferntree_simulation(sim_id: str) -> bool:
         )
 
     return True
+
+
+async def eval_sim_results(
+    db_client: mongodb.MongoClient, model_id: str
+) -> SimResultsEval:
+    # Fetch sim results timeseries data
+    sim_results: list[SimTimestep] = await db_client.fetch_sim_results_by_id(model_id)
+    sim_results = [timestep.model_dump() for timestep in sim_results]
+
+    energy_kpis: EnergyKPIs = await calc_energy_kpis(sim_results)
+    pv_monthly_gen: PVMonthlyGen = await calc_pv_monthly_gen(sim_results)
+
+    sim_results_eval = SimResultsEval(
+        model_id=model_id,
+        energy_kpis=energy_kpis,
+        pv_monthly_gen=pv_monthly_gen,
+    )
+
+    return sim_results_eval
+
+
+async def calc_energy_kpis(sim_results: list[dict]) -> EnergyKPIs:
+    """Calculates the energy KPIs of the simulation results.
+    - Reads the simulation results from the database
+    - Calculates various energy KPIs, e.g. annual pv generation, self-consumption, self-sufficiency
+
+    Args:
+        db_client (MongoClient): The MongoDB client.
+        sim_id (str): The simulation ID.
+
+    Returns:
+        SimEnergyKPIs: The energy KPIs of the simulation results.
+
+    """
+    # Read sim results into dataframe
+    sim_results_df = pd.DataFrame(sim_results)
+
+    # Set time column to datetime, measured in seconds
+    sim_results_df["time"] = pd.to_datetime(sim_results_df["time"], unit="s")
+    # Set time column as index
+    sim_results_df.set_index("time", inplace=True)
+
+    # Calculate net load of house with baseload and pv generation
+    sim_results_df["P_net_load"] = (
+        sim_results_df["P_base"] + sim_results_df["P_pv"]
+    )  # + sim_results_df["P_heat_el"]
+    # Calculate total power profile of house with net load and battery power
+    sim_results_df["P_total"] = sim_results_df["P_net_load"] + sim_results_df["P_bat"]
+
+    # Calculate energy KPIs of system simulation
+    # Annual electricity consumption from baseload demand
+    annual_baseload_demand = sim_results_df["P_base"].sum()  # [kWh]
+    # Annaul PV generation
+    annual_pv_generation = (
+        abs(sim_results_df["P_pv"].sum()) + sim_results_df["Soc_bat"].iloc[-1]
+    )  # [kWh]
+    # Annaul electricity consumed fron grid
+    annual_grid_consumption = sim_results_df["P_total"][
+        sim_results_df["P_total"] > 0.0
+    ].sum()  # [kWh]
+    # Annual electricity fed into grid
+    annual_grid_feed_in = abs(
+        sim_results_df["P_total"][sim_results_df["P_total"] < 0.0].sum()
+    )  # [kWh]
+    # Annual amount of energy consumption covered by PV generation
+    annual_self_consumption = annual_baseload_demand - annual_grid_consumption
+
+    # Energy KPIs of system simulation
+    energy_kpis = EnergyKPIs(
+        electr_consumption=annual_baseload_demand,
+        pv_generation=annual_pv_generation,
+        grid_consumption=annual_grid_consumption,
+        grid_feed_in=annual_grid_feed_in,
+        self_consumption=annual_self_consumption,
+        self_consumption_rate=annual_self_consumption / annual_pv_generation,
+        self_sufficiency=annual_self_consumption / annual_baseload_demand,
+    )
+
+    return energy_kpis
+
+
+async def calc_pv_monthly_gen(sim_results: list[dict]):
+    """Calculates the monthly PV generation data from the timeseries data.
+
+    Args:
+        timeseries_data (list[dict]): The timeseries data.
+
+    Returns:
+        list[dict]: The monthly PV generation data.
+
+    """
+    # Convert timeseries data to dataframe
+    df = pd.DataFrame(sim_results)
+
+    # Set time column to datetime, measured in seconds
+    df["time"] = pd.to_datetime(df["time"], unit="s")
+    # Set time column as index
+    df.set_index("time", inplace=True)
+
+    # Group by month and sum P_pv values
+    df["month"] = df.index.month
+    monthly_pv_df = df.groupby("month")["P_pv"].sum()
+
+    month_mapping = {
+        1: "Jan",
+        2: "Feb",
+        3: "Mar",
+        4: "Apr",
+        5: "May",
+        6: "Jun",
+        7: "Jul",
+        8: "Aug",
+        9: "Sep",
+        10: "Oct",
+        11: "Nov",
+        12: "Dec",
+    }
+
+    # Convert monthly PV generation data to list of dictionaries
+    pv_monthly_gen = [
+        PVMonthlyGen(month=month_mapping[index], PVGeneration=-1 * pv_gen)
+        for index, pv_gen in monthly_pv_df.items()
+    ]
+
+    return pv_monthly_gen
 
 
 # ------------------ OLD SHIT --------------------

@@ -7,7 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 from typing import Union
 
-from backend.database.models import ModelDataOut
+from backend.database.models import ModelDataOut, SimTimestep
 
 
 # Use certifi to get the path of the CA file
@@ -71,7 +71,7 @@ class MongoClient:
 
         return delete_result.acknowledged
 
-    async def fetch_model_by_id(self, model_id: str):
+    async def fetch_model_by_id(self, model_id: str) -> ModelDataOut:
         # Find one document in the collection that matches the query
         query = {"_id": ObjectId(model_id)}
         db_collection = self.db["models"]
@@ -80,6 +80,15 @@ class MongoClient:
         model = ModelDataOut(**model, model_id=str(model["_id"]))
 
         return model
+
+    async def fetch_sim_results_by_id(self, model_id: str) -> list[SimTimestep]:
+        # Find one document in the collection that matches the query
+        query = {"model_id": ObjectId(model_id)}
+        db_collection = self.db["sim_results_ts"]
+        doc = await db_collection.find_one(query)
+        sim_results_ts = [SimTimestep(**timestep) for timestep in doc.timeseries]
+
+        return sim_results_ts
 
     # --------- OLD SHIT -------------
 

@@ -18,7 +18,7 @@ else:
     logging.basicConfig(level=logging.CRITICAL, format="%(message)s")
 
 
-def build_and_run_simulation(sim_id):
+def build_and_run_simulation(sim_id: str, model_id: str):
     # Load sim_builder
     try:
         sim_builder = importlib.import_module("sim_builder")
@@ -27,7 +27,7 @@ def build_and_run_simulation(sim_id):
         sys.exit(1)
 
     # Build simulation
-    builder = sim_builder.SimBuilder(sim_id)
+    builder = sim_builder.SimBuilder(sim_id, model_id)
     sim = builder.build_simulation()
 
     # Start simulation
@@ -41,17 +41,17 @@ if __name__ == "__main__":
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser()
-    # parser.add_argument(
-    #     "-m", "--model_id", help="id of model specs doc in db", required=True
-    # )
+    parser.add_argument(
+        "-m", "--model_id", help="id of model specs doc in db", required=True
+    )
     parser.add_argument(
         "-s", "--sim_id", help="id of simulation doc in db", required=True
     )
     args = parser.parse_args()
-    # model_id = args.model_id
+    model_id = args.model_id
     sim_id = args.sim_id
 
-    # logger.info(f"Model ID: \t{model_id}")
+    logger.info(f"Model ID: \t{model_id}")
     logger.info(f"Simulation ID: \t{sim_id}")
 
     logger.info("")
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     # Build and run the simulation
     start_time = time.time()
     # build_and_run_simulation(model_path)
-    build_and_run_simulation(sim_id)
+    build_and_run_simulation(sim_id, model_id)
     end_time = time.time()
 
     logger.info("")
