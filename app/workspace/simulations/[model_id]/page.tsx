@@ -1,4 +1,4 @@
-import { PvForm } from '../pv-form';
+// import { PvForm } from '../pv-form';
 import { PvDonutChart } from './pv-donut-chart';
 import { PvPowerChart } from './pv-power-chart';
 import { PvGenBarChart } from './pv-gen-bar-chart';
@@ -18,9 +18,9 @@ export default async function Page({ params, searchParams }:
     return (
         <main>
             <div className="grid gap-4 grid-cols-5">
-                <div className="col-span-1">
+                {/* <div className="col-span-1">
                     <PvForm />
-                </div>
+                </div> */}
                 <div className="col-span-4">
                     <div className="grid gap-4 grid-cols-3 grid-rows-4">
 

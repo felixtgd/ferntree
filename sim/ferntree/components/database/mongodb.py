@@ -22,30 +22,29 @@ MONGODB_DATABASE = os.environ["MONGODB_DATABASE"]
 
 
 class pyMongoClient:
-    def __init__(self, model_id: str, sim_id: str):
+    def __init__(self, sim_id: str):
         self.client = MongoClient(MONGODB_URI, server_api=ServerApi("1"), tlsCAFile=ca)
 
         self.db = self.client[MONGODB_DATABASE]
 
-        self.model_id = ObjectId(model_id)
         self.sim_id = ObjectId(sim_id)
 
         self.batch_size = 1000
         self.data_buffer = []
 
     def load_config(self) -> dict:
-        # Load model specifications from database
-        collection = self.db["model_specs"]
-        result = collection.find_one({"_id": self.model_id})
-
-        return result
-
-    def load_simulation_input(self) -> dict:
-        # Load simulation input data from database
-        collection = self.db["sim_timeseries"]
+        # Load sim config from database
+        collection = self.db["simulations"]
         result = collection.find_one({"_id": self.sim_id})
 
         return result
+
+    # def load_simulation_input(self) -> dict:
+    #     # Load simulation input data from database
+    #     collection = self.db["sim_timeseries"]
+    #     result = collection.find_one({"_id": self.sim_id})
+
+    #     return result
 
     def get_load_profile(self, profile_id: int) -> list:
         # Get load profile for baseload from database

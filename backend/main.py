@@ -3,7 +3,7 @@ import logging
 
 from dotenv import load_dotenv
 
-from datetime import datetime
+# from datetime import datetime
 
 # from enum import Enum
 from fastapi import FastAPI, HTTPException, status
@@ -14,8 +14,8 @@ from backend.database.models import (
     ModelDataOut,
     SimDataIn,
     # UserInputForm,
-    TimeseriesDataRequest,
-    FilteredTimeseriesData,
+    # TimeseriesDataRequest,
+    # FilteredTimeseriesData,
 )
 from backend.database.mongodb import MongoClient
 from backend.utils.sim_funcs import (
@@ -23,9 +23,10 @@ from backend.utils.sim_funcs import (
     # process_user_input,
     run_ferntree_simulation,
     # evaluate_simulation_results,
-    calc_monthly_pv_gen_data,
+    # calc_monthly_pv_gen_data,
 )
-from backend.utils.data_model_helpers import format_timeseries_data
+
+# from backend.utils.data_model_helpers import format_timeseries_data
 from backend.utils.auth_funcs import check_user_exists
 
 
@@ -137,7 +138,7 @@ async def delete_model(user_id: str, model_id: str):
     return model_id
 
 
-@app.get("/workspace/simulations/run-sim", response_model=bool)
+@app.get("/workspace/simulations/run-sim", response_model=dict[str, bool])
 @check_user_exists(db_client)
 async def run_simulation(user_id: str, model_id: str):
     logger.info(
@@ -145,10 +146,10 @@ async def run_simulation(user_id: str, model_id: str):
     )
 
     # Fetch model data from database
-    model_data: ModelDataOut = db_client.fetch_model_by_id(model_id)
+    model_data: ModelDataOut = await db_client.fetch_model_by_id(model_id)
 
     # Get simulation input data
-    sim_input_data: SimDataIn = get_sim_input_data(model_data)
+    sim_input_data: SimDataIn = await get_sim_input_data(model_data)
 
     # Insert simulation input data into database
     sim_id = await db_client.insert_one(
@@ -161,15 +162,17 @@ async def run_simulation(user_id: str, model_id: str):
         )
 
     # Run the simulation
-    sim_run: bool = await run_ferntree_simulation(sim_id, model_id)
+    sim_run: bool = await run_ferntree_simulation(sim_id)
 
     if sim_run:
         logger.info(
-            f"GET:\t/simulations/run-simulation --> Sim {sim_id} ran successfully!"
+            f"GET:\t/workspace/simulations/run-simulation --> Sim {sim_id} ran successfully!"
         )
         return {"run_successful": True}
     else:
-        logger.info(f"/dashboard/run-simulation --> Sim {sim_id} failed!")
+        logger.info(
+            f"ERROR:\t/workspace/simulations/run-simulation --> Sim {sim_id} failed!"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error running simulation",
@@ -285,60 +288,60 @@ async def run_simulation(user_id: str, model_id: str):
 #     return model_summary
 
 
-@app.post("/dashboard/sim-timeseries-data")
-async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
-    logger.info(
-        f"\nPOST:\t/dashboard/sim-timeseries-data --> Received request: {request_body}"
-    )
+# @app.post("/dashboard/sim-timeseries-data")
+# async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
+#     logger.info(
+#         f"\nPOST:\t/dashboard/sim-timeseries-data --> Received request: {request_body}"
+#     )
 
-    # Fetch the model specifications TODO: stupid to do this again here!!!
-    sim_model_specs = await db_client.find_one_by_id(
-        "model_specs", request_body.s_model_id
-    )
-    sim_id = sim_model_specs["sim_id"]
+#     # Fetch the model specifications TODO: stupid to do this again here!!!
+#     sim_model_specs = await db_client.find_one_by_id(
+#         "model_specs", request_body.s_model_id
+#     )
+#     sim_id = sim_model_specs["sim_id"]
 
-    try:
-        start_date = datetime.fromisoformat(request_body.start_date).timestamp()
-        end_date = datetime.fromisoformat(request_body.end_date).timestamp()
-    except ValueError as e:
-        logger.error(f"Error parsing datetime: {e}")
-        raise HTTPException(status_code=400, detail="Invalid datetime format")
+#     try:
+#         start_date = datetime.fromisoformat(request_body.start_date).timestamp()
+#         end_date = datetime.fromisoformat(request_body.end_date).timestamp()
+#     except ValueError as e:
+#         logger.error(f"Error parsing datetime: {e}")
+#         raise HTTPException(status_code=400, detail="Invalid datetime format")
 
-    # Fetch the timeseries data of the simulation
-    timeseries_data = await db_client.fetch_timeseries_data(sim_id=sim_id)
+#     # Fetch the timeseries data of the simulation
+#     timeseries_data = await db_client.fetch_timeseries_data(sim_id=sim_id)
 
-    # Filter the timeseries data to only include data within the given date range
-    filtered_timeseries_data = [
-        FilteredTimeseriesData(**data)
-        for data in timeseries_data
-        if start_date <= data["time"] <= end_date
-    ]
+#     # Filter the timeseries data to only include data within the given date range
+#     filtered_timeseries_data = [
+#         FilteredTimeseriesData(**data)
+#         for data in timeseries_data
+#         if start_date <= data["time"] <= end_date
+#     ]
 
-    formatted_timeseries_data = format_timeseries_data(filtered_timeseries_data)
+#     formatted_timeseries_data = format_timeseries_data(filtered_timeseries_data)
 
-    logger.info(
-        f"\nPOST:\t/dashboard/sim-timeseries-data --> Return timeseries data: {len(formatted_timeseries_data)} data points"
-    )
+#     logger.info(
+#         f"\nPOST:\t/dashboard/sim-timeseries-data --> Return timeseries data: {len(formatted_timeseries_data)} data points"
+#     )
 
-    return formatted_timeseries_data  # TODO: define data model for response
+#     return formatted_timeseries_data  # TODO: define data model for response
 
 
-@app.get("/dashboard/pv-monthly-gen")
-async def fetch_pv_monthly_gen_data(model_id: str):
-    logger.info(
-        f"\nGET:\t/dashboard/pv-monthly-gen --> Received request: model_id={model_id}"
-    )
-    # Fetch the model specifications TODO: stupid to do this again here!!!
-    sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
-    sim_id = sim_model_specs["sim_id"]
+# @app.get("/dashboard/pv-monthly-gen")
+# async def fetch_pv_monthly_gen_data(model_id: str):
+#     logger.info(
+#         f"\nGET:\t/dashboard/pv-monthly-gen --> Received request: model_id={model_id}"
+#     )
+#     # Fetch the model specifications TODO: stupid to do this again here!!!
+#     sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
+#     sim_id = sim_model_specs["sim_id"]
 
-    # Fetch the timeseries data of the simulation
-    timeseries_data = await db_client.fetch_timeseries_data(sim_id=sim_id)
+#     # Fetch the timeseries data of the simulation
+#     timeseries_data = await db_client.fetch_timeseries_data(sim_id=sim_id)
 
-    # Calculate the monthly PV generation data
-    monthly_pv_gen_data = await calc_monthly_pv_gen_data(timeseries_data)
+#     # Calculate the monthly PV generation data
+#     monthly_pv_gen_data = await calc_monthly_pv_gen_data(timeseries_data)
 
-    logger.info(
-        f"\nGET:\t/dashboard/pv-monthly-gen --> Return Monthly PV Generation Data: {monthly_pv_gen_data}"
-    )
-    return monthly_pv_gen_data
+#     logger.info(
+#         f"\nGET:\t/dashboard/pv-monthly-gen --> Return Monthly PV Generation Data: {monthly_pv_gen_data}"
+#     )
+#     return monthly_pv_gen_data

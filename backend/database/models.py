@@ -72,6 +72,9 @@ class SimDataIn(BaseModel):
     planning_horizon: int
     system_settings: SystemSettings
 
+    class Config:
+        protected_namespaces = ()
+
 
 class SimDataOut(SimDataIn):
     sim_id: str

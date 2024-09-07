@@ -73,7 +73,7 @@ class MongoClient:
 
     async def fetch_model_by_id(self, model_id: str):
         # Find one document in the collection that matches the query
-        query = {"_id": ObjectId(id)}
+        query = {"_id": ObjectId(model_id)}
         db_collection = self.db["models"]
         model = await db_collection.find_one(query)
 
