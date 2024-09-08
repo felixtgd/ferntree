@@ -30,13 +30,14 @@ class pyMongoClient:
         self.results_collection = self.db["sim_results_ts"]
         self.results_collection.create_index("sim_id", unique=True)
         self.results_collection.create_index("model_id", unique=True)
-        self.results_collection.update_one(
+
+        # Replace the document if it exists, or insert a new one
+        self.results_collection.replace_one(
             {"sim_id": sim_id},
             {
-                "$set": {
-                    "model_id": model_id,
-                    "run_time": datetime.now().isoformat(),
-                }
+                "sim_id": sim_id,
+                "model_id": model_id,
+                "run_time": datetime.now().isoformat(),
             },
             upsert=True,
         )

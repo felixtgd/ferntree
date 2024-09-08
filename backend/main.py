@@ -216,7 +216,7 @@ async def fetch_sim_results(user_id: str, model_id: str):
 @check_user_exists(db_client)
 async def fetch_sim_timeseries(
     user_id: str, model_id: str, request_body: StartEndTimes
-):
+) -> list[SimTimestepOut]:
     logger.info(
         f"POST:\t/workspace/simulations/fetch-sim-timeseries --> Received request: user_id={user_id}, model_id={model_id}, requets body={request_body}"
     )
