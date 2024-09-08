@@ -39,12 +39,16 @@ export async function runSimulation(model_id: string) {
 
     let run_successful: boolean;
     try {
+
+        console.log(`GET workspace/simulations/run-sim: Started simulation of model ${model_id}.`);
+
         // Fetch models of user
         const BACKEND_BASE_URI = await loadBackendBaseUri();
         const response_sim_run = await fetch(`${BACKEND_BASE_URI}/workspace/simulations/run-sim?user_id=${user_id}&model_id=${model_id}`).then((res) => res.json());
+
         run_successful = response_sim_run.run_successful;
 
-        console.log(`GET workspace/simulations/run-sim: Simulation executed (${response_sim_run.status}).`);
+        console.log(`GET workspace/simulations/run-sim: Simulation finished, success: ${run_successful}.`);
 
     }
     catch (error) {

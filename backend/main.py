@@ -171,6 +171,15 @@ async def run_simulation(user_id: str, model_id: str):
     # Run the simulation
     sim_run: bool = await run_ferntree_simulation(sim_id, model_id)
 
+    # If sim run was successful, insert sim_id into model doc in database
+    if sim_run:
+        sim_id_updated = await db_client.update_sim_id_of_model(model_id, sim_id)
+        if not sim_id_updated:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Error updating sim_id {sim_id} of model {model_id}.",
+            )
+
     if sim_run:
         logger.info(
             f"GET:\t/workspace/simulations/run-simulation --> Sim {sim_id} ran successfully!"

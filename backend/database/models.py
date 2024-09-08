@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -17,6 +18,7 @@ class ModelDataIn(BaseModel):
 
 class ModelDataOut(ModelDataIn):
     model_id: str
+    sim_id: Optional[str] = None
 
 
 class Baseload(BaseModel):

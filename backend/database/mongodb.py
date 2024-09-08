@@ -77,6 +77,15 @@ class MongoClient:
 
         return models
 
+    async def update_sim_id_of_model(self, model_id: str, sim_id: str):
+        query = {"_id": ObjectId(model_id)}
+        db_collection = self.db["models"]
+        doc_updated = await db_collection.update_one(
+            query, {"$set": {"sim_id": sim_id}}
+        )
+
+        return doc_updated.acknowledged
+
     async def delete_model(self, model_id: str):
         query = {"_id": ObjectId(model_id)}
         db_collection = self.db["models"]
