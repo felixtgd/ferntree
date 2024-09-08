@@ -92,9 +92,7 @@ async def submit_model(user_id: str, model_data: ModelDataIn):
     )
 
     # Insert model data into database
-    model_id = await db_client.insert_one(
-        "models", model_data.model_dump(), index="user_id"
-    )
+    model_id = await db_client.insert_model(model_data.model_dump())
     if model_id is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -159,9 +157,7 @@ async def run_simulation(user_id: str, model_id: str):
     sim_input_data: SimDataIn = await get_sim_input_data(model_data)
 
     # Insert simulation input data into database
-    sim_id = await db_client.insert_one(
-        "simulations", sim_input_data.model_dump(), index="model_id", unique=True
-    )
+    sim_id = await db_client.insert_sim_data("simulations", sim_input_data.model_dump())
     if sim_id is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -202,10 +198,16 @@ async def fetch_sim_results(user_id: str, model_id: str):
         f"GET:\t/workspace/simulations/fetch-sim-results --> Received request: user_id={user_id}, model_id={model_id}"
     )
 
-    sim_results_eval: SimResultsEval = await eval_sim_results(db_client, model_id)
-    await db_client.insert_one(
-        "sim_results_eval", sim_results_eval.model_dump(), index="model_id"
+    # Check if sim results are already evaluated
+    sim_results_eval: SimResultsEval | None = await db_client.fetch_sim_results_eval(
+        model_id
     )
+    # If not, evaluate sim results
+    if sim_results_eval is None:
+        sim_results_eval: SimResultsEval = await eval_sim_results(db_client, model_id)
+        await db_client.insert_sim_data(
+            "sim_results_eval", sim_results_eval.model_dump()
+        )
 
     return sim_results_eval
 
@@ -229,7 +231,7 @@ async def fetch_sim_timeseries(
         raise HTTPException(status_code=400, detail="Invalid datetime format")
 
     # Fetch sim results timeseries data
-    sim_results: list[SimTimestep] = await db_client.fetch_sim_results_by_id(model_id)
+    sim_results: list[SimTimestep] = await db_client.fetch_sim_results_ts(model_id)
 
     # Filter the timeseries data to only include data within the given date range
     sim_timeseries_data = [

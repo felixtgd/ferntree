@@ -67,9 +67,8 @@ export async function runSimulation(model_id: string) {
 
 
 export async function viewResults(model_id: string) {
-    // Placeholder for viewing results
-    console.log(`View results: ${model_id}`);
-    revalidatePath('/workspace/models');
+    console.info(`View results for model: ${model_id}`);
+    redirect(`/workspace/simulations/${model_id}`);
 }
 
 // not used right now, maybe in the future

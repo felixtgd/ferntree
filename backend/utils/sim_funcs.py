@@ -134,7 +134,7 @@ async def eval_sim_results(
     db_client: mongodb.MongoClient, model_id: str
 ) -> SimResultsEval:
     # Fetch sim results timeseries data
-    sim_results: list[SimTimestep] = await db_client.fetch_sim_results_by_id(model_id)
+    sim_results: list[SimTimestep] = await db_client.fetch_sim_results_ts(model_id)
     sim_results = [timestep.model_dump() for timestep in sim_results]
 
     energy_kpis: EnergyKPIs = await calc_energy_kpis(sim_results)

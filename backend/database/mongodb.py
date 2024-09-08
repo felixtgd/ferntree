@@ -5,9 +5,11 @@ from dotenv import load_dotenv
 from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
+
+# from pymongo.errors import DuplicateKeyError
 from typing import Union
 
-from backend.database.models import ModelDataOut, SimTimestep
+from backend.database.models import ModelDataOut, SimTimestep, SimResultsEval
 
 
 # Use certifi to get the path of the CA file
@@ -36,34 +38,45 @@ class MongoClient:
         else:
             return True
 
-    async def insert_one(
+    async def insert_model(
+        self,
+        model: dict,
+    ) -> str:
+        # Each model has a unique user_id, a user can have multiple models
+
+        # Create an index on the user_id field
+        db_collection = self.db["models"]
+        await db_collection.create_index("user_id", unique=False)
+
+        # Insert model in database
+        result = await db_collection.insert_one(model)
+        model_id = str(result.inserted_id)
+
+        return model_id
+
+    async def insert_sim_data(
         self,
         collection: str,
-        document: dict,
-        index: Union[str, None] = None,
-        unique: bool = False,
-    ) -> Union[str, None]:
-        # Insert a document into the collection
-        db_collection = self.db[collection]
-        if index is not None:
-            await db_collection.create_index(index, unique=unique)
+        sim_data: dict,
+    ) -> str:
+        # One-to-one relationship between model and simulation
+        query = {"model_id": sim_data["model_id"]}
 
-        # Define the query to check for existing document
-        query = {index: document[index]} if index else {}
+        # Create an index on the model_id field
+        db_collection = self.db[collection]
+        await db_collection.create_index("model_id", unique=True)
 
         # Fetch the existing document's ID if it exists
-        existing_document = await db_collection.find_one(query, {"_id": 1})
+        existing_document = await db_collection.find_one(query)
         existing_id = str(existing_document["_id"]) if existing_document else None
 
-        # Replace the document if it exists, or insert a new one if it doesn't
-        result = await db_collection.replace_one(query, document, upsert=True)
+        # Insert or replace document in database
+        result = await db_collection.replace_one(query, sim_data, upsert=True)
 
-        if result.upserted_id:
-            return str(result.upserted_id)
-        elif result.modified_count > 0:
-            return existing_id
-        else:
-            return None
+        # If the document was inserted, result.upserted_id will be set
+        inserted_id = str(result.upserted_id) if result.upserted_id else existing_id
+
+        return inserted_id
 
     async def fetch_models(self, user_id: str) -> list[ModelDataOut]:
         # Fetch all models of the user
@@ -87,9 +100,17 @@ class MongoClient:
         return doc_updated.acknowledged
 
     async def delete_model(self, model_id: str):
+        # Deletethe the model from collection "models"
         query = {"_id": ObjectId(model_id)}
         db_collection = self.db["models"]
         delete_result = await db_collection.delete_one(query)
+
+        # Delete all other docs associated with the model
+        collections = ["simulations", "sim_results_ts", "sim_results_eval"]
+        for collection in collections:
+            query = {"model_id": model_id}
+            db_collection = self.db[collection]
+            await db_collection.delete_many(query)
 
         return delete_result.acknowledged
 
@@ -103,7 +124,7 @@ class MongoClient:
 
         return model
 
-    async def fetch_sim_results_by_id(self, model_id: str) -> list[SimTimestep]:
+    async def fetch_sim_results_ts(self, model_id: str) -> list[SimTimestep]:
         # Find one document in the collection that matches the query
         query = {"model_id": model_id}
         db_collection = self.db["sim_results_ts"]
@@ -111,6 +132,19 @@ class MongoClient:
         sim_results_ts = [SimTimestep(**timestep) for timestep in doc["timeseries"]]
 
         return sim_results_ts
+
+    async def fetch_sim_results_eval(
+        self, model_id: str
+    ) -> Union[SimResultsEval, None]:
+        # Find one document in the collection that matches the query
+        query = {"model_id": model_id}
+        db_collection = self.db["sim_results_eval"]
+        doc = await db_collection.find_one(query)
+        if doc:
+            sim_results_ts = SimResultsEval(**doc)
+            return sim_results_ts
+        else:
+            return None
 
     # --------- OLD SHIT -------------
 
