@@ -8,13 +8,11 @@ export async function ModelSelection() {
     const models: ModelData[] = await fetchModels();
 
     return (
-        <div className="p-2">
-            <Card
-                className="flex transition-all duration-300 flex-grow flex-col items-center justify-center w-full"
-            >
-                <ModelSelectForm models={models} />
+        <Card
+            className="flex transition-all duration-300 flex-grow flex-col items-center justify-center w-full"
+        >
+            <ModelSelectForm models={models} />
 
-            </Card>
-        </div>
+        </Card>
     );
 }

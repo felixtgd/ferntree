@@ -198,9 +198,6 @@ async def fetch_sim_results(user_id: str, model_id: str):
         "sim_results_eval", sim_results_eval.model_dump(), index="model_id"
     )
 
-    logger.info("SimResultEval:")
-    logger.info(sim_results_eval)
-
     return sim_results_eval
 
 

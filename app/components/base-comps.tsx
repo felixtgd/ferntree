@@ -1,6 +1,6 @@
 'use client';
 
-import { FinBarChartItem, PowerTimeseriesItem, PVMonthlyGen } from '@/app/utils/definitions';
+import { FinBarChartItem, PVMonthlyGen, SimTimestep } from '@/app/utils/definitions';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react'
 import { enGB } from 'date-fns/locale';
@@ -155,7 +155,7 @@ export function BaseDateRangePicker({ date_range } : { date_range: DateRangePick
     );
 }
 
-export function BaseLineChart({ data } : { data: PowerTimeseriesItem[]; }) {
+export function BaseLineChart({ data } : { data: SimTimestep[]; }) {
     return (
         <>
             <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium m-4">
