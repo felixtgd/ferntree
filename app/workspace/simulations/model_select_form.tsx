@@ -4,7 +4,8 @@ import { RunButton, ViewButton } from "@/app/components/buttons";
 import { Select, SelectItem, List, ListItem } from "@tremor/react";
 import { RiShapesLine } from "@remixicon/react";
 import { ModelData } from "@/app/utils/definitions";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import {
   RiArrowUpWideLine,
   RiBattery2ChargeLine,
@@ -17,6 +18,18 @@ import {
 export function ModelSelectForm({models}: {models: ModelData[]}) {
 
     const [modelData, setModelData] = useState(models[0]);
+    const params = useParams();
+
+    useEffect(() => {
+        if (params.model_id) {
+            console.log(`ModelSelectForm: Setting model data from URL: ${params.model_id}`);
+            const model_id = params.model_id as string;
+            const selectedModel = models.find((model) => model.model_id === model_id);
+            if (selectedModel) {
+                setModelData(selectedModel);
+            }
+        }
+    }, [params.model_id, models]);
 
     return (
         <div className="flex flex-col w-full items-center">

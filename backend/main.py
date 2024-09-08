@@ -204,6 +204,9 @@ async def fetch_sim_results(user_id: str, model_id: str):
     )
     # If not, evaluate sim results
     if sim_results_eval is None:
+        logger.info(
+            f"GET:\t/workspace/simulations/fetch-sim-results --> Evaluating sim results for model_id={model_id}"
+        )
         sim_results_eval: SimResultsEval = await eval_sim_results(db_client, model_id)
         await db_client.insert_sim_data(
             "sim_results_eval", sim_results_eval.model_dump()
