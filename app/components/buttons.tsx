@@ -3,6 +3,9 @@
 import { RemixiconComponentType, RiDeleteBin6Line, RiEyeLine, RiPencilLine, RiPlayCircleLine } from "@remixicon/react";
 import { Button, ButtonProps } from "@tremor/react";
 import { deleteModel, editModel, runSimulation, viewResults } from "@/app/components/button-actions";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import LoadingScreen from "./loading-screen";
 
 
 function BaseButton(
@@ -56,6 +59,21 @@ export function DeleteButton({type, model_id}: {type: string, model_id: string})
 
 export function RunButton({type, model_id}: {type: string, model_id: string}) {
 
+    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+
+    async function handleRunSimulation(model_id: string) {
+        setIsLoading(true);
+        const result = await runSimulation(model_id);
+        setIsLoading(false);
+
+        if (result.success) {
+          router.push(`/workspace/simulations/${result.model_id}`);
+        } else {
+          router.refresh();
+        }
+      };
+
     let tooltip;
     if (type === "model") {
         tooltip = "Run simulation";
@@ -67,13 +85,16 @@ export function RunButton({type, model_id}: {type: string, model_id: string}) {
     }
 
     return (
-        <BaseButton
-            icon={RiPlayCircleLine}
-            color="blue"
-            tooltip={tooltip}
-            model_id={model_id}
-            buttonAction={runSimulation}
-        />
+        <>
+            <BaseButton
+                icon={RiPlayCircleLine}
+                color="blue"
+                tooltip={tooltip}
+                model_id={model_id}
+                buttonAction={handleRunSimulation}
+            />
+            {isLoading && <LoadingScreen />}
+        </>
     );
 }
 

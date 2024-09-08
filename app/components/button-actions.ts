@@ -56,12 +56,7 @@ export async function runSimulation(model_id: string) {
         run_successful = false;
     }
 
-    if (run_successful) {
-        redirect(`/workspace/simulations/${model_id}`);
-    }
-    else {
-        revalidatePath('/workspace/simulations');
-    }
+    return { success: run_successful, model_id };
 
 }
 
