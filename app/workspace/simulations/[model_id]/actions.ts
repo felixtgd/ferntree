@@ -1,6 +1,6 @@
 'use server';
 
-import { SimResultsEval } from "@/app/utils/definitions";
+import { SimResultsEval, SimTimestep } from "@/app/utils/definitions";
 import { DateRangePickerValue } from "@tremor/react";
 import { getUserID, loadBackendBaseUri } from '@/app/utils/helpers';
 
@@ -42,21 +42,24 @@ export async function fetchSimResults(model_id: string) {
 
 
 export async function fetchPowerData(model_id: string, date_range: DateRangePickerValue) {
+
+    // Get the user ID
+    const user_id = await getUserID();
+
     try {
         const request_body = {
-        model_id: model_id,
-        start_date: date_range.from?.toISOString(),
-        end_date: date_range.to?.toISOString(),
+            start_time: date_range.from?.toISOString(),
+            end_time: date_range.to?.toISOString(),
         };
 
         const BACKEND_BASE_URI = await loadBackendBaseUri();
-        const response = await fetch(`${BACKEND_BASE_URI}/dashboard/sim-timeseries-data`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request_body),
+        const response = await fetch(`${BACKEND_BASE_URI}/workspace/simulations/fetch-sim-timeseries?user_id=${user_id}&model_id=${model_id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(request_body),
         });
 
-        const timeseries_data = await response.json();
+        const timeseries_data: SimTimestep[] = await response.json();
         return timeseries_data;
 
     } catch (error) {

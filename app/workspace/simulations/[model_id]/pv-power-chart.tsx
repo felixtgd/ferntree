@@ -3,7 +3,7 @@ import { fetchPowerData } from './actions';
 import { z } from "zod";
 import { redirect } from 'next/navigation';
 import { BaseDateRangePicker, BaseLineChart } from '@/app/components/base-comps';
-import { PowerTimeseriesItem } from '@/app/utils/definitions';
+import { SimTimestep } from '@/app/utils/definitions';
 
 export async function PvPowerChart({ model_id, search_params }:
   {
@@ -35,7 +35,11 @@ export async function PvPowerChart({ model_id, search_params }:
     redirect(`/workspace/simulations/${model_id}`);
   }
 
-  const chart_data : PowerTimeseriesItem[] = await fetchPowerData(model_id, date_range.data);
+  const chart_data : SimTimestep[] | undefined = await fetchPowerData(model_id, date_range.data);
+
+  if (!chart_data) {
+    return <div>Failed to load chart data</div>;
+  }
 
   return (
     <Card

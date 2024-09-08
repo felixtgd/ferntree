@@ -77,6 +77,14 @@ export type DonutChartData = {
   title: string;
 }
 
+export type SimTimestep = {
+  time: string;
+  Load: number;
+  PV: number;
+  Battery: number;
+  Total: number;
+  StateOfCharge: number;
+};
 
 
 
@@ -178,14 +186,6 @@ export type FinBarChartItem = {
   'Operation costs'?: number;
 };
 
-export type PowerTimeseriesItem = {
-  time: string;
-  Load: number;
-  PV: number;
-  Battery: number;
-  Total: number;
-  StateOfCharge: number;
-};
 
 export type ModelSummary = {
   location: string;

@@ -3,7 +3,7 @@ import logging
 
 from dotenv import load_dotenv
 
-# from datetime import datetime
+from datetime import datetime
 
 # from enum import Enum
 from fastapi import FastAPI, HTTPException, status
@@ -14,6 +14,9 @@ from backend.database.models import (
     ModelDataOut,
     SimDataIn,
     SimResultsEval,
+    StartEndTimes,
+    SimTimestep,
+    SimTimestepOut,
     # EnergyKPIs,
     # PVMonthlyGen,
     # UserInputForm,
@@ -85,7 +88,7 @@ app.add_middleware(
 @check_user_exists(db_client)
 async def submit_model(user_id: str, model_data: ModelDataIn):
     logger.info(
-        f"\nPOST:\t/workspace/models/submit-model --> Received request: model_data={model_data}"
+        f"\nPOST:\t/workspace/models/submit-model --> Received request: user_id={user_id}, model_data={model_data}"
     )
 
     # Insert model data into database
@@ -199,6 +202,48 @@ async def fetch_sim_results(user_id: str, model_id: str):
     logger.info(sim_results_eval)
 
     return sim_results_eval
+
+
+@app.post(
+    "/workspace/simulations/fetch-sim-timeseries", response_model=list[SimTimestepOut]
+)
+@check_user_exists(db_client)
+async def fetch_sim_timeseries(
+    user_id: str, model_id: str, request_body: StartEndTimes
+):
+    logger.info(
+        f"POST:\t/workspace/simulations/fetch-sim-timeseries --> Received request: user_id={user_id}, model_id={model_id}, requets body={request_body}"
+    )
+
+    try:
+        start_time = datetime.fromisoformat(request_body.start_time).timestamp()
+        end_time = datetime.fromisoformat(request_body.end_time).timestamp()
+    except ValueError as e:
+        logger.error(f"Error parsing datetime: {e}")
+        raise HTTPException(status_code=400, detail="Invalid datetime format")
+
+    # Fetch sim results timeseries data
+    sim_results: list[SimTimestep] = await db_client.fetch_sim_results_by_id(model_id)
+
+    # Filter the timeseries data to only include data within the given date range
+    sim_timeseries_data = [
+        SimTimestepOut(
+            time=datetime.fromtimestamp(timestep.time).strftime("%d-%m-%Y %H:%M"),
+            Load=timestep.P_base,
+            PV=timestep.P_pv,
+            Battery=timestep.P_bat,
+            Total=timestep.P_base + timestep.P_pv + timestep.P_bat,
+            StateOfCharge=timestep.Soc_bat,
+        )
+        for timestep in sim_results
+        if start_time <= timestep.time <= end_time
+    ]
+
+    logger.info(
+        f"POST:\t/workspace/simulations/fetch-sim-timeseries --> Return timeseries data: {len(sim_timeseries_data)} data points"
+    )
+
+    return sim_timeseries_data
 
 
 # -------------- OLD SHIT -----------------

@@ -137,6 +137,20 @@ class SimTimestep(BaseModel):
     P_load_pred: float
 
 
+class StartEndTimes(BaseModel):
+    start_time: str
+    end_time: str
+
+
+class SimTimestepOut(BaseModel):
+    time: str
+    Load: float
+    PV: float
+    Battery: float
+    Total: float
+    StateOfCharge: float
+
+
 # ------------------ OLD SHIT --------------------
 
 
