@@ -1,9 +1,11 @@
 'use client';
 
 import { Select, SelectItem, NumberInput, Flex, Button } from "@tremor/react";
-import { ModelData } from "@/app/utils/definitions";
+import { FinData, FormState, ModelData } from "@/app/utils/definitions";
 import { useState, useEffect } from "react";
+import { useFormStatus, useFormState } from 'react-dom'
 import { useParams } from "next/navigation";
+import { submitFinances } from "./actions";
 import {
     RiArrowDownWideLine,
     RiArrowRightDownLine,
@@ -15,39 +17,66 @@ import {
     RiFundsLine,
     RiHandCoinLine,
     RiHourglassLine,
+    RiPlayLargeLine,
     RiShapesLine,
     RiSunLine,
     RiSwap2Line,
     RiToolsLine,
 } from "@remixicon/react";
 
-const default_values = {
-    // Source: https://www.ise.fraunhofer.de/de/veroeffentlichungen/studien/aktuelle-fakten-zur-photovoltaik-in-deutschland.html
-    electr_price: 45,
-    feed_in_tariff: 8,
-    pv_price_kwp: 1500,
-    bat_price_kwh: 650,
-    useful_life: 20,
-    module_deg: 0.5,
-    inflation: 2,
-    op_cost: 1,
-    down_payment: 20,
-    pay_off_rate: 5,
-    interest_rate: 4
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+
+  return (
+    <Button
+      type="submit"
+      icon={RiPlayLargeLine}
+      disabled={pending}
+    >
+      Calculate Finances
+    </Button>
+  )
 }
 
 export function FinanceConfigForm({models}: {models: ModelData[]}) {
 
-    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [modelData, setModelData] = useState(models[0]);
 
+    const default_fin_data: FinData = {
+        // Source: https://www.ise.fraunhofer.de/de/veroeffentlichungen/studien/aktuelle-fakten-zur-photovoltaik-in-deutschland.html
+        model_id: modelData.model_id as string,
+        electr_price: 45,
+        feed_in_tariff: 8,
+        pv_price: 1500,
+        battery_price: 650,
+        useful_life: 20,
+        module_deg: 0.5,
+        inflation: 2,
+        op_cost: 1,
+        down_payment: 20,
+        pay_off_rate: 5,
+        interest_rate: 4,
+    }
+
+    const [formData, setFormData] = useState(default_fin_data);
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = event.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const initialState : FormState = { message: null, errors: {} };
+    const [state, formAction] = useFormState(submitFinances, initialState);
+
+    // Collapsible for advanced settings
+    const [showAdvanced, setShowAdvanced] = useState(false);
     const toggleAdvanced = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
         setShowAdvanced(!showAdvanced);
     };
 
-    const [modelData, setModelData] = useState(models[0]);
+    // Select model data from URL
     const params = useParams();
-
     useEffect(() => {
         if (params.model_id) {
             console.log(`ModelSelectForm: Setting model data from URL: ${params.model_id}`);
@@ -55,17 +84,21 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
             const selectedModel = models.find((model) => model.model_id === model_id);
             if (selectedModel) {
                 setModelData(selectedModel);
+                setFormData({
+                    ...formData,
+                    model_id: model_id
+                });
             }
         }
-    }, [params.model_id, models]);
+    }, [params.model_id, models, formData]);
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(event.target.value);
-    };
 
     return (
         <div className="flex flex-col w-full items-center">
-            <form className="w-full">
+            <form
+                className="w-full"
+                action={formAction}
+            >
                 <h2 className="w-full text-center mb-4">
                     Select a model and enter your financial parameters
                 </h2>
@@ -103,11 +136,19 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                             id="electr_price"
                             name="electr_price"
                             step="0.1"
-                            placeholder={default_values.electr_price.toString()}
+                            placeholder={formData.electr_price.toString()}
                             icon={RiCoinsLine}
                             onChange={handleChange}
-                            // value = {formData.electr_price}
+                            value = {formData.electr_price}
                         />
+                    </div>
+                    <div id="electr_price_error" aria-live="polite" aria-atomic="true">
+                        {state.errors?.electr_price &&
+                        state.errors.electr_price.map((error: string) => (
+                            <p className="mt-2 text-sm text-red-500" key={error}>
+                            {error}
+                            </p>
+                        ))}
                     </div>
                 </div>
 
@@ -121,48 +162,72 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                             id="feed_in_tariff"
                             name="feed_in_tariff"
                             step="0.1"
-                            placeholder={default_values.feed_in_tariff.toString()}
+                            placeholder={formData.feed_in_tariff.toString()}
                             icon={RiSwap2Line}
                             onChange={handleChange}
-                            // value = {formData.electr_price}
+                            value = {formData.feed_in_tariff}
                         />
+                    </div>
+                    <div id="feed_in_tariff_error" aria-live="polite" aria-atomic="true">
+                        {state.errors?.feed_in_tariff &&
+                        state.errors.feed_in_tariff.map((error: string) => (
+                            <p className="mt-2 text-sm text-red-500" key={error}>
+                            {error}
+                            </p>
+                        ))}
                     </div>
                 </div>
 
                 {/* PV price per kWp */}
                 <div className="mb-4">
-                    <label htmlFor="pv_price_kwp" className="mb-2 block text-sm font-medium">
+                    <label htmlFor="pv_price" className="mb-2 block text-sm font-medium">
                         PV price per kWp  [€/kWp]
                     </label>
                     <div className="relative">
                         <NumberInput
-                            id="pv_price_kwp"
-                            name="pv_price_kwp"
+                            id="pv_price"
+                            name="pv_price"
                             step="1"
-                            placeholder={default_values.pv_price_kwp.toString()}
+                            placeholder={formData.pv_price.toString()}
                             icon={RiSunLine}
                             onChange={handleChange}
-                            // value = {formData.electr_price}
+                            value = {formData.pv_price}
                         />
+                    </div>
+                    <div id="pv_price_error" aria-live="polite" aria-atomic="true">
+                        {state.errors?.pv_price &&
+                        state.errors.pv_price.map((error: string) => (
+                            <p className="mt-2 text-sm text-red-500" key={error}>
+                            {error}
+                            </p>
+                        ))}
                     </div>
                 </div>
 
                 {/* Battery price per kWh */}
                 <div className="mb-4">
-                    <label htmlFor="bat_price_kwh" className="mb-2 block text-sm font-medium">
+                    <label htmlFor="battery_price" className="mb-2 block text-sm font-medium">
                         Battery price per kWh  [€/kWh]
                     </label>
                     <div className="relative">
                         <NumberInput
-                            id="bat_price_kwh"
-                            name="bat_price_kwh"
+                            id="battery_price"
+                            name="battery_price"
                             step="1"
-                            placeholder={default_values.bat_price_kwh.toString()}
+                            placeholder={formData.battery_price.toString()}
                             icon={RiBattery2ChargeLine}
                             onChange={handleChange}
-                            // value = {default_values.bat_price_kwh}
+                            value = {formData.battery_price}
                             disabled={modelData.battery_cap === 0}
                         />
+                    </div>
+                    <div id="battery_price_error" aria-live="polite" aria-atomic="true">
+                        {state.errors?.battery_price &&
+                        state.errors.battery_price.map((error: string) => (
+                            <p className="mt-2 text-sm text-red-500" key={error}>
+                            {error}
+                            </p>
+                        ))}
                     </div>
                 </div>
 
@@ -176,11 +241,19 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                             id="useful_life"
                             name="useful_life"
                             step="1"
-                            placeholder={default_values.useful_life.toString()}
+                            placeholder={formData.useful_life.toString()}
                             icon={RiHourglassLine}
                             onChange={handleChange}
-                            value={default_values.useful_life}
+                            value={formData.useful_life}
                         />
+                    </div>
+                    <div id="useful_life_error" aria-live="polite" aria-atomic="true">
+                        {state.errors?.useful_life &&
+                        state.errors.useful_life.map((error: string) => (
+                            <p className="mt-2 text-sm text-red-500" key={error}>
+                            {error}
+                            </p>
+                        ))}
                     </div>
                 </div>
 
@@ -206,11 +279,19 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                                         id="module_deg"
                                         name="module_deg"
                                         step="0.1"
-                                        placeholder={default_values.module_deg.toString()}
+                                        placeholder={formData.module_deg.toString()}
                                         icon={RiArrowRightDownLine}
                                         onChange={handleChange}
-                                        value={default_values.module_deg.toString()}
+                                        value={formData.module_deg}
                                     />
+                                </div>
+                                <div id="module_deg_error" aria-live="polite" aria-atomic="true">
+                                    {state.errors?.module_deg &&
+                                    state.errors.module_deg.map((error: string) => (
+                                        <p className="mt-2 text-sm text-red-500" key={error}>
+                                        {error}
+                                        </p>
+                                    ))}
                                 </div>
                             </div>
 
@@ -224,11 +305,19 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                                         id="inflation"
                                         name="inflation"
                                         step="0.1"
-                                        placeholder={default_values.inflation.toString()}
+                                        placeholder={formData.inflation.toString()}
                                         icon={RiFundsLine}
                                         onChange={handleChange}
-                                        value={default_values.inflation.toString()}
+                                        value={formData.inflation}
                                     />
+                                </div>
+                                <div id="inflation_error" aria-live="polite" aria-atomic="true">
+                                    {state.errors?.inflation &&
+                                    state.errors.inflation.map((error: string) => (
+                                        <p className="mt-2 text-sm text-red-500" key={error}>
+                                        {error}
+                                        </p>
+                                    ))}
                                 </div>
                             </div>
 
@@ -242,11 +331,19 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                                         id="op_cost"
                                         name="op_cost"
                                         step="0.1"
-                                        placeholder={default_values.op_cost.toString()}
+                                        placeholder={formData.op_cost.toString()}
                                         icon={RiToolsLine}
                                         onChange={handleChange}
-                                        value={default_values.op_cost.toString()}
+                                        value={formData.op_cost}
                                     />
+                                </div>
+                                <div id="op_cost_error" aria-live="polite" aria-atomic="true">
+                                    {state.errors?.op_cost &&
+                                    state.errors.op_cost.map((error: string) => (
+                                        <p className="mt-2 text-sm text-red-500" key={error}>
+                                        {error}
+                                        </p>
+                                    ))}
                                 </div>
                             </div>
 
@@ -260,11 +357,19 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                                         id="down_payment"
                                         name="down_payment"
                                         step="0.1"
-                                        placeholder={default_values.down_payment.toString()}
+                                        placeholder={formData.down_payment.toString()}
                                         icon={RiCurrencyLine}
                                         onChange={handleChange}
-                                        value ={default_values.down_payment.toString()}
+                                        value ={formData.down_payment.toString()}
                                     />
+                                </div>
+                                <div id="down_payment_error" aria-live="polite" aria-atomic="true">
+                                    {state.errors?.down_payment &&
+                                    state.errors.down_payment.map((error: string) => (
+                                        <p className="mt-2 text-sm text-red-500" key={error}>
+                                        {error}
+                                        </p>
+                                    ))}
                                 </div>
                             </div>
 
@@ -278,11 +383,19 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                                         id="pay_off_rate"
                                         name="pay_off_rate"
                                         step="0.1"
-                                        placeholder={default_values.pay_off_rate.toString()}
+                                        placeholder={formData.pay_off_rate.toString()}
                                         icon={RiHandCoinLine}
                                         onChange={handleChange}
-                                        value={default_values.pay_off_rate.toString()}
+                                        value={formData.pay_off_rate}
                                     />
+                                </div>
+                                <div id="pay_off_rate_error" aria-live="polite" aria-atomic="true">
+                                    {state.errors?.pay_off_rate &&
+                                    state.errors.pay_off_rate.map((error: string) => (
+                                        <p className="mt-2 text-sm text-red-500" key={error}>
+                                        {error}
+                                        </p>
+                                    ))}
                                 </div>
                             </div>
 
@@ -296,17 +409,29 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                                         id="interest_rate"
                                         name="interest_rate"
                                         step="0.1"
-                                        placeholder={default_values.interest_rate.toString()}
+                                        placeholder={formData.interest_rate.toString()}
                                         icon={RiBankLine}
                                         onChange={handleChange}
-                                        value={default_values.interest_rate.toString()}
+                                        value={formData.interest_rate}
                                     />
+                                </div>
+                                <div id="interest_rate_error" aria-live="polite" aria-atomic="true">
+                                    {state.errors?.interest_rate &&
+                                    state.errors.interest_rate.map((error: string) => (
+                                        <p className="mt-2 text-sm text-red-500" key={error}>
+                                        {error}
+                                        </p>
+                                    ))}
                                 </div>
                             </div>
                             </>
                         )}
                     </Flex>
                 </Flex>
+
+                <div className="mt-6 flex justify-center gap-4">
+                    <SubmitButton />
+                </div>
 
             </form>
 

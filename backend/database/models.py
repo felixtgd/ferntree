@@ -161,6 +161,24 @@ class SimTimestepOut(BaseModel):
     StateOfCharge: float
 
 
+class FinDataIn(BaseModel):
+    model_id: str
+    electr_price: float
+    feed_in_tariff: float
+    pv_price: float
+    battery_price: float
+    useful_life: int
+    module_deg: float
+    inflation: float
+    op_cost: float
+    down_payment: float
+    pay_off_rate: float
+    interest_rate: float
+
+    class Config:
+        protected_namespaces = ()
+
+
 # ------------------ OLD SHIT --------------------
 
 

@@ -18,6 +18,7 @@ from backend.database.models import (
     StartEndTimes,
     SimTimestep,
     SimTimestepOut,
+    FinDataIn,
     # EnergyKPIs,
     # PVMonthlyGen,
     # UserInputForm,
@@ -244,6 +245,29 @@ async def fetch_sim_timeseries(
     )
 
     return sim_timeseries_data
+
+
+@app.post("/workspace/finances/submit-fin-data", response_model=str)
+@check_user_exists(db_client)
+async def submit_fin_data(user_id: str, fin_data: FinDataIn) -> str:
+    logger.info(
+        f"\nPOST:\t/workspace/finances/submit-fin-data --> Received request: user_id={user_id}, fin_data={fin_data}"
+    )
+
+    model_id: str = fin_data.model_id
+    # # Insert model data into database
+    # model_id: Optional[str] = await db_client.insert_model(fin_data.model_dump())
+    # if model_id is None:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+    #         detail="Error inserting model data into database.",
+    #     )
+
+    logger.info(
+        f"POST:\t/workspace/finances/submit-fin-data --> Return Model ID: {model_id}"
+    )
+
+    return model_id
 
 
 # -------------- OLD SHIT -----------------

@@ -86,7 +86,70 @@ export type SimTimestep = {
   StateOfCharge: number;
 };
 
+// FINANCES
+// MODEL DATA for /workspace/models
+export type FinData = {
+  model_id: string;
+  electr_price: number;
+  feed_in_tariff: number;
+  pv_price: number;
+  battery_price: number;
+  useful_life: number;
+  module_deg: number;
+  inflation: number;
+  op_cost: number;
+  down_payment: number;
+  pay_off_rate: number;
+  interest_rate: number;
+};
 
+export const FinDataSchema = z.object({
+  model_id: z.string(),
+  electr_price: z.coerce
+      .number()
+      .gt(0, { message: 'Must be greater than 0 ct/kWh' })
+      .lte(1000, { message: 'Must be at most 1000 ct/kWh' }),
+  feed_in_tariff: z.coerce
+      .number()
+      .gt(0, { message: 'Must be greater than 0 ct/kWh' })
+      .lte(1000, { message: 'Must be at most 1000 ct/kWh' }),
+  pv_price: z.coerce
+      .number()
+      .gt(0, { message: 'Must be greater than 0 €/kWp' })
+      .lte(10000, { message: 'Must be at most 10,000 €/kWp' }),
+  battery_price: z.coerce
+      .number()
+      .gt(0, { message: 'Must be greater than 0 €/kWh' })
+      .lte(10000, { message: 'Must be at most 10,000 €/kWh' }),
+  useful_life: z.coerce
+      .number()
+      .gt(0, { message: 'Must be greater than 0 years' })
+      .lte(50, { message: 'Must be at most 50 years' }),
+  module_deg: z.coerce
+      .number()
+      .gt(0, { message: 'Must be greater than 0%' })
+      .lt(100, { message: 'Must be less than 100%' }),
+  inflation: z.coerce
+      .number()
+      .gt(0, { message: 'Must be greater than 0%' })
+      .lte(100, { message: 'Must be at most 100%' }),
+  op_cost: z.coerce
+      .number()
+      .gt(0, { message: 'Must be greater than 0%' })
+      .lte(100, { message: 'Must be at most 100%' }),
+  down_payment: z.coerce
+      .number()
+      .gt(0, { message: 'Must be greater than 0%' })
+      .lte(100, { message: 'Must be at most 100%' }),
+  pay_off_rate: z.coerce
+      .number()
+      .gt(0, { message: 'Must be greater than 0%' })
+      .lte(100, { message: 'Must be at most 100%' }),
+  interest_rate: z.coerce
+      .number()
+      .gt(0, { message: 'Must be greater than 0%' })
+      .lte(100, { message: 'Must be at most 100%' }),
+});
 
 
 
