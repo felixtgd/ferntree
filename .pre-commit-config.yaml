@@ -31,5 +31,5 @@ repos:
       - id: mypy
         args: ["--strict", --ignore-missing-imports]  # Use strict mode to enforce type checking
         additional_dependencies:
-          - "pydantic>=1.10.4"
-          - "fastapi>=0.68.0"
+          - "pydantic>=2.7.0"
+          - "fastapi>=0.110.2"
