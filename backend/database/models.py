@@ -2,6 +2,14 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
+class User(BaseModel):
+    user_id: str
+    name: str
+    email: str
+    image: str
+    emailVerified: Optional[str]
+
+
 class ModelDataIn(BaseModel):
     user_id: str
     model_name: str

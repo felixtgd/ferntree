@@ -2,7 +2,10 @@ from datetime import datetime
 
 # import os
 import subprocess
+from subprocess import CompletedProcess
 import pandas as pd
+from pandas import DataFrame, Series
+from typing import Hashable, Any
 
 from backend.database.models import (
     ModelDataOut,
@@ -36,6 +39,9 @@ from backend.solar_data import pvgis_api, geolocator
 async def get_sim_input_data(model_data: ModelDataOut) -> SimDataIn:
     # Pass parameters to pvgis_api to query solar data for sim input
     try:
+        T_amb: list[float]
+        G_i: list[float]
+        coordinates: dict[str, str]
         T_amb, G_i, coordinates = await pvgis_api.get_solar_data_for_location(
             model_data.location, model_data.roof_azimuth, model_data.roof_incl
         )
@@ -48,7 +54,7 @@ async def get_sim_input_data(model_data: ModelDataOut) -> SimDataIn:
     # Define energy system settings based on model data
     system_settings: SystemSettings = await def_system_settings(model_data)
 
-    sim_input_data = SimDataIn(
+    sim_input_data: SimDataIn = SimDataIn(
         model_id=model_data.model_id,
         run_time=datetime.now().isoformat(),
         T_amb=T_amb,
@@ -64,32 +70,32 @@ async def get_sim_input_data(model_data: ModelDataOut) -> SimDataIn:
 
 
 async def def_system_settings(model_data: ModelDataOut) -> SystemSettings:
-    baseload = Baseload(
+    baseload: Baseload = Baseload(
         annual_consumption=model_data.electr_cons,
         profile_id=1,  # TODO: Find better way to set profile_id
     )
 
-    pv = PV(
+    pv: PV = PV(
         roof_tilt=model_data.roof_incl,
         roof_azimuth=model_data.roof_azimuth,
         peak_power=model_data.peak_power,
     )
 
-    battery_ctrl = BatteryCtrl(
+    battery_ctrl: BatteryCtrl = BatteryCtrl(
         planning_horizon=1,
         useable_capacity=0.8,
         greedy=True,
         opt_fill=False,
     )
 
-    battery = Battery(
+    battery: Battery = Battery(
         capacity=model_data.battery_cap,
         max_power=model_data.battery_cap,  # TODO: Add max_power to user input?
         soc_init=0.0,
         battery_ctrl=battery_ctrl,
     )
 
-    system_settings = SystemSettings(
+    system_settings: SystemSettings = SystemSettings(
         baseload=baseload,
         pv=pv,
         battery=battery,
@@ -108,9 +114,7 @@ async def run_ferntree_simulation(sim_id: str, model_id: str) -> bool:
         bool: True if the simulation was successful.
 
     """
-    # script_dir = os.path.dirname(__file__)
-    # ferntree_sim_dir = os.path.join(script_dir, "../../sim/ferntree/")
-    command = [
+    command: list[str] = [
         "python",
         "sim/ferntree/ferntree.py",
         "--sim_id",
@@ -118,12 +122,11 @@ async def run_ferntree_simulation(sim_id: str, model_id: str) -> bool:
         "--model_id",
         model_id,
     ]
-    # completed_process = subprocess.run(command, cwd=ferntree_sim_dir)
-    completed_process = subprocess.run(command)
+    completed_process: CompletedProcess[Any] = subprocess.run(command)
 
     # Check if the simulation has finished successfully
     if completed_process.returncode != 0:
-        raise ValueError(
+        raise RuntimeError(
             f"Ferntree Simulation failed. Return code: {completed_process.returncode}"
         )
 
@@ -135,12 +138,14 @@ async def eval_sim_results(
 ) -> SimResultsEval:
     # Fetch sim results timeseries data
     sim_results: list[SimTimestep] = await db_client.fetch_sim_results_ts(model_id)
-    sim_results = [timestep.model_dump() for timestep in sim_results]
+    sim_results_dict: list[dict[str, float]] = [
+        timestep.model_dump() for timestep in sim_results
+    ]
 
-    energy_kpis: EnergyKPIs = await calc_energy_kpis(sim_results)
-    pv_monthly_gen: list[PVMonthlyGen] = await calc_pv_monthly_gen(sim_results)
+    energy_kpis: EnergyKPIs = await calc_energy_kpis(sim_results_dict)
+    pv_monthly_gen: list[PVMonthlyGen] = await calc_pv_monthly_gen(sim_results_dict)
 
-    sim_results_eval = SimResultsEval(
+    sim_results_eval: SimResultsEval = SimResultsEval(
         model_id=model_id,
         energy_kpis=energy_kpis,
         pv_monthly_gen=pv_monthly_gen,
@@ -149,7 +154,7 @@ async def eval_sim_results(
     return sim_results_eval
 
 
-async def calc_energy_kpis(sim_results: list[dict]) -> EnergyKPIs:
+async def calc_energy_kpis(sim_results: list[dict[str, float]]) -> EnergyKPIs:
     """Calculates the energy KPIs of the simulation results.
     - Reads the simulation results from the database
     - Calculates various energy KPIs, e.g. annual pv generation, self-consumption, self-sufficiency
@@ -163,7 +168,7 @@ async def calc_energy_kpis(sim_results: list[dict]) -> EnergyKPIs:
 
     """
     # Read sim results into dataframe
-    sim_results_df = pd.DataFrame(sim_results)
+    sim_results_df: DataFrame = pd.DataFrame(sim_results)
 
     # Set time column to datetime, measured in seconds
     sim_results_df["time"] = pd.to_datetime(sim_results_df["time"], unit="s")
@@ -179,24 +184,24 @@ async def calc_energy_kpis(sim_results: list[dict]) -> EnergyKPIs:
 
     # Calculate energy KPIs of system simulation
     # Annual electricity consumption from baseload demand
-    annual_baseload_demand = sim_results_df["P_base"].sum()  # [kWh]
+    annual_baseload_demand: float = sim_results_df["P_base"].sum()  # [kWh]
     # Annaul PV generation
-    annual_pv_generation = (
+    annual_pv_generation: float = (
         abs(sim_results_df["P_pv"].sum()) + sim_results_df["Soc_bat"].iloc[-1]
     )  # [kWh]
     # Annaul electricity consumed fron grid
-    annual_grid_consumption = sim_results_df["P_total"][
+    annual_grid_consumption: float = sim_results_df["P_total"][
         sim_results_df["P_total"] > 0.0
     ].sum()  # [kWh]
     # Annual electricity fed into grid
-    annual_grid_feed_in = abs(
+    annual_grid_feed_in: float = abs(
         sim_results_df["P_total"][sim_results_df["P_total"] < 0.0].sum()
     )  # [kWh]
     # Annual amount of energy consumption covered by PV generation
-    annual_self_consumption = annual_baseload_demand - annual_grid_consumption
+    annual_self_consumption: float = annual_baseload_demand - annual_grid_consumption
 
     # Energy KPIs of system simulation
-    energy_kpis = EnergyKPIs(
+    energy_kpis: EnergyKPIs = EnergyKPIs(
         annual_consumption=annual_baseload_demand,
         pv_generation=annual_pv_generation,
         grid_consumption=annual_grid_consumption,
@@ -209,7 +214,7 @@ async def calc_energy_kpis(sim_results: list[dict]) -> EnergyKPIs:
     return energy_kpis
 
 
-async def calc_pv_monthly_gen(sim_results: list[dict]):
+async def calc_pv_monthly_gen(sim_results: list[dict[str, Any]]) -> list[PVMonthlyGen]:
     """Calculates the monthly PV generation data from the timeseries data.
 
     Args:
@@ -220,18 +225,22 @@ async def calc_pv_monthly_gen(sim_results: list[dict]):
 
     """
     # Convert timeseries data to dataframe
-    df = pd.DataFrame(sim_results)
+    df: DataFrame = pd.DataFrame(sim_results)
 
     # Set time column to datetime, measured in seconds
     df["time"] = pd.to_datetime(df["time"], unit="s")
     # Set time column as index
     df.set_index("time", inplace=True)
 
+    # Verify the index is a datetime index
+    if not isinstance(df.index, pd.DatetimeIndex):
+        raise ValueError("Index is not a datetime index")
+
     # Group by month and sum P_pv values
     df["month"] = df.index.month
-    monthly_pv_df = df.groupby("month")["P_pv"].sum()
+    monthly_pv_df: Series[float] = df.groupby("month")["P_pv"].sum()
 
-    month_mapping = {
+    month_mapping: dict[Hashable, str] = {
         1: "Jan",
         2: "Feb",
         3: "Mar",
@@ -247,7 +256,7 @@ async def calc_pv_monthly_gen(sim_results: list[dict]):
     }
 
     # Convert monthly PV generation data to list of dictionaries
-    pv_monthly_gen = [
+    pv_monthly_gen: list[PVMonthlyGen] = [
         PVMonthlyGen(month=month_mapping[index], pv_generation=-1 * pv_gen)
         for index, pv_gen in monthly_pv_df.items()
     ]

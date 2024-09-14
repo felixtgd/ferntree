@@ -3,35 +3,40 @@ import certifi
 
 from dotenv import load_dotenv
 from bson import ObjectId
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import (
+    AsyncIOMotorClient,
+    AsyncIOMotorCollection,
+    AsyncIOMotorDatabase,
+    AsyncIOMotorCursor,
+)
 from pymongo.server_api import ServerApi
+from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
 
-# from pymongo.errors import DuplicateKeyError
-from typing import Union
+from typing import Any, Optional
 
 from backend.database.models import ModelDataOut, SimTimestep, SimResultsEval
 
 
 # Use certifi to get the path of the CA file
-ca = certifi.where()
+ca: str = certifi.where()
 
 # Load config from .env file:
 load_dotenv("./.env")
-MONGODB_URI = os.environ["MONGODB_URI"]
-MONGODB_DATABASE = os.environ["MONGODB_DATABASE"]
+MONGODB_URI: str = os.environ["MONGODB_URI"]
+MONGODB_DATABASE: str = os.environ["MONGODB_DATABASE"]
 
 
 class MongoClient:
     def __init__(self) -> None:
-        self.client = AsyncIOMotorClient(
+        self.client: AsyncIOMotorClient = AsyncIOMotorClient(
             MONGODB_URI, server_api=ServerApi("1"), tlsCAFile=ca
         )
-        self.db = self.client[MONGODB_DATABASE]
+        self.db: AsyncIOMotorDatabase = self.client[MONGODB_DATABASE]
 
     async def check_user_exists(self, user_id: str) -> bool:
-        query = {"_id": ObjectId(user_id)}
-        db_collection = self.db["users"]
-        user = await db_collection.find_one(query)
+        query: dict[str, ObjectId] = {"_id": ObjectId(user_id)}
+        db_collection: AsyncIOMotorCollection = self.db["users"]
+        user: Optional[dict[str, Any]] = await db_collection.find_one(query)
 
         if user is None:
             return False
@@ -40,111 +45,136 @@ class MongoClient:
 
     async def insert_model(
         self,
-        model: dict,
+        model: dict[str, Any],
     ) -> str:
         # Each model has a unique user_id, a user can have multiple models
 
         # Create an index on the user_id field
-        db_collection = self.db["models"]
+        db_collection: AsyncIOMotorCollection = self.db["models"]
         await db_collection.create_index("user_id", unique=False)
 
         # Insert model in database
-        result = await db_collection.insert_one(model)
-        model_id = str(result.inserted_id)
+        result: InsertOneResult = await db_collection.insert_one(model)
+        model_id: str = str(result.inserted_id)
 
         return model_id
 
     async def insert_sim_data(
         self,
         collection: str,
-        sim_data: dict,
+        sim_data: dict[str, Any],
     ) -> str:
         # One-to-one relationship between model and simulation
-        query = {"model_id": sim_data["model_id"]}
+        query: dict[str, str] = {"model_id": sim_data["model_id"]}
 
         # Create an index on the model_id field
-        db_collection = self.db[collection]
+        db_collection: AsyncIOMotorCollection = self.db[collection]
         await db_collection.create_index("model_id", unique=True)
 
         # Fetch the existing document's ID if it exists
-        existing_document = await db_collection.find_one(query)
-        existing_id = str(existing_document["_id"]) if existing_document else None
+        existing_document: Optional[dict[str, Any]] = await db_collection.find_one(
+            query
+        )
+        existing_id: Optional[str] = (
+            str(existing_document["_id"]) if existing_document else None
+        )
 
         # Insert or replace document in database
-        result = await db_collection.replace_one(query, sim_data, upsert=True)
+        result: UpdateResult = await db_collection.replace_one(
+            query, sim_data, upsert=True
+        )
 
         # If the document was inserted, result.upserted_id will be set
-        inserted_id = str(result.upserted_id) if result.upserted_id else existing_id
-
-        return inserted_id
+        if result.upserted_id:
+            inserted_id: str = str(result.upserted_id)
+            return inserted_id
+        elif existing_id:
+            return existing_id
+        else:
+            raise RuntimeError(
+                "Failed to insert or update the document in the database."
+            )
 
     async def fetch_models(self, user_id: str) -> list[ModelDataOut]:
         # Fetch all models of the user
-        query = {"user_id": user_id}
-        db_collection = self.db["models"]
-        cursor = db_collection.find(query)
+        query: dict[str, str] = {"user_id": user_id}
+        db_collection: AsyncIOMotorCollection = self.db["models"]
+        cursor: AsyncIOMotorCursor = db_collection.find(query)
 
-        models = [
+        models: list[ModelDataOut] = [
             ModelDataOut(**model, model_id=str(model["_id"])) async for model in cursor
         ]
 
         return models
 
-    async def update_sim_id_of_model(self, model_id: str, sim_id: str):
-        query = {"_id": ObjectId(model_id)}
-        db_collection = self.db["models"]
-        doc_updated = await db_collection.update_one(
+    async def update_sim_id_of_model(self, model_id: str, sim_id: str) -> bool:
+        query: dict[str, ObjectId] = {"_id": ObjectId(model_id)}
+        db_collection: AsyncIOMotorCollection = self.db["models"]
+        doc_updated: UpdateResult = await db_collection.update_one(
             query, {"$set": {"sim_id": sim_id}}
         )
+        acknowledged: bool = doc_updated.acknowledged
+        return acknowledged
 
-        return doc_updated.acknowledged
-
-    async def delete_model(self, model_id: str):
+    async def delete_model(self, model_id: str) -> bool:
         # Deletethe the model from collection "models"
-        query = {"_id": ObjectId(model_id)}
-        db_collection = self.db["models"]
-        delete_result = await db_collection.delete_one(query)
+        query_model_id: dict[str, ObjectId] = {"_id": ObjectId(model_id)}
+        db_collection_models: AsyncIOMotorCollection = self.db["models"]
+        delete_result: DeleteResult = await db_collection_models.delete_one(
+            query_model_id
+        )
 
         # Delete all other docs associated with the model
-        collections = ["simulations", "sim_results_ts", "sim_results_eval"]
+        collections: list[str] = ["simulations", "sim_results_ts", "sim_results_eval"]
         for collection in collections:
-            query = {"model_id": model_id}
-            db_collection = self.db[collection]
+            query: dict[str, str] = {"model_id": model_id}
+            db_collection: AsyncIOMotorCollection = self.db[collection]
             await db_collection.delete_many(query)
 
-        return delete_result.acknowledged
+        acknowledged: bool = delete_result.acknowledged
+        return acknowledged
 
     async def fetch_model_by_id(self, model_id: str) -> ModelDataOut:
         # Find one document in the collection that matches the query
-        query = {"_id": ObjectId(model_id)}
-        db_collection = self.db["models"]
-        model = await db_collection.find_one(query)
+        query: dict[str, ObjectId] = {"_id": ObjectId(model_id)}
+        db_collection: AsyncIOMotorCollection = self.db["models"]
+        model: Optional[dict[str, Any]] = await db_collection.find_one(query)
 
-        model = ModelDataOut(**model, model_id=str(model["_id"]))
-
-        return model
+        if model is None:
+            raise RuntimeError(f"Failed to fetch model with ID {model_id}")
+        else:
+            model_data: ModelDataOut = ModelDataOut(**model, model_id=str(model["_id"]))
+            return model_data
 
     async def fetch_sim_results_ts(self, model_id: str) -> list[SimTimestep]:
         # Find one document in the collection that matches the query
-        query = {"model_id": model_id}
-        db_collection = self.db["sim_results_ts"]
-        doc = await db_collection.find_one(query)
-        sim_results_ts = [SimTimestep(**timestep) for timestep in doc["timeseries"]]
+        query: dict[str, str] = {"model_id": model_id}
+        db_collection: AsyncIOMotorCollection = self.db["sim_results_ts"]
+        doc: Optional[dict[str, Any]] = await db_collection.find_one(query)
 
-        return sim_results_ts
-
-    async def fetch_sim_results_eval(
-        self, model_id: str
-    ) -> Union[SimResultsEval, None]:
-        # Find one document in the collection that matches the query
-        query = {"model_id": model_id}
-        db_collection = self.db["sim_results_eval"]
-        doc = await db_collection.find_one(query)
-        if doc:
-            sim_results_ts = SimResultsEval(**doc)
-            return sim_results_ts
+        if doc is None:
+            raise RuntimeError(
+                f"Failed to fetch sim results timeseries for model_id {model_id}"
+            )
         else:
+            sim_results_ts = [SimTimestep(**timestep) for timestep in doc["timeseries"]]
+            return sim_results_ts
+
+    async def fetch_sim_results_eval(self, model_id: str) -> Optional[SimResultsEval]:
+        # Find one document in the collection that matches the query
+        query: dict[str, str] = {"model_id": model_id}
+        db_collection: AsyncIOMotorCollection = self.db["sim_results_eval"]
+        doc: Optional[dict[str, Any]] = await db_collection.find_one(query)
+        if doc is None:
             return None
+        else:
+            sim_results_ts: SimResultsEval = SimResultsEval(**doc)
+            return sim_results_ts
+
+    async def clean_collection(self, collection: str) -> None:
+        # Delete all documents in the collection
+        db_collection: AsyncIOMotorCollection = self.db[collection]
+        await db_collection.delete_many({})
 
     # --------- OLD SHIT -------------
 

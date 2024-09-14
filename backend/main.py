@@ -1,6 +1,7 @@
 import os
 import logging
-
+from logging import Logger
+from typing import Optional
 from dotenv import load_dotenv
 
 from datetime import datetime
@@ -37,40 +38,23 @@ from backend.utils.sim_funcs import (
 from backend.utils.auth_funcs import check_user_exists
 
 
-# class RoofTilt(int, Enum):
-#     flat = 0
-#     tilted30 = 30
-#     tilted45 = 45
-
-
-# class RoofAzimuth(int, Enum):
-#     south = 0
-#     south_east = -45
-#     south_west = 45
-#     east = -90
-#     west = 90
-#     north_east = -135
-#     north_west = 135
-#     north = 180
-
-
 # Set up logger
-LOGGERNAME = "fastapi_logger"
+LOGGERNAME: str = "fastapi_logger"
 logging.basicConfig(level=logging.INFO, format="%(message)s")
-logger = logging.getLogger(LOGGERNAME)
+logger: Logger = logging.getLogger(LOGGERNAME)
 
 # Create a FastAPI instance
-app = FastAPI()
+app: FastAPI = FastAPI()
 
 # Create a MongoDB client
-db_client = MongoClient()
+db_client: MongoClient = MongoClient()
 
 # Load config from .env file:
 load_dotenv("./.env")
-FRONTEND_BASE_URI = os.environ["FRONTEND_BASE_URI"]
+FRONTEND_BASE_URI: str = os.environ["FRONTEND_BASE_URI"]
 
 # Configure CORS
-origins = [
+origins: list[str] = [
     FRONTEND_BASE_URI,
     # "*",
 ]
@@ -86,13 +70,13 @@ app.add_middleware(
 
 @app.post("/workspace/models/submit-model", response_model=str)
 @check_user_exists(db_client)
-async def submit_model(user_id: str, model_data: ModelDataIn):
+async def submit_model(user_id: str, model_data: ModelDataIn) -> str:
     logger.info(
         f"\nPOST:\t/workspace/models/submit-model --> Received request: user_id={user_id}, model_data={model_data}"
     )
 
     # Insert model data into database
-    model_id = await db_client.insert_model(model_data.model_dump())
+    model_id: Optional[str] = await db_client.insert_model(model_data.model_dump())
     if model_id is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -108,13 +92,13 @@ async def submit_model(user_id: str, model_data: ModelDataIn):
 
 @app.get("/workspace/models/fetch-models", response_model=list[ModelDataOut])
 @check_user_exists(db_client)
-async def fetch_models(user_id: str):
+async def fetch_models(user_id: str) -> list[ModelDataOut]:
     logger.info(
         f"GET:\t/workspace/models/fetch-models --> Received request: user_id={user_id}"
     )
 
     # Fetch all models of the user
-    models = await db_client.fetch_models(user_id)
+    models: list[ModelDataOut] = await db_client.fetch_models(user_id)
 
     logger.info(f"GET:\t/workspace/models/fetch-models --> Return {len(models)} models")
 
@@ -123,13 +107,13 @@ async def fetch_models(user_id: str):
 
 @app.delete("/workspace/models/delete-model", response_model=str)
 @check_user_exists(db_client)
-async def delete_model(user_id: str, model_id: str):
+async def delete_model(user_id: str, model_id: str) -> str:
     logger.info(
         f"DELETE:\t/workspace/models/delete-model --> Received request: user_id={user_id}, model_id={model_id}"
     )
 
     # Delete the model
-    delete_result_acknowledged = await db_client.delete_model(model_id)
+    delete_result_acknowledged: bool = await db_client.delete_model(model_id)
     if not delete_result_acknowledged:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -145,7 +129,7 @@ async def delete_model(user_id: str, model_id: str):
 
 @app.get("/workspace/simulations/run-sim", response_model=dict[str, bool])
 @check_user_exists(db_client)
-async def run_simulation(user_id: str, model_id: str):
+async def run_simulation(user_id: str, model_id: str) -> dict[str, bool]:
     logger.info(
         f"GET:\t/workspace/simulations/run-sim --> Received request: user_id={user_id}, model_id={model_id}"
     )
@@ -157,7 +141,9 @@ async def run_simulation(user_id: str, model_id: str):
     sim_input_data: SimDataIn = await get_sim_input_data(model_data)
 
     # Insert simulation input data into database
-    sim_id = await db_client.insert_sim_data("simulations", sim_input_data.model_dump())
+    sim_id: Optional[str] = await db_client.insert_sim_data(
+        "simulations", sim_input_data.model_dump()
+    )
     if sim_id is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -169,7 +155,7 @@ async def run_simulation(user_id: str, model_id: str):
 
     # If sim run was successful, insert sim_id into model doc in database
     if sim_run:
-        sim_id_updated = await db_client.update_sim_id_of_model(model_id, sim_id)
+        sim_id_updated: bool = await db_client.update_sim_id_of_model(model_id, sim_id)
         if not sim_id_updated:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -193,26 +179,29 @@ async def run_simulation(user_id: str, model_id: str):
 
 @app.get("/workspace/simulations/fetch-sim-results", response_model=SimResultsEval)
 @check_user_exists(db_client)
-async def fetch_sim_results(user_id: str, model_id: str):
+async def fetch_sim_results(user_id: str, model_id: str) -> SimResultsEval:
     logger.info(
         f"GET:\t/workspace/simulations/fetch-sim-results --> Received request: user_id={user_id}, model_id={model_id}"
     )
 
     # Check if sim results are already evaluated
-    sim_results_eval: SimResultsEval | None = await db_client.fetch_sim_results_eval(
-        model_id
-    )
+    sim_results_eval_existing: Optional[
+        SimResultsEval
+    ] = await db_client.fetch_sim_results_eval(model_id)
     # If not, evaluate sim results
-    if sim_results_eval is None:
+    if sim_results_eval_existing is None:
         logger.info(
             f"GET:\t/workspace/simulations/fetch-sim-results --> Evaluating sim results for model_id={model_id}"
         )
-        sim_results_eval: SimResultsEval = await eval_sim_results(db_client, model_id)
-        await db_client.insert_sim_data(
-            "sim_results_eval", sim_results_eval.model_dump()
+        sim_results_eval_new: SimResultsEval = await eval_sim_results(
+            db_client, model_id
         )
-
-    return sim_results_eval
+        await db_client.insert_sim_data(
+            "sim_results_eval", sim_results_eval_new.model_dump()
+        )
+        return sim_results_eval_new
+    else:
+        return sim_results_eval_existing
 
 
 @app.post(
@@ -227,8 +216,8 @@ async def fetch_sim_timeseries(
     )
 
     try:
-        start_time = datetime.fromisoformat(request_body.start_time).timestamp()
-        end_time = datetime.fromisoformat(request_body.end_time).timestamp()
+        start_time: float = datetime.fromisoformat(request_body.start_time).timestamp()
+        end_time: float = datetime.fromisoformat(request_body.end_time).timestamp()
     except ValueError as e:
         logger.error(f"Error parsing datetime: {e}")
         raise HTTPException(status_code=400, detail="Invalid datetime format")
@@ -237,7 +226,7 @@ async def fetch_sim_timeseries(
     sim_results: list[SimTimestep] = await db_client.fetch_sim_results_ts(model_id)
 
     # Filter the timeseries data to only include data within the given date range
-    sim_timeseries_data = [
+    sim_timeseries_data: list[SimTimestepOut] = [
         SimTimestepOut(
             time=datetime.fromtimestamp(timestep.time).strftime("%d-%m-%Y %H:%M"),
             Load=timestep.P_base,
