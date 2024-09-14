@@ -3,13 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
-import { RiDashboardHorizontalLine, RiFlowChart, RiShapesLine } from '@remixicon/react';
+import { RiExchangeDollarLine, RiFlowChart, RiShapesLine } from '@remixicon/react';
 
 // Map of links to display in the side navigation.
 const links = [
   { name: 'Models', href: '/workspace/models', icon: RiShapesLine },
   { name: 'Simulations', href: '/workspace/simulations', icon: RiFlowChart },
-  { name: 'Scenarios', href: '/workspace/scenarios', icon: RiDashboardHorizontalLine },
+  { name: 'Finances', href: '/workspace/finances', icon: RiExchangeDollarLine },
 ];
 
 export default function NavLinks() {
