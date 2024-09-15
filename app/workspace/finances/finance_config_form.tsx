@@ -105,8 +105,8 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
 
                 <div className="mb-4 w-full relative">
                     <Select
-                        id="model"
-                        name="model"
+                        id="model_id"
+                        name="model_id"
                         icon={RiShapesLine}
                         onValueChange={
                             (value: string) => {
@@ -428,6 +428,18 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                         )}
                     </Flex>
                 </Flex>
+
+                {/* Hidden inputs to ensure values are included in form data */}
+                {!showAdvanced && (
+                    <>
+                        <input type="hidden" name="module_deg" value={formData.module_deg} />
+                        <input type="hidden" name="inflation" value={formData.inflation} />
+                        <input type="hidden" name="op_cost" value={formData.op_cost} />
+                        <input type="hidden" name="down_payment" value={formData.down_payment} />
+                        <input type="hidden" name="pay_off_rate" value={formData.pay_off_rate} />
+                        <input type="hidden" name="interest_rate" value={formData.interest_rate} />
+                    </>
+                )}
 
                 <div className="mt-6 flex justify-center gap-4">
                     <SubmitButton />
