@@ -179,6 +179,37 @@ class FinDataIn(BaseModel):
         protected_namespaces = ()
 
 
+class FinInvestment(BaseModel):
+    pv: float
+    battery: float
+    total: float
+
+
+class FinKPIs(BaseModel):
+    investment: FinInvestment
+    break_even_year: float
+    cum_profit: float
+    cum_cost_savings: float
+    cum_feed_in_revenue: float
+    cum_operation_costs: float
+    lcoe: float
+    solar_interest_rate: float
+
+
+class FinYearlyData(BaseModel):
+    year: int
+    cum_profit: float
+
+
+class FinResults(BaseModel):
+    model_id: str
+    fin_kpis: FinKPIs
+    yearly_data: list[FinYearlyData]
+
+    class Config:
+        protected_namespaces = ()
+
+
 # ------------------ OLD SHIT --------------------
 
 

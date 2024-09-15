@@ -5,7 +5,7 @@ import subprocess
 from subprocess import CompletedProcess
 import pandas as pd
 from pandas import DataFrame, Series
-from typing import Hashable, Any
+from typing import Hashable, Any, Union
 
 from backend.database.models import (
     ModelDataOut,
@@ -19,6 +19,11 @@ from backend.database.models import (
     SimTimestep,
     SimResultsEval,
     PVMonthlyGen,
+    FinDataIn,
+    FinResults,
+    FinInvestment,
+    FinYearlyData,
+    FinKPIs,
     # UserInputForm,
     # SimTimeSeriesDoc,
     # SimEvaluationDoc,
@@ -262,6 +267,130 @@ async def calc_pv_monthly_gen(sim_results: list[dict[str, Any]]) -> list[PVMonth
     ]
 
     return pv_monthly_gen
+
+
+async def calc_fin_results(
+    fin_data: FinDataIn, model_data: ModelDataOut, sim_results_eval: SimResultsEval
+) -> FinResults:
+    # Investment costs
+    pv_investment: float = model_data.peak_power * fin_data.pv_price
+    battery_investment: float = model_data.battery_cap * fin_data.battery_price
+    total_investment: float = pv_investment + battery_investment
+    investment: FinInvestment = FinInvestment(
+        pv=pv_investment,
+        battery=battery_investment,
+        total=total_investment,
+    )
+
+    energy_kpis: EnergyKPIs = sim_results_eval.energy_kpis
+
+    # Dataframe for fincancial calculations
+    df: DataFrame = pd.DataFrame()
+
+    # Calculate financial performance of energy system over 25 years
+    years_financial_analysis: int = fin_data.useful_life
+    df["year"] = range(years_financial_analysis + 1)
+
+    # Energy consumption assumed to stay constant
+    df["consumption"] = model_data.electr_cons  # [kWh]
+
+    # Electricity price increases annually by price_increase
+    df["electr_price"] = (
+        fin_data.electr_price * (1 + fin_data.inflation) ** df["year"]
+    )  # [€/kWh]
+
+    # PV generation decreases annually by module_degradation
+    df["pv_generation"] = (
+        energy_kpis.pv_generation * (1 - fin_data.module_deg) ** df["year"]
+    )  # [kWh]
+
+    # Self-consumption: amount PV generation consumed on-site (sc-rate stays constant)
+    df["self_consumption"] = (
+        df["pv_generation"] * energy_kpis.self_consumption_rate
+    )  # [kWh]
+
+    # Cost savings due to self-consumed PV generation (as compared to scenario without PV)
+    df["electr_cost_savings"] = df["self_consumption"] * df["electr_price"]  # [€]
+
+    # Revenue from grid feed-in of remaining/unused PV generation
+    df["feed_in_remuneration"] = (
+        df["pv_generation"] - df["self_consumption"]
+    ) * fin_data.feed_in_tariff  # [€]
+
+    # Operation costs: maintenance, insurance etc.
+    df["operation_costs"] = (
+        total_investment * fin_data.op_cost * (1 + fin_data.inflation) ** df["year"]
+    )  # [€]
+
+    # Profit from cost savings and feed-in minus operation costs
+    df["profit"] = (
+        df["electr_cost_savings"] + df["feed_in_remuneration"] - df["operation_costs"]
+    )  # [€]
+
+    df["cumulative_profit"] = df["profit"].cumsum()  # [€]
+
+    ## Financial KPI:
+
+    # Break-even year
+    break_even_year: int = df[df["cumulative_profit"] > total_investment]["year"].iloc[
+        0
+    ]
+    break_even_year_exact: float = (break_even_year - 1) + (
+        total_investment - df.iloc[break_even_year - 1]["cumulative_profit"]
+    ) / df.iloc[break_even_year]["profit"]
+
+    # Cumulative profit over 25 years
+    cum_profit: float = df["cumulative_profit"].iloc[-1]
+
+    # Cumulative cost savings over 25 years
+    cum_cost_savings: float = df["electr_cost_savings"].sum()
+
+    # Cumulative feed-in revenue over 25 years
+    cum_feed_in_revenue: float = df["feed_in_remuneration"].sum()
+
+    # Cumulative operation costs over 25 years
+    cum_operation_costs: float = df["operation_costs"].sum()
+
+    # Levelised cost of electricity
+    lcoe: float = (
+        (total_investment + df["operation_costs"].sum())
+        / df["pv_generation"].sum()
+        * 100
+    )  # [cents/kWh]
+
+    # Solar interest rate: average annual return on investment
+    df["solar_interest_rate"] = df["profit"] / total_investment * 100
+    solar_interest_rate: float = df["solar_interest_rate"].mean()
+
+    fin_kpis: FinKPIs = FinKPIs(
+        investment=investment,
+        break_even_year=break_even_year_exact,
+        cum_profit=cum_profit,
+        cum_cost_savings=cum_cost_savings,
+        cum_feed_in_revenue=cum_feed_in_revenue,
+        cum_operation_costs=cum_operation_costs,
+        lcoe=lcoe,
+        solar_interest_rate=solar_interest_rate,
+    )
+
+    fin_yearly_data_df: list[dict[Hashable, Union[float, int]]] = df[
+        ["year", "cumulative_profit"]
+    ].to_dict(orient="records")
+    fin_yearly_data: list[FinYearlyData] = [
+        FinYearlyData(
+            year=int(record["year"]), cum_profit=float(record["cumulative_profit"])
+        )
+        for record in fin_yearly_data_df
+    ]
+
+    # Collect everything in one response model
+    fin_results: FinResults = FinResults(
+        model_id=model_data.model_id,
+        fin_kpis=fin_kpis,
+        yearly_data=fin_yearly_data,
+    )
+
+    return fin_results
 
 
 # ------------------ OLD SHIT --------------------

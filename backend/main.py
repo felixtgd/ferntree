@@ -19,6 +19,7 @@ from backend.database.models import (
     SimTimestep,
     SimTimestepOut,
     FinDataIn,
+    FinResults,
     # EnergyKPIs,
     # PVMonthlyGen,
     # UserInputForm,
@@ -31,6 +32,7 @@ from backend.utils.sim_funcs import (
     # process_user_input,
     run_ferntree_simulation,
     eval_sim_results,
+    calc_fin_results,
     # evaluate_simulation_results,
     # calc_monthly_pv_gen_data,
 )
@@ -247,27 +249,36 @@ async def fetch_sim_timeseries(
     return sim_timeseries_data
 
 
-@app.post("/workspace/finances/submit-fin-data", response_model=str)
+@app.post("/workspace/finances/submit-fin-data", response_model=FinResults)
 @check_user_exists(db_client)
-async def submit_fin_data(user_id: str, fin_data: FinDataIn) -> str:
+async def submit_fin_data(user_id: str, fin_data: FinDataIn) -> FinResults:
     logger.info(
         f"\nPOST:\t/workspace/finances/submit-fin-data --> Received request: user_id={user_id}, fin_data={fin_data}"
     )
 
-    model_id: str = fin_data.model_id
-    # # Insert model data into database
-    # model_id: Optional[str] = await db_client.insert_model(fin_data.model_dump())
-    # if model_id is None:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-    #         detail="Error inserting model data into database.",
-    #     )
+    # Fetch model data from database
+    model_data: ModelDataOut = await db_client.fetch_model_by_id(fin_data.model_id)
 
-    logger.info(
-        f"POST:\t/workspace/finances/submit-fin-data --> Return Model ID: {model_id}"
+    # Fetch sim results evaluation from database
+    sim_results_eval: Optional[SimResultsEval] = await db_client.fetch_sim_results_eval(
+        model_data.model_id
+    )
+    if sim_results_eval is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Simulation results not found.",
+        )
+
+    # Calculate financial results
+    fin_results: FinResults = await calc_fin_results(
+        fin_data, model_data, sim_results_eval
     )
 
-    return model_id
+    logger.info(
+        f"POST:\t/workspace/finances/submit-fin-data --> Return financial results for model {model_data.model_id}"
+    )
+
+    return fin_results
 
 
 # -------------- OLD SHIT -----------------
