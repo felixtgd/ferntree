@@ -161,7 +161,7 @@ class SimTimestepOut(BaseModel):
     StateOfCharge: float
 
 
-class FinDataIn(BaseModel):
+class FinFormData(BaseModel):
     model_id: str
     electr_price: float
     feed_in_tariff: float

@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 
 from datetime import datetime
 
-# from enum import Enum
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,26 +17,17 @@ from backend.database.models import (
     StartEndTimes,
     SimTimestep,
     SimTimestepOut,
-    FinDataIn,
+    FinFormData,
     FinResults,
-    # EnergyKPIs,
-    # PVMonthlyGen,
-    # UserInputForm,
-    # TimeseriesDataRequest,
-    # FilteredTimeseriesData,
 )
 from backend.database.mongodb import MongoClient
 from backend.utils.sim_funcs import (
     get_sim_input_data,
-    # process_user_input,
     run_ferntree_simulation,
     eval_sim_results,
     calc_fin_results,
-    # evaluate_simulation_results,
-    # calc_monthly_pv_gen_data,
 )
 
-# from backend.utils.data_model_helpers import format_timeseries_data
 from backend.utils.auth_funcs import check_user_exists
 
 
@@ -249,36 +239,43 @@ async def fetch_sim_timeseries(
     return sim_timeseries_data
 
 
-@app.post("/workspace/finances/submit-fin-data", response_model=FinResults)
+@app.post("/workspace/finances/submit-fin-form-data", response_model=str)
 @check_user_exists(db_client)
-async def submit_fin_data(user_id: str, fin_data: FinDataIn) -> FinResults:
+async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> str:
     logger.info(
-        f"\nPOST:\t/workspace/finances/submit-fin-data --> Received request: user_id={user_id}, fin_data={fin_data}"
+        f"\nPOST:\t/workspace/finances/submit-fin-form-data --> Received request: user_id={user_id}"
     )
 
-    # Fetch model data from database
-    model_data: ModelDataOut = await db_client.fetch_model_by_id(fin_data.model_id)
-
-    # Fetch sim results evaluation from database
-    sim_results_eval: Optional[SimResultsEval] = await db_client.fetch_sim_results_eval(
-        model_data.model_id
+    # Fetch fin form data from database
+    model_id: str = fin_form_data_sub.model_id
+    fin_form_data_db: Optional[FinFormData] = await db_client.fetch_fin_form_data(
+        model_id
     )
-    if sim_results_eval is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Simulation results not found.",
+
+    # If model has no form data (1:1 relation),
+    # then write form data to database and calculate financial results
+    # If model has form data, then check if form data has changed and if so,
+    # write new form data to database and calculate financial results
+    # Else nothing to do because finances have already been calculated for this form data
+    if (fin_form_data_db is None) or (fin_form_data_sub != fin_form_data_db):
+        logger.info(
+            f"POST:\t/workspace/finances/submit-fin-form-data --> Calculating financial results for model {model_id}"
+        )
+        # Write fin form data to database
+        await db_client.insert_fin_form_data(fin_form_data_sub)
+        # Calculate financial results
+        fin_results: FinResults = await calc_fin_results(db_client, fin_form_data_sub)
+        await db_client.insert_fin_results(fin_results)
+    else:
+        logger.info(
+            f"POST:\t/workspace/finances/submit-fin-form-data --> Financial results already calculated for model {model_id}"
         )
 
-    # Calculate financial results
-    fin_results: FinResults = await calc_fin_results(
-        fin_data, model_data, sim_results_eval
-    )
-
     logger.info(
-        f"POST:\t/workspace/finances/submit-fin-data --> Return financial results for model {model_data.model_id}"
+        f"POST:\t/workspace/finances/submit-fin-form-data --> Financial results ready for model {model_id}"
     )
 
-    return fin_results
+    return model_id
 
 
 # -------------- OLD SHIT -----------------

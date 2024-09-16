@@ -5,7 +5,9 @@ import subprocess
 from subprocess import CompletedProcess
 import pandas as pd
 from pandas import DataFrame, Series
-from typing import Hashable, Any, Union
+from typing import Hashable, Any, Union, Optional
+
+from fastapi import HTTPException, status
 
 from backend.database.models import (
     ModelDataOut,
@@ -19,7 +21,7 @@ from backend.database.models import (
     SimTimestep,
     SimResultsEval,
     PVMonthlyGen,
-    FinDataIn,
+    FinFormData,
     FinResults,
     FinInvestment,
     FinYearlyData,
@@ -270,8 +272,23 @@ async def calc_pv_monthly_gen(sim_results: list[dict[str, Any]]) -> list[PVMonth
 
 
 async def calc_fin_results(
-    fin_data: FinDataIn, model_data: ModelDataOut, sim_results_eval: SimResultsEval
+    db_client: mongodb.MongoClient,
+    fin_data: FinFormData,
 ) -> FinResults:
+    # Fetch model data from database
+    model_data: ModelDataOut = await db_client.fetch_model_by_id(fin_data.model_id)
+
+    # Fetch sim results evaluation from database
+    sim_results_eval: Optional[SimResultsEval] = await db_client.fetch_sim_results_eval(
+        model_data.model_id
+    )
+    if sim_results_eval is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Simulation results not found.",
+        )
+    energy_kpis: EnergyKPIs = sim_results_eval.energy_kpis
+
     # Investment costs
     pv_investment: float = model_data.peak_power * fin_data.pv_price
     battery_investment: float = model_data.battery_cap * fin_data.battery_price
@@ -281,8 +298,6 @@ async def calc_fin_results(
         battery=battery_investment,
         total=total_investment,
     )
-
-    energy_kpis: EnergyKPIs = sim_results_eval.energy_kpis
 
     # Dataframe for fincancial calculations
     df: DataFrame = pd.DataFrame()

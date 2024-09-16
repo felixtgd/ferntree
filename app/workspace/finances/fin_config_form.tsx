@@ -5,7 +5,7 @@ import { FinData, FormState, ModelData } from "@/app/utils/definitions";
 import { useState, useEffect } from "react";
 import { useFormStatus, useFormState } from 'react-dom'
 import { useParams } from "next/navigation";
-import { submitFinances } from "./actions";
+import { submitFinFormData } from "./actions";
 import {
     RemixiconComponentType,
     RiArrowDownWideLine,
@@ -121,7 +121,7 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
 
     // Action to submit form data and handle validation errors
     const initialState : FormState = { message: null, errors: {} };
-    const [state, formAction] = useFormState(submitFinances, initialState);
+    const [state, formAction] = useFormState(submitFinFormData, initialState);
 
     // Collapsible for advanced settings
     const [showAdvanced, setShowAdvanced] = useState(false);

@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 
-export async function submitFinances(prev_state: FormState, form_data: FormData) {
+export async function submitFinFormData(prev_state: FormState, form_data: FormData) {
     // When invoked in a form, the action automatically receives the FormData object.
     // You don't need to use React useState to manage fields, instead, you can extract
     // the data using the native FormData methods.
@@ -35,22 +35,22 @@ export async function submitFinances(prev_state: FormState, form_data: FormData)
         user_id: user_id,
     };
 
+    let model_id: string;
     try {
         // Submit user input form with model parameters
         const BACKEND_BASE_URI = await loadBackendBaseUri();
-        const response_submit_fin_data = await fetch(`${BACKEND_BASE_URI}/workspace/finances/submit-fin-data?user_id=${user_id}`, {
+        const response_submit_fin_data = await fetch(`${BACKEND_BASE_URI}/workspace/finances/submit-fin-form-data?user_id=${user_id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
-        const model_id: string = await response_submit_fin_data.json();
+        model_id = await response_submit_fin_data.json();
 
         console.log(`POST workspace/finances/submit-fin-data: Model form submitted (${response_submit_fin_data.status}). Model ID: ${model_id}`);
         state = {
             errors: {},
             message: 'success',
         };
-        redirect(`/workspace/finances/${model_id}`);
 
     } catch (error) {
         console.error(`Failed to submit model form: ${error}`);
@@ -61,4 +61,10 @@ export async function submitFinances(prev_state: FormState, form_data: FormData)
         revalidatePath('/workspace/finances');
         return state;
     }
+
+    if (model_id) {
+        redirect(`/workspace/finances/${model_id}`);
+    }
+
+    return state;
 };
