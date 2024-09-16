@@ -26,14 +26,14 @@ import {
 } from "@remixicon/react";
 
 
-function SubmitButton() {
+function SubmitButton({sim_exists}: {sim_exists: boolean}) {
   const { pending } = useFormStatus()
 
   return (
     <Button
       type="submit"
       icon={RiPlayLargeLine}
-      disabled={pending}
+      disabled={pending || !sim_exists}
     >
       Calculate Finances
     </Button>
@@ -95,6 +95,7 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
 
     const [modelData, setModelData] = useState(models[0]);
 
+    // Default financial data for the form
     const default_fin_data: FinData = {
         // Source: https://www.ise.fraunhofer.de/de/veroeffentlichungen/studien/aktuelle-fakten-zur-photovoltaik-in-deutschland.html
         model_id: modelData.model_id ? modelData.model_id : "",
@@ -111,12 +112,14 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
         interest_rate: 4,
     }
 
+    // Handle form data
     const [formData, setFormData] = useState(default_fin_data);
     const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = event.target;
         setFormData({ ...formData, [name]: value });
     };
 
+    // Action to submit form data and handle validation errors
     const initialState : FormState = { message: null, errors: {} };
     const [state, formAction] = useFormState(submitFinances, initialState);
 
@@ -143,7 +146,6 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
             }
         }
     }, [params.model_id, models, formData]);
-
 
     const input_fields = [
         {
@@ -265,7 +267,8 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                         {models.map((modelData, index) => (
                             <SelectItem
                                 key={index}
-                                value={modelData.model_id as string}>{modelData.model_name}
+                                value={modelData.model_id as string}>
+                                    {modelData.model_name}
                             </SelectItem>
                         ))}
                     </Select>
@@ -321,12 +324,17 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                     </>
                 )}
 
+                {(modelData.sim_id == null) && (
+                    <p className="mt-4 text-red-500 text-center">
+                        Please run a simulation before calculating finances.
+                    </p>
+                )}
+
                 <div className="mt-6 flex justify-center gap-4">
-                    <SubmitButton />
+                    <SubmitButton sim_exists={(modelData.sim_id !== null)} />
                 </div>
 
             </form>
-
         </div>
     );
 }

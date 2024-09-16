@@ -1,7 +1,7 @@
 import { Card, } from "@tremor/react";
 import { fetchModels } from "@/app/utils/helpers";
 import { ModelData } from "@/app/utils/definitions";
-import { FinanceConfigForm } from "./finance_config_form";
+import { FinanceConfigForm } from "./fin_config_form";
 
 export async function FinanceConfig() {
 

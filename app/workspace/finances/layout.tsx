@@ -1,5 +1,5 @@
 
-import { FinanceConfig } from "./finance_config_card";
+import { FinanceConfig } from "./fin_config_card";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
 
