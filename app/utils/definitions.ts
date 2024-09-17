@@ -152,6 +152,42 @@ export const FinDataSchema = z.object({
 });
 
 
+export type FinInvestment = {
+  pv: number;
+  battery: number;
+  total: number;
+}
+
+export type FinKPIs = {
+  investment: FinInvestment;
+  break_even_year: number;
+  cum_profit: number;
+  cum_cost_savings: number;
+  cum_feed_in_revenue: number;
+  cum_operation_costs: number;
+  lcoe: number;
+  solar_interest_rate: number;
+}
+
+export type FinYearlyData = {
+  year: number;
+  cum_profit: number;
+}
+
+export type FinResults = {
+  model_id: string;
+  fin_kpis: FinKPIs;
+  yearly_data: FinYearlyData[];
+}
+
+export type FinBarChartItem = {
+  type: string;
+  'PV'?: number;
+  'Battery'?: number;
+  'Cost savings'?: number;
+  'Feed-in revenue'?: number;
+  'Operation costs'?: number;
+};
 
 // ------------- OLD SHIT --------------------
 
@@ -240,14 +276,6 @@ export type SimEvaluation = {
 //   PVGeneration: number;
 // };
 
-export type FinBarChartItem = {
-  type: string;
-  'PV'?: number;
-  'Battery'?: number;
-  'Cost savings'?: number;
-  'Feed-in revenue'?: number;
-  'Operation costs'?: number;
-};
 
 
 export type ModelSummary = {

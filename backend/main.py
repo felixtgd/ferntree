@@ -278,6 +278,23 @@ async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> 
     return model_id
 
 
+@app.get("/workspace/finances/fetch-fin-results", response_model=FinResults)
+@check_user_exists(db_client)
+async def fetch_fin_results(user_id: str, model_id: str) -> FinResults:
+    logger.info(
+        f"GET:\t/workspace/finances/fetch-fin-results --> Received request: user_id={user_id}, model_id={model_id}"
+    )
+
+    # Fetch financial results from database
+    fin_results: FinResults = await db_client.fetch_fin_results(model_id)
+
+    logger.info(
+        f"GET:\t/workspace/finances/fetch-fin-results --> Return financial results for model {model_id}"
+    )
+
+    return fin_results
+
+
 # -------------- OLD SHIT -----------------
 # @app.get("/")
 # async def root():

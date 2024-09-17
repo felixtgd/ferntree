@@ -1,5 +1,6 @@
 import { List, ListItem } from '@tremor/react';
 import { BaseCard } from '../../../components/base-comps';
+import { ModelData } from '@/app/utils/definitions';
 import {
   RiArrowUpWideLine,
   RiBattery2ChargeLine,
@@ -8,8 +9,7 @@ import {
   RiLightbulbFlashLine,
   RiSunLine
 } from '@remixicon/react';
-import type { ModelSummary } from '@/app/data/definitions';
-import { fetchModelSummary } from './actions';
+import { fetchModels } from '@/app/utils/helpers';
 
 const valueFormatter = (value: number, unit: string): string => {
   return `${value} ${unit}`;
@@ -35,40 +35,44 @@ const azimuthFormatter = (degree: number): string => {
 };
 
 
-export async function ModelSummary({modelId}: {modelId: string}) {
+export async function ModelSummary({model_id}: {model_id: string}) {
 
-  const modelSummary : ModelSummary = await fetchModelSummary(modelId);
+  const models: ModelData[] = await fetchModels();
+  const model: ModelData | undefined = models.find((model) => model.model_id === model_id);
+  if (!model) {
+      return <div>Model not found</div>;
+  }
 
   return (
     <div>
       <BaseCard title="Model Summary">
       <div className="flex flex-row justify-between w-full">
         <List className="mt-2 px-6">
-          <ListItem key={modelSummary.location}>
+          <ListItem key={model.location}>
             <RiHome4Line />
-            <span>{ modelSummary.location }</span>
+            <span>{ model.location }</span>
           </ListItem>
-          <ListItem key={modelSummary.roof_incl}>
+          <ListItem key={model.roof_incl}>
             <RiArrowUpWideLine />
-            <span>{ degreeFormatter(modelSummary.roof_incl) }</span>
+            <span>{ degreeFormatter(model.roof_incl) }</span>
           </ListItem>
-          <ListItem key={modelSummary.roof_azimuth}>
+          <ListItem key={model.roof_azimuth}>
             <RiCompassLine />
-            <span>{ azimuthFormatter(modelSummary.roof_azimuth) }</span>
+            <span>{ azimuthFormatter(model.roof_azimuth) }</span>
           </ListItem>
         </List>
         <List className="mt-2 px-6">
-          <ListItem key={modelSummary.electr_cons}>
+          <ListItem key={model.electr_cons}>
             <RiLightbulbFlashLine />
-            <span>{ valueFormatter(modelSummary.electr_cons, "kWh/a")}</span>
+            <span>{ valueFormatter(model.electr_cons, "kWh/a")}</span>
           </ListItem>
-          <ListItem key={modelSummary.peak_power}>
+          <ListItem key={model.peak_power}>
             <RiSunLine />
-            <span>{ valueFormatter(modelSummary.peak_power, "kWp")}</span>
+            <span>{ valueFormatter(model.peak_power, "kWp")}</span>
           </ListItem>
-          <ListItem key={modelSummary.battery_cap}>
+          <ListItem key={model.battery_cap}>
             <RiBattery2ChargeLine />
-            <span>{ valueFormatter(modelSummary.battery_cap, "kWh")}</span>
+            <span>{ valueFormatter(model.battery_cap, "kWh")}</span>
           </ListItem>
         </List>
       </div>

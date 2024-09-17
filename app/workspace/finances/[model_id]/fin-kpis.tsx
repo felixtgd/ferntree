@@ -1,7 +1,7 @@
 import { List, ListItem } from '@tremor/react';
-import { fetchSimResults } from './actions';
-import { SimEvaluation, SimFinancialKPIs } from '@/app/data/definitions';
+import { fetchFinResults } from './actions';
 import { BaseCard } from '../../../components/base-comps';
+import { FinKPIs, FinResults } from '@/app/utils/definitions';
 
 const moneyFormatter = (number: number) =>
     `€ ${Math.round(number).toLocaleString()}`;
@@ -16,10 +16,13 @@ const lcoeFormatter = (number: number) =>
   `${number.toFixed(1).toLocaleString()} cents/kWh`;
 
 
-export async function FinKpis({modelId}: {modelId: string}) {
+export async function FinKpis({model_id}: {model_id: string}) {
 
-  const simResults : SimEvaluation = await fetchSimResults(modelId);
-  const kpis : SimFinancialKPIs = simResults.financial_analysis.kpis;
+  const fin_results : FinResults | undefined = await fetchFinResults(model_id);
+  if (!fin_results) {
+    return <div>Finance results not found</div>;
+  }
+  const kpis : FinKPIs = fin_results.fin_kpis;
 
   return (
     <div>
@@ -33,9 +36,9 @@ export async function FinKpis({modelId}: {modelId: string}) {
               <span>Break-even</span>
               <span><strong>{yearFormatter(kpis.break_even_year)}</strong></span>
             </ListItem>
-            <ListItem key={kpis.cum_profit_25yrs}>
-              <span>Cumulative profit over 25 years</span>
-              <span><strong>{moneyFormatter(kpis.cum_profit_25yrs)}</strong></span>
+            <ListItem key={kpis.cum_profit}>
+              <span>Cumulative profit over useful life</span>
+              <span><strong>{moneyFormatter(kpis.cum_profit)}</strong></span>
             </ListItem>
             <ListItem key={kpis.lcoe}>
               <span>Levelised cost of electricity</span>

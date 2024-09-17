@@ -1,6 +1,9 @@
 
-// import { Suspense } from 'react';
-// import { BarSkeleton, DonutSkeleton, LineChartSkeleton } from '@/app/components/skeletons';
+import { Suspense } from 'react';
+import { FinBarSkeleton, FinKpiSkeleton } from '@/app/components/skeletons';
+import { ModelSummary } from './model-summary';
+import { FinKpis } from './fin-kpis';
+import { FinBarChart } from './fin-bar-chart';
 
 
 export default async function Page({ params }:
@@ -10,42 +13,27 @@ export default async function Page({ params }:
 
     return (
         <div className="grid gap-4 grid-cols-3 grid-rows-3 h-full">
-            Hier könnte ihr Werbung stehen.
-            params: {params.model_id}
 
-            {/* Placeholder */}
-            {/* <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
+            {/* Model summary */}
+            <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
                 <Suspense key={params.model_id}  fallback={<FinKpiSkeleton/>}>
-                    <ModelSummary modelId={params.model_id}/>
-                </Suspense>
-            </div> */}
-
-            {/* Donut chart for consumption */}
-            {/* <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
-                <Suspense key={params.model_id}  fallback={<DonutSkeleton/>}>
-                    <PvDonutChart chart_type='consumption' model_id={params.model_id}/>
-                </Suspense>
-            </div> */}
-
-            {/* Donut chart for pv generation */}
-            {/* <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
-                <Suspense key={params.model_id}  fallback={<DonutSkeleton/>}>
-                    <PvDonutChart chart_type='generation' model_id={params.model_id}/>
-                </Suspense>
-            </div> */}
-
-            {/* Bar chart for pv generation */}
-            {/* <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
-                <Suspense key={params.model_id}  fallback={<BarSkeleton/>}>
-                    <PvGenBarChart model_id={params.model_id}/>
+                    <ModelSummary model_id={params.model_id}/>
                 </Suspense>
             </div>
 
-            <div className="col-span-3 row-span-2 flex flex-col flex-grow w-full">
-                <Suspense key={params.model_id}  fallback={<LineChartSkeleton/>}>
-                    <PvPowerChart model_id={params.model_id} search_params={searchParams}/>
+            {/* Fin KPIs */}
+            <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
+                <Suspense key={params.model_id}  fallback={<FinKpiSkeleton/>}>
+                    <FinKpis model_id={params.model_id}/>
                 </Suspense>
-            </div> */}
+            </div>
+
+            {/* Bar chart with investments and revenue */}
+            <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
+                <Suspense key={params.model_id}  fallback={<FinBarSkeleton/>}>
+                    <FinBarChart model_id={params.model_id}/>
+                </Suspense>
+            </div>
 
         </div>
     );

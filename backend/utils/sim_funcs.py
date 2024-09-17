@@ -299,6 +299,17 @@ async def calc_fin_results(
         total=total_investment,
     )
 
+    # Convert cents to €
+    fin_data.electr_price /= 100
+    fin_data.feed_in_tariff /= 100
+    # Convert % to fractions
+    fin_data.module_deg /= 100
+    fin_data.inflation /= 100
+    fin_data.op_cost /= 100
+    fin_data.down_payment /= 100
+    fin_data.pay_off_rate /= 100
+    fin_data.interest_rate /= 100
+
     # Dataframe for fincancial calculations
     df: DataFrame = pd.DataFrame()
 
@@ -347,12 +358,16 @@ async def calc_fin_results(
     ## Financial KPI:
 
     # Break-even year
-    break_even_year: int = df[df["cumulative_profit"] > total_investment]["year"].iloc[
-        0
-    ]
-    break_even_year_exact: float = (break_even_year - 1) + (
-        total_investment - df.iloc[break_even_year - 1]["cumulative_profit"]
-    ) / df.iloc[break_even_year]["profit"]
+    try:
+        break_even_year: int = df[df["cumulative_profit"] > total_investment][
+            "year"
+        ].iloc[0]
+        break_even_year_exact: float = (break_even_year - 1) + (
+            total_investment - df.iloc[break_even_year - 1]["cumulative_profit"]
+        ) / df.iloc[break_even_year]["profit"]
+    except IndexError:
+        break_even_year = -1
+        break_even_year_exact = -1.0
 
     # Cumulative profit over 25 years
     cum_profit: float = df["cumulative_profit"].iloc[-1]
