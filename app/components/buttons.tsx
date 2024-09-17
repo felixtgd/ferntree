@@ -93,7 +93,7 @@ export function RunButton({type, model_id}: {type: string, model_id: string}) {
                 model_id={model_id}
                 buttonAction={handleRunSimulation}
             />
-            {isLoading && <LoadingScreen />}
+            {isLoading && <LoadingScreen message={"Simulating your energy system ..."} />}
         </>
     );
 }

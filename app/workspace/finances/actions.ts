@@ -4,9 +4,6 @@
 
 import { FormState, FinDataSchema } from '@/app/utils/definitions';
 import { loadBackendBaseUri, getUserID } from '@/app/utils/helpers';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-
 
 export async function submitFinFormData(prev_state: FormState, form_data: FormData) {
     // When invoked in a form, the action automatically receives the FormData object.
@@ -51,6 +48,7 @@ export async function submitFinFormData(prev_state: FormState, form_data: FormDa
             errors: {},
             message: 'success',
         };
+        return state;
 
     } catch (error) {
         console.error(`Failed to submit model form: ${error}`);
@@ -58,13 +56,7 @@ export async function submitFinFormData(prev_state: FormState, form_data: FormDa
             errors: {},
             message: 'Failed to submit form.',
         };
-        revalidatePath('/workspace/finances');
         return state;
     }
 
-    if (model_id) {
-        redirect(`/workspace/finances/${model_id}`);
-    }
-
-    return state;
 };
