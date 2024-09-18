@@ -47,6 +47,8 @@ export async function submitFinFormData(prev_state: FormState, form_data: FormDa
         state = {
             errors: {},
             message: 'success',
+            model_id: model_id,
+            timestamp: new Date().toISOString(),
         };
         return state;
 

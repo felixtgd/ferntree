@@ -4,7 +4,7 @@ import { Select, SelectItem, Flex, Button } from "@tremor/react";
 import { FinData, FormState, ModelData } from "@/app/utils/definitions";
 import { useState, useEffect } from "react";
 import { useFormState } from 'react-dom'
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { submitFinFormData } from "./actions";
 import { get_advanced_input_fields, get_standard_input_fields, NumberInputField, SubmitButton } from "./fin_form_components";
 import {
@@ -33,7 +33,6 @@ const default_fin_data: FinData = {
 
 export function FinanceConfigForm({models}: {models: ModelData[]}) {
 
-    const params = useParams();
     const router = useRouter();
 
     const [modelData, setModelData] = useState(models[0]);
@@ -41,7 +40,7 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
     const [showAdvanced, setShowAdvanced] = useState(false);
 
     // Action to submit form data and handle validation errors
-    const initialState : FormState = { message: null, errors: {} };
+    const initialState : FormState = { message: null, errors: {}, model_id: null, timestamp: null };
     const [state, formAction] = useFormState(submitFinFormData, initialState);
 
     // Form input fields
@@ -60,27 +59,14 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
         setFormData({ ...formData, [name]: value });
     };
 
-    // Effect hook to set model data from URL and redirect user after successful form submission
+    // Redirect to model results page on successful form submission
+    // Refresh the page to display the new fin results after re-submitting the form
     useEffect(() => {
-        // Select model data from URL
-        if (params.model_id) {
-            console.log(`ModelSelectForm: Setting model data from URL: ${params.model_id}`);
-            const model_id = params.model_id as string;
-            const selectedModel = models.find((model) => model.model_id === model_id);
-            if (selectedModel) {
-                setModelData(selectedModel);
-                setFormData(prevFormData => ({
-                    ...prevFormData,
-                    model_id: model_id
-                }));
-            }
-        }
-        // Redirect user to ./[model_id] page after successful form submission
         if (state.message === 'success') {
-            router.push(`/workspace/finances/${modelData.model_id}`);
-          }
-    }, [params.model_id, models, state.message, modelData.model_id, router]);
-
+            router.push(`/workspace/finances/${state.model_id}`);
+            router.refresh();
+        }
+    }, [state, router]);
 
     return (
         <div className="flex flex-col w-full items-center">

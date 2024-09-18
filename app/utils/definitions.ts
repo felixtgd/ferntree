@@ -5,6 +5,8 @@ import { z } from "zod";
 export type FormState = {
   errors?: Record<string, string[]>;
   message?: string | null;
+  model_id?: string | null;
+  timestamp?: string | null;
 };
 
 // MODEL DATA for /workspace/models
