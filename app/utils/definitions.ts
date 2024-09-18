@@ -169,12 +169,24 @@ export type FinKPIs = {
   cum_operation_costs: number;
   lcoe: number;
   solar_interest_rate: number;
+  loan: number;
+  loan_paid_off: number;
 }
 
 export type FinYearlyData = {
   year: number;
   cum_profit: number;
+  cum_cash_flow: number;
+  loan: number;
 }
+
+export type FinChartData = {
+  "Year": number;
+  "Cum. Profit": number;
+  "Investment": number;
+  "Cum. Cash Flow": number;
+  "Loan": number;
+};
 
 export type FinResults = {
   model_id: string;

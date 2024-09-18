@@ -2,7 +2,7 @@ import { Card, DateRangePickerValue } from '@tremor/react';
 import { fetchPowerData } from './actions';
 import { z } from "zod";
 import { redirect } from 'next/navigation';
-import { BaseDateRangePicker, BaseLineChart } from '@/app/components/base-comps';
+import { BaseDateRangePicker, BasePowerLineChart } from '@/app/components/base-comps';
 import { SimTimestep } from '@/app/utils/definitions';
 
 export async function PvPowerChart({ model_id, search_params }:
@@ -48,7 +48,7 @@ export async function PvPowerChart({ model_id, search_params }:
       decorationColor="blue-300"
     >
       <BaseDateRangePicker date_range={date_range.data} />
-      <BaseLineChart data={chart_data} />
+      <BasePowerLineChart data={chart_data} />
     </Card>
   );
 }

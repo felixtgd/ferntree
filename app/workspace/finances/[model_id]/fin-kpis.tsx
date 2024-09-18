@@ -40,6 +40,14 @@ export async function FinKpis({model_id}: {model_id: string}) {
               <span>Cumulative profit over useful life</span>
               <span><strong>{moneyFormatter(kpis.cum_profit)}</strong></span>
             </ListItem>
+            <ListItem key={kpis.loan}>
+              <span>Total loan</span>
+              <span><strong>{moneyFormatter(kpis.loan)}</strong></span>
+            </ListItem>
+            <ListItem key={kpis.loan_paid_off}>
+              <span>Loan paid off</span>
+              <span><strong>{yearFormatter(kpis.loan_paid_off)}</strong></span>
+            </ListItem>
             <ListItem key={kpis.lcoe}>
               <span>Levelised cost of electricity</span>
               <span><strong>{lcoeFormatter(kpis.lcoe)}</strong></span>

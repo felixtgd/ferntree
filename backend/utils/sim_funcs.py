@@ -355,7 +355,31 @@ async def calc_fin_results(
 
     df["cumulative_profit"] = df["profit"].cumsum()  # [€]
 
+    ## Calculate loan and cash flow
+    loan: list[float] = [total_investment * (1 - fin_data.down_payment)]
+    repayment: list[float] = [0.0]  # system_cost * repayment_percentage
+    interest: list[float] = [loan[0] * fin_data.interest_rate]
+
+    for year in range(len(df) - 1):
+        loan_next_year: float = loan[year] - repayment[year]
+        loan.append(loan_next_year if loan_next_year > 0 else 0)
+        repayment.append(loan[0] * fin_data.pay_off_rate if loan_next_year > 0 else 0)
+        interest.append(loan_next_year * fin_data.interest_rate)
+
+    df["loan"] = loan
+    df["repayment"] = repayment
+    df["interest"] = interest
+    df["capital_cost"] = df["repayment"] + df["interest"]
+    df["cash_flow"] = df["profit"] - df["capital_cost"]
+    df["cumulative_cash_flow"] = df["cash_flow"].cumsum()
+
     ## Financial KPI:
+
+    # Loan paid off year
+    try:
+        loan_paid_off: int = df[df["loan"] == 0].iloc[0]["year"] - 1
+    except IndexError:
+        loan_paid_off = -1
 
     # Break-even year
     try:
@@ -401,14 +425,19 @@ async def calc_fin_results(
         cum_operation_costs=cum_operation_costs,
         lcoe=lcoe,
         solar_interest_rate=solar_interest_rate,
+        loan=loan[0],
+        loan_paid_off=loan_paid_off,
     )
 
     fin_yearly_data_df: list[dict[Hashable, Union[float, int]]] = df[
-        ["year", "cumulative_profit"]
+        ["year", "cumulative_profit", "cumulative_cash_flow", "loan"]
     ].to_dict(orient="records")
     fin_yearly_data: list[FinYearlyData] = [
         FinYearlyData(
-            year=int(record["year"]), cum_profit=float(record["cumulative_profit"])
+            year=int(record["year"]),
+            cum_profit=float(record["cumulative_profit"]),
+            cum_cash_flow=float(record["cumulative_cash_flow"]),
+            loan=float(record["loan"]),
         )
         for record in fin_yearly_data_df
     ]

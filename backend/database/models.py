@@ -194,11 +194,15 @@ class FinKPIs(BaseModel):
     cum_operation_costs: float
     lcoe: float
     solar_interest_rate: float
+    loan: float
+    loan_paid_off: float
 
 
 class FinYearlyData(BaseModel):
     year: int
     cum_profit: float
+    cum_cash_flow: float
+    loan: float
 
 
 class FinResults(BaseModel):

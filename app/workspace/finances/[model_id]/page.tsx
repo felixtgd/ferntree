@@ -1,9 +1,10 @@
 
 import { Suspense } from 'react';
-import { FinBarSkeleton, FinKpiSkeleton } from '@/app/components/skeletons';
+import { FinBarSkeleton, FinKpiSkeleton, LineChartSkeleton } from '@/app/components/skeletons';
 import { ModelSummary } from './model-summary';
 import { FinKpis } from './fin-kpis';
 import { FinBarChart } from './fin-bar-chart';
+import { FinLineChart } from './fin-line-chart';
 
 
 export default async function Page({ params }:
@@ -34,6 +35,14 @@ export default async function Page({ params }:
                     <FinBarChart model_id={params.model_id}/>
                 </Suspense>
             </div>
+
+            {/* Line chart with yearly financial performance */}
+            <div className="col-span-3 row-span-1 flex flex-col flex-grow w-full">
+                <Suspense key={params.model_id}  fallback={<LineChartSkeleton/>}>
+                    <FinLineChart model_id={params.model_id}/>
+                </Suspense>
+            </div>
+
 
         </div>
     );

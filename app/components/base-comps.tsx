@@ -1,6 +1,6 @@
 'use client';
 
-import { FinBarChartItem, PVMonthlyGen, SimTimestep } from '@/app/utils/definitions';
+import { FinBarChartItem, FinChartData, PVMonthlyGen, SimTimestep } from '@/app/utils/definitions';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react'
 import { enGB } from 'date-fns/locale';
@@ -155,7 +155,7 @@ export function BaseDateRangePicker({ date_range } : { date_range: DateRangePick
     );
 }
 
-export function BaseLineChart({ data } : { data: SimTimestep[]; }) {
+export function BasePowerLineChart({ data } : { data: SimTimestep[]; }) {
     return (
         <>
             <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium m-4">
@@ -188,6 +188,29 @@ export function BaseLineChart({ data } : { data: SimTimestep[]; }) {
                 startEndOnly={true}
                 showLegend={false}
                 showXAxis={false}
+            />
+        </>
+    )
+}
+
+
+export function BaseFinLineChart({ data } : { data: FinChartData[]; }) {
+        return (
+        <>
+            <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium m-4">
+                Financial Performance
+            </h3>
+            <LineChart
+                className="w-full"
+                data={data}
+                index="Year"
+                categories={['Cum. Profit', 'Investment', 'Cum. Cash Flow', 'Loan']}
+                colors={['green-600', 'red-500', 'blue-500', 'amber']}
+                valueFormatter={moneyFormatter}
+                yAxisWidth={80}
+                showAnimation={true}
+                startEndOnly={false}
+                showXAxis={true}
             />
         </>
     )
