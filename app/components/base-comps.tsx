@@ -25,8 +25,11 @@ const moneyFormatter = (number: number) =>
 const kWFormatter2d: ValueFormatter = (number: number) =>
     `${number.toFixed(2)} kW`;
 
-const kWhFormatter2d: ValueFormatter = (number: number) =>
-    `${number.toFixed(2)} kWh`;
+// const kWhFormatter2d: ValueFormatter = (number: number) =>
+//     `${number.toFixed(2)} kWh`;
+
+const percentFormatter: ValueFormatter = (number: number) =>
+    `${Math.round(number).toString()}%`;
 
 
 export function BaseCard({ title, children } : { title: string, children: React.ReactNode }) {
@@ -182,12 +185,14 @@ export function BasePowerLineChart({ data } : { data: SimTimestep[]; }) {
                 index="time"
                 categories={['StateOfCharge']}
                 colors={['teal']}
-                valueFormatter={kWhFormatter2d}
+                valueFormatter={percentFormatter}
                 yAxisWidth={80}
                 showAnimation={true}
                 startEndOnly={true}
                 showLegend={false}
-                showXAxis={false}
+                showXAxis={true}
+                minValue={0}
+                maxValue={100}
             />
         </>
     )

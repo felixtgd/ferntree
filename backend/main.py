@@ -218,6 +218,10 @@ async def fetch_sim_timeseries(
     # Fetch sim results timeseries data
     sim_results: list[SimTimestep] = await db_client.fetch_sim_results_ts(model_id)
 
+    # Fetch model data
+    model_data: ModelDataOut = await db_client.fetch_model_by_id(model_id)
+    battery_cap: float = model_data.battery_cap
+
     # Filter the timeseries data to only include data within the given date range
     sim_timeseries_data: list[SimTimestepOut] = [
         SimTimestepOut(
@@ -226,7 +230,7 @@ async def fetch_sim_timeseries(
             PV=timestep.P_pv,
             Battery=timestep.P_bat,
             Total=timestep.P_base + timestep.P_pv + timestep.P_bat,
-            StateOfCharge=timestep.Soc_bat,
+            StateOfCharge=timestep.Soc_bat / battery_cap * 100,  # in %
         )
         for timestep in sim_results
         if start_time <= timestep.time <= end_time
