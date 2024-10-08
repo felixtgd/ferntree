@@ -51,7 +51,7 @@ export function BaseDonutChart( { data, label, colors }:
 } ) {
     return (
         <DonutChart
-            className="mt-2 h-[90%]"
+            className="mt-2"
             data={data}
             category="value"
             index="name"

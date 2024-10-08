@@ -43,7 +43,7 @@ export async function PvPowerChart({ model_id, search_params }:
 
   return (
     <Card
-      className="flex flex-grow flex-col items-center justify-center w-full max-h-120"
+      className="flex flex-grow flex-col items-center justify-center w-full max-h-90"
       decoration="top"
       decorationColor="blue-300"
     >

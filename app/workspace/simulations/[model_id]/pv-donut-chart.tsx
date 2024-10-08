@@ -25,12 +25,12 @@ function getChartData(chart_type: string, sim_results_eval: SimResultsEval | nul
             case 'consumption':
                 chart_data.data=[
                 {
-                    name: 'From: PV',
+                    name: 'PV',
                     value: sim_results_eval.energy_kpis.self_consumption,
                     share: sim_results_eval.energy_kpis.self_consumption/sim_results_eval.energy_kpis.annual_consumption
                 },
                 {
-                    name: 'From: Grid',
+                    name: 'Grid',
                     value: sim_results_eval.energy_kpis.grid_consumption,
                     share: sim_results_eval.energy_kpis.grid_consumption/sim_results_eval.energy_kpis.annual_consumption
                 },
@@ -47,12 +47,12 @@ function getChartData(chart_type: string, sim_results_eval: SimResultsEval | nul
             case 'generation':
                 chart_data.data=[
                 {
-                    name: 'To: Self-consumption',
+                    name: 'Self-consumption',
                     value: sim_results_eval.energy_kpis.self_consumption,
                     share: sim_results_eval.energy_kpis.self_consumption/sim_results_eval.energy_kpis.pv_generation
                 },
                 {
-                    name: 'To: Grid Feed-in',
+                    name: 'Grid Feed-in',
                     value: sim_results_eval.energy_kpis.grid_feed_in,
                     share: sim_results_eval.energy_kpis.grid_feed_in/sim_results_eval.energy_kpis.pv_generation
                 },
@@ -96,8 +96,8 @@ export async function PvDonutChart({chart_type, model_id}: {chart_type: string, 
             />
             <List className="mt-2">
                 {data_with_colors.map((item) => (
-                    <ListItem key={item.name} className="space-x-6">
-                        <div className="flex items-center space-x-2.5 truncate">
+                    <ListItem key={item.name} className="space-x-2">
+                        <div className="flex items-center space-x-2 truncate">
                             <span
                                 className={classNames(
                                     `bg-${item.color}-500`,
@@ -105,7 +105,7 @@ export async function PvDonutChart({chart_type, model_id}: {chart_type: string, 
                                 )}
                                 aria-hidden={true}
                             />
-                            <span className="truncate dark:text-dark-tremor-content-emphasis">
+                            <span className="truncate dark:text-dark-tremor-content-emphasis" style={{ maxWidth: '100px' }}>
                                 {item.name}
                             </span>
                         </div>

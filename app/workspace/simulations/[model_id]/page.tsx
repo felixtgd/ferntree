@@ -23,27 +23,27 @@ export default async function Page({ params, searchParams }:
             </div> */}
 
             {/* Donut chart for consumption */}
-            <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
+            <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full h-full">
                 <Suspense key={params.model_id}  fallback={<DonutSkeleton/>}>
                     <PvDonutChart chart_type='consumption' model_id={params.model_id}/>
                 </Suspense>
             </div>
 
             {/* Donut chart for pv generation */}
-            <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
+            <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full h-full">
                 <Suspense key={params.model_id}  fallback={<DonutSkeleton/>}>
                     <PvDonutChart chart_type='generation' model_id={params.model_id}/>
                 </Suspense>
             </div>
 
             {/* Bar chart for pv generation */}
-            <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
+            <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full h-full">
                 <Suspense key={params.model_id}  fallback={<BarSkeleton/>}>
                     <PvGenBarChart model_id={params.model_id}/>
                 </Suspense>
             </div>
 
-            <div className="col-span-3 row-span-2 flex flex-col flex-grow w-full">
+            <div className="col-span-3 row-span-2 flex flex-col flex-grow w-full h-full">
                 <Suspense key={params.model_id}  fallback={<LineChartSkeleton/>}>
                     <PvPowerChart model_id={params.model_id} search_params={searchParams}/>
                 </Suspense>

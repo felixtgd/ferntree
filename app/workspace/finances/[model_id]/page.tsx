@@ -13,7 +13,7 @@ export default async function Page({ params }:
     }) {
 
     return (
-        <div className="grid gap-4 grid-cols-3 grid-rows-3 h-full">
+        <div className="grid gap-4 grid-cols-3 grid-rows-2 h-full">
 
             {/* Model summary */}
             <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
