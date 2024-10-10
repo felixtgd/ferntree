@@ -38,7 +38,7 @@ export async function PvPowerChart({ model_id, search_params }:
   const chart_data : SimTimestep[] | undefined = await fetchPowerData(model_id, date_range.data);
 
   if (!chart_data) {
-    return <div>Failed to load chart data</div>;
+    return <div>An error occurred while fetching the simulation results. Try reloading the page.</div>;
   }
 
   return (
