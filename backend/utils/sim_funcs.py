@@ -1,6 +1,5 @@
 from datetime import datetime
 
-# import os
 import subprocess
 from subprocess import CompletedProcess
 import pandas as pd
@@ -18,7 +17,6 @@ from backend.database.models import (
     BatteryCtrl,
     SystemSettings,
     EnergyKPIs,
-    SimTimestep,
     SimResultsEval,
     PVMonthlyGen,
     FinFormData,
@@ -26,21 +24,10 @@ from backend.database.models import (
     FinInvestment,
     FinYearlyData,
     FinKPIs,
-    # UserInputForm,
-    # SimTimeSeriesDoc,
-    # SimEvaluationDoc,
-    # SimModelSummary,
-    # SimEnergyKPIs,
-    # SimFinancialAnalysis,
-    # SimFinancialAssumptions,
-    # SimFinancialInvestment,
-    # SimFinancialKPIs,
-    # PVMonthlyGenData,
 )
 
 from backend.database import mongodb
 from backend.solar_data import pvgis_api, geolocator
-# from backend.utils import data_model_helpers
 
 
 async def get_sim_input_data(model_data: ModelDataOut) -> SimDataIn:
@@ -144,10 +131,14 @@ async def eval_sim_results(
     db_client: mongodb.MongoClient, model_id: str
 ) -> SimResultsEval:
     # Fetch sim results timeseries data
-    sim_results: list[SimTimestep] = await db_client.fetch_sim_results_ts(model_id)
-    sim_results_dict: list[dict[str, float]] = [
-        timestep.model_dump() for timestep in sim_results
-    ]
+    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
+        "sim_results_ts", model_id
+    )
+    if doc is None:
+        raise RuntimeError(
+            f"Failed to fetch sim results timeseries for model_id {model_id}"
+        )
+    sim_results_dict: list[dict[str, float]] = doc["timeseries"]
 
     energy_kpis: EnergyKPIs = await calc_energy_kpis(sim_results_dict)
     pv_monthly_gen: list[PVMonthlyGen] = await calc_pv_monthly_gen(sim_results_dict)
@@ -279,9 +270,10 @@ async def calc_fin_results(
     model_data: ModelDataOut = await db_client.fetch_model_by_id(fin_data.model_id)
 
     # Fetch sim results evaluation from database
-    sim_results_eval: Optional[SimResultsEval] = await db_client.fetch_sim_results_eval(
-        model_data.model_id
+    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
+        "sim_results_eval", model_data.model_id
     )
+    sim_results_eval: Optional[SimResultsEval] = SimResultsEval(**doc) if doc else None
     if sim_results_eval is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

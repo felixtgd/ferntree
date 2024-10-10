@@ -1,7 +1,7 @@
 import os
 import logging
 from logging import Logger
-from typing import Optional
+from typing import Optional, Any
 from dotenv import load_dotenv
 
 from datetime import datetime
@@ -178,9 +178,13 @@ async def fetch_sim_results(user_id: str, model_id: str) -> SimResultsEval:
     )
 
     # Check if sim results are already evaluated
-    sim_results_eval_existing: Optional[
-        SimResultsEval
-    ] = await db_client.fetch_sim_results_eval(model_id)
+    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
+        "sim_results_eval", model_id
+    )
+    sim_results_eval_existing: Optional[SimResultsEval] = (
+        SimResultsEval(**doc) if doc else None
+    )
+
     # If not, evaluate sim results
     if sim_results_eval_existing is None:
         logger.info(
@@ -216,7 +220,16 @@ async def fetch_sim_timeseries(
         raise HTTPException(status_code=400, detail="Invalid datetime format")
 
     # Fetch sim results timeseries data
-    sim_results: list[SimTimestep] = await db_client.fetch_sim_results_ts(model_id)
+    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
+        "sim_results_ts", model_id
+    )
+    if doc is None:
+        raise RuntimeError(
+            f"Failed to fetch sim results timeseries for model_id {model_id}"
+        )
+    sim_results: list[SimTimestep] = [
+        SimTimestep(**timestep) for timestep in doc["timeseries"]
+    ]
 
     # Fetch model data
     model_data: ModelDataOut = await db_client.fetch_model_by_id(model_id)
@@ -252,9 +265,10 @@ async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> 
 
     # Fetch fin form data from database
     model_id: str = fin_form_data_sub.model_id
-    fin_form_data_db: Optional[FinFormData] = await db_client.fetch_fin_form_data(
-        model_id
+    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
+        "fin_form_data", model_id
     )
+    fin_form_data_db: Optional[FinFormData] = FinFormData(**doc) if doc else None
 
     # If model has no form data (1:1 relation),
     # then write form data to database and calculate financial results
@@ -290,7 +304,12 @@ async def fetch_fin_results(user_id: str, model_id: str) -> FinResults:
     )
 
     # Fetch financial results from database
-    fin_results: FinResults = await db_client.fetch_fin_results(model_id)
+    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
+        "fin_results", model_id
+    )
+    if doc is None:
+        raise RuntimeError(f"Failed to fetch financial results for model_id {model_id}")
+    fin_results: FinResults = FinResults(**doc)
 
     logger.info(
         f"GET:\t/workspace/finances/fetch-fin-results --> Return financial results for model {model_id}"

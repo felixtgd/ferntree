@@ -16,8 +16,6 @@ from typing import Any, Optional
 
 from backend.database.models import (
     ModelDataOut,
-    SimTimestep,
-    SimResultsEval,
     FinFormData,
     FinResults,
 )
@@ -152,41 +150,25 @@ class MongoClient:
             model_data: ModelDataOut = ModelDataOut(**model, model_id=str(model["_id"]))
             return model_data
 
-    async def fetch_sim_results_ts(self, model_id: str) -> list[SimTimestep]:
+    async def fetch_document(
+        self, collection: str, model_id: str
+    ) -> Optional[dict[str, Any]]:
+        """Fetch document from the specified collection for the given model_id.
+
+        Args:
+            collection (str): Name of the collection to fetch data from
+            model_id (str): ID of the model
+
+        Returns:
+            dict: Data fetched from the collection
+        """
+
         # Find one document in the collection that matches the query
         query: dict[str, str] = {"model_id": model_id}
-        db_collection: AsyncIOMotorCollection = self.db["sim_results_ts"]
+        db_collection: AsyncIOMotorCollection = self.db[collection]
         doc: Optional[dict[str, Any]] = await db_collection.find_one(query)
 
-        if doc is None:
-            raise RuntimeError(
-                f"Failed to fetch sim results timeseries for model_id {model_id}"
-            )
-        else:
-            sim_results_ts = [SimTimestep(**timestep) for timestep in doc["timeseries"]]
-            return sim_results_ts
-
-    async def fetch_sim_results_eval(self, model_id: str) -> Optional[SimResultsEval]:
-        # Find one document in the collection that matches the query
-        query: dict[str, str] = {"model_id": model_id}
-        db_collection: AsyncIOMotorCollection = self.db["sim_results_eval"]
-        doc: Optional[dict[str, Any]] = await db_collection.find_one(query)
-        if doc is None:
-            return None
-        else:
-            sim_results_ts: SimResultsEval = SimResultsEval(**doc)
-            return sim_results_ts
-
-    async def fetch_fin_form_data(self, model_id: str) -> Optional[FinFormData]:
-        # Find one document in the collection that matches the query
-        query: dict[str, str] = {"model_id": model_id}
-        db_collection: AsyncIOMotorCollection = self.db["finances"]
-        doc: Optional[dict[str, Any]] = await db_collection.find_one(query)
-        if doc is None:
-            return None
-        else:
-            fin_form_data: FinFormData = FinFormData(**doc)
-            return fin_form_data
+        return doc
 
     async def insert_fin_form_data(self, fin_form_data: FinFormData) -> None:
         # Insert fin_form_data in database or replace if already exists
@@ -219,17 +201,6 @@ class MongoClient:
             raise RuntimeError(
                 "Failed to insert or update the document in the database."
             )
-
-    async def fetch_fin_results(self, model_id: str) -> FinResults:
-        # Find one document in the collection that matches the query
-        query: dict[str, str] = {"model_id": model_id}
-        db_collection: AsyncIOMotorCollection = self.db["fin_results"]
-        doc: Optional[dict[str, Any]] = await db_collection.find_one(query)
-        if doc is None:
-            raise RuntimeError(f"Failed to fetch fin results for model_id {model_id}")
-        else:
-            fin_results: FinResults = FinResults(**doc)
-            return fin_results
 
     async def clean_collection(self, collection: str) -> None:
         # Delete all documents in the collection
