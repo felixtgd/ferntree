@@ -12,6 +12,7 @@ import {
     RiArrowUpWideLine,
     RiShapesLine,
 } from "@remixicon/react";
+import Link from "next/link";
 
 
 // Default financial data for the form
@@ -67,6 +68,17 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
             router.refresh();
         }
     }, [state, router]);
+
+    // If models is empty list, return div with link to models page
+    if (models.length === 0) {
+        return (
+            <div className="flex flex-col w-full items-center">
+                <h2 className="w-full text-center mb-4">
+                    Please <Link href="/workspace/models" className="text-blue-500">create a model</Link> first.
+                </h2>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col w-full items-center">

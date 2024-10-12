@@ -14,6 +14,7 @@ import {
   RiLightbulbFlashLine,
   RiSunLine
 } from '@remixicon/react';
+import Link from "next/link";
 
 export function ModelSelectForm({models}: {models: ModelData[]}) {
 
@@ -24,12 +25,25 @@ export function ModelSelectForm({models}: {models: ModelData[]}) {
         if (params.model_id) {
             console.log(`ModelSelectForm: Setting model data from URL: ${params.model_id}`);
             const model_id = params.model_id as string;
-            const selectedModel = models.find((model) => model.model_id === model_id);
-            if (selectedModel) {
-                setModelData(selectedModel);
+            if (models.length > 0) {
+                const selectedModel = models.find((model) => model.model_id === model_id);
+                if (selectedModel) {
+                    setModelData(selectedModel);
+                }
             }
         }
     }, [params.model_id, models]);
+
+    // If models is empty list, return div with link to models page
+    if (models.length === 0) {
+        return (
+            <div className="flex flex-col w-full items-center">
+                <h2 className="w-full text-center mb-4">
+                    Please <Link href="/workspace/models" className="text-blue-500">create a model</Link> first.
+                </h2>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col w-full items-center">
