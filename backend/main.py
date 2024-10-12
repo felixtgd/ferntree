@@ -134,17 +134,10 @@ async def run_simulation(user_id: str, model_id: str) -> dict[str, bool]:
     sim_input_data: SimDataIn = await get_sim_input_data(model_data)
 
     # Insert simulation input data into database
-    sim_id: Optional[str] = await db_client.insert_sim_data(
-        "simulations", sim_input_data.model_dump()
-    )
-    if sim_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Error inserting sim data into database.",
-        )
+    sim_id: str = await db_client.insert_document("simulations", sim_input_data)
 
     # Run the simulation
-    sim_run: bool = await run_ferntree_simulation(sim_id, model_id)
+    sim_run: bool = await run_ferntree_simulation(model_id, sim_id)
 
     # If sim run was successful, insert sim_id into model doc in database
     if sim_run:
@@ -154,8 +147,6 @@ async def run_simulation(user_id: str, model_id: str) -> dict[str, bool]:
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=f"Error updating sim_id {sim_id} of model {model_id}.",
             )
-
-    if sim_run:
         logger.info(
             f"GET:\t/workspace/simulations/run-simulation --> Sim {sim_id} ran successfully!"
         )
@@ -193,9 +184,7 @@ async def fetch_sim_results(user_id: str, model_id: str) -> SimResultsEval:
         sim_results_eval_new: SimResultsEval = await eval_sim_results(
             db_client, model_id
         )
-        await db_client.insert_sim_data(
-            "sim_results_eval", sim_results_eval_new.model_dump()
-        )
+        await db_client.insert_document("sim_results_eval", sim_results_eval_new)
         return sim_results_eval_new
     else:
         return sim_results_eval_existing
@@ -280,10 +269,10 @@ async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> 
             f"POST:\t/workspace/finances/submit-fin-form-data --> Calculating financial results for model {model_id}"
         )
         # Write fin form data to database
-        await db_client.insert_fin_form_data(fin_form_data_sub)
+        await db_client.insert_document("finances", fin_form_data_sub)
         # Calculate financial results
         fin_results: FinResults = await calc_fin_results(db_client, fin_form_data_sub)
-        await db_client.insert_fin_results(fin_results)
+        await db_client.insert_document("fin_results", fin_results)
     else:
         logger.info(
             f"POST:\t/workspace/finances/submit-fin-form-data --> Financial results already calculated for model {model_id}"

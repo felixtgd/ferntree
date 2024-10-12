@@ -98,10 +98,14 @@ async def def_system_settings(model_data: ModelDataOut) -> SystemSettings:
     return system_settings
 
 
-async def run_ferntree_simulation(sim_id: str, model_id: str) -> bool:
+async def run_ferntree_simulation(
+    model_id: str,
+    sim_id: str,
+) -> bool:
     """Starts the Ferntree simulation with the given sim_id and model_id.
 
     Args:
+        model_id (str): The model ID.
         sim_id (str): The simulation ID.
 
     Returns:

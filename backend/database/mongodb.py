@@ -12,10 +12,12 @@ from motor.motor_asyncio import (
 from pymongo.server_api import ServerApi
 from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from backend.database.models import (
     ModelDataOut,
+    SimDataIn,
+    SimResultsEval,
     FinFormData,
     FinResults,
 )
@@ -63,41 +65,41 @@ class MongoClient:
 
         return model_id
 
-    async def insert_sim_data(
-        self,
-        collection: str,
-        sim_data: dict[str, Any],
-    ) -> str:
-        # One-to-one relationship between model and simulation
-        query: dict[str, str] = {"model_id": sim_data["model_id"]}
+    # async def insert_sim_data(
+    #     self,
+    #     collection: str,
+    #     sim_data: dict[str, Any],
+    # ) -> str:
+    #     # One-to-one relationship between model and simulation
+    #     query: dict[str, str] = {"model_id": sim_data["model_id"]}
 
-        # Create an index on the model_id field
-        db_collection: AsyncIOMotorCollection = self.db[collection]
-        await db_collection.create_index("model_id", unique=True)
+    #     # Create an index on the model_id field
+    #     db_collection: AsyncIOMotorCollection = self.db[collection]
+    #     await db_collection.create_index("model_id", unique=True)
 
-        # Fetch the existing document's ID if it exists
-        existing_document: Optional[dict[str, Any]] = await db_collection.find_one(
-            query
-        )
-        existing_id: Optional[str] = (
-            str(existing_document["_id"]) if existing_document else None
-        )
+    #     # Fetch the existing document's ID if it exists
+    #     existing_document: Optional[dict[str, Any]] = await db_collection.find_one(
+    #         query
+    #     )
+    #     existing_id: Optional[str] = (
+    #         str(existing_document["_id"]) if existing_document else None
+    #     )
 
-        # Insert or replace document in database
-        result: UpdateResult = await db_collection.replace_one(
-            query, sim_data, upsert=True
-        )
+    #     # Insert or replace document in database
+    #     result: UpdateResult = await db_collection.replace_one(
+    #         query, sim_data, upsert=True
+    #     )
 
-        # If the document was inserted, result.upserted_id will be set
-        if result.upserted_id:
-            inserted_id: str = str(result.upserted_id)
-            return inserted_id
-        elif existing_id:
-            return existing_id
-        else:
-            raise RuntimeError(
-                "Failed to insert or update the document in the database."
-            )
+    #     # If the document was inserted, result.upserted_id will be set
+    #     if result.upserted_id:
+    #         inserted_id: str = str(result.upserted_id)
+    #         return inserted_id
+    #     elif existing_id:
+    #         return existing_id
+    #     else:
+    #         raise RuntimeError(
+    #             "Failed to insert or update the document in the database."
+    #         )
 
     async def fetch_models(self, user_id: str) -> list[ModelDataOut]:
         # Fetch all models of the user
@@ -176,37 +178,71 @@ class MongoClient:
 
         return doc
 
-    async def insert_fin_form_data(self, fin_form_data: FinFormData) -> None:
-        # Insert fin_form_data in database or replace if already exists
-        query: dict[str, str] = {"model_id": fin_form_data.model_id}
-        db_collection: AsyncIOMotorCollection = self.db["finances"]
+    async def insert_document(
+        self,
+        collection: str,
+        document: Union[SimDataIn, SimResultsEval, FinFormData, FinResults],
+    ) -> str:
+        try:
+            model_id: str = document.model_id
+        except AttributeError:
+            raise RuntimeError("Document must have a model_id attribute.")
+
+        # Insert document in database or replace if already exists
+        query: dict[str, str] = {"model_id": model_id}
+        db_collection: AsyncIOMotorCollection = self.db[collection]
+
         # Create index on model_id field
         await db_collection.create_index("model_id", unique=True)
+
         # Insert or replace document in database
         result: UpdateResult = await db_collection.replace_one(
-            query, fin_form_data.model_dump(), upsert=True
+            query, document.model_dump(), upsert=True
         )
         acknowledged: bool = result.acknowledged
+
         if not acknowledged:
             raise RuntimeError(
                 "Failed to insert or update the document in the database."
             )
 
-    async def insert_fin_results(self, fin_results: FinResults) -> None:
-        # Insert fin_results in database or replace if already exists
-        query: dict[str, str] = {"model_id": fin_results.model_id}
-        db_collection: AsyncIOMotorCollection = self.db["fin_results"]
-        # Create index on model_id field
-        await db_collection.create_index("model_id", unique=True)
-        # Insert or replace document in database
-        result: UpdateResult = await db_collection.replace_one(
-            query, fin_results.model_dump(), upsert=True
-        )
-        acknowledged: bool = result.acknowledged
-        if not acknowledged:
-            raise RuntimeError(
-                "Failed to insert or update the document in the database."
-            )
+        # Return the document ID
+        if not result.upserted_id:
+            raise RuntimeError("Failed to get the ID of the inserted document.")
+
+        return str(result.upserted_id)
+
+    # async def insert_fin_form_data(self, fin_form_data: FinFormData) -> None:
+    #     # Insert fin_form_data in database or replace if already exists
+    #     query: dict[str, str] = {"model_id": fin_form_data.model_id}
+    #     db_collection: AsyncIOMotorCollection = self.db["finances"]
+    #     # Create index on model_id field
+    #     await db_collection.create_index("model_id", unique=True)
+    #     # Insert or replace document in database
+    #     result: UpdateResult = await db_collection.replace_one(
+    #         query, fin_form_data.model_dump(), upsert=True
+    #     )
+    #     acknowledged: bool = result.acknowledged
+    #     if not acknowledged:
+    #         raise RuntimeError(
+    #             "Failed to insert or update the document in the database."
+    #         )
+
+    # async def insert_fin_results(self, fin_results: FinResults) -> None:
+    #     # Insert fin_results in database or replace if already exists
+    #     query: dict[str, str] = {"model_id": fin_results.model_id}
+    #     db_collection: AsyncIOMotorCollection = self.db["fin_results"]
+    #     # Create index on model_id field
+    #     await db_collection.create_index("model_id", unique=True)
+    #     # Insert or replace document in database
+    #     result: UpdateResult = await db_collection.replace_one(
+    #         query, fin_results.model_dump(), upsert=True
+    #     )
+    #     acknowledged: bool = result.acknowledged
+    #     if not acknowledged:
+    #         raise RuntimeError(
+    #             "Failed to insert or update the document in the database."
+    #         )
 
     async def clean_collection(self, collection: str) -> None:
         # Delete all documents in the collection
