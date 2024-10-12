@@ -254,9 +254,7 @@ async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> 
 
     # Fetch fin form data from database
     model_id: str = fin_form_data_sub.model_id
-    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
-        "fin_form_data", model_id
-    )
+    doc: Optional[dict[str, Any]] = await db_client.fetch_document("finances", model_id)
     fin_form_data_db: Optional[FinFormData] = FinFormData(**doc) if doc else None
 
     # If model has no form data (1:1 relation),
