@@ -15,6 +15,7 @@ import {
   RiSunLine
 } from '@remixicon/react';
 import Link from "next/link";
+import { Tooltip } from "@/app/components/components";
 
 export function ModelSelectForm({models}: {models: ModelData[]}) {
 
@@ -77,44 +78,56 @@ export function ModelSelectForm({models}: {models: ModelData[]}) {
                     <List className="p-2 w-full">
 
                         <ListItem key="location">
-                            <span className="flex items-center">
-                                <RiHome4Line className="mr-2" />
-                            </span>
+                            <Tooltip content="Location">
+                                <span className="flex items-center">
+                                    <RiHome4Line className="mr-2" />
+                                </span>
+                            </Tooltip>
                             <span>{modelData.location}</span>
                         </ListItem>
 
                         <ListItem key="roof_incl">
-                            <span className="flex items-center">
-                                <RiArrowUpWideLine className="mr-2" />
-                            </span>
+                            <Tooltip content="Roof inclination">
+                                <span className="flex items-center">
+                                    <RiArrowUpWideLine className="mr-2" />
+                                </span>
+                            </Tooltip>
                             <span>{modelData.roof_incl}°</span>
                         </ListItem>
 
                         <ListItem key="roof_azimuth">
-                            <span className="flex items-center">
-                                <RiCompassLine className="mr-2" />
-                            </span>
+                            <Tooltip content="Roof orientation">
+                                <span className="flex items-center">
+                                    <RiCompassLine className="mr-2" />
+                                </span>
+                            </Tooltip>
                             <span>{modelData.roof_azimuth}°</span>
                         </ListItem>
 
                         <ListItem key="electr_cons">
-                            <span className="flex items-center">
-                                <RiLightbulbFlashLine className="mr-2" />
-                            </span>
+                            <Tooltip content="Annual electricity consumption">
+                                <span className="flex items-center">
+                                    <RiLightbulbFlashLine className="mr-2" />
+                                </span>
+                            </Tooltip>
                             <span>{modelData.electr_cons} kWh</span>
                         </ListItem>
 
                         <ListItem key="peak_power">
-                            <span className="flex items-center">
-                                <RiSunLine className="mr-2" />
-                            </span>
+                            <Tooltip content="PV peak power">
+                                <span className="flex items-center">
+                                    <RiSunLine className="mr-2" />
+                                </span>
+                            </Tooltip>
                             <span>{modelData.peak_power} kWp</span>
                         </ListItem>
 
                         <ListItem key="roof_azimuth">
-                            <span className="flex items-center">
-                                <RiBattery2ChargeLine className="mr-2" />
-                            </span>
+                            <Tooltip content="Battery capacity">
+                                <span className="flex items-center">
+                                    <RiBattery2ChargeLine className="mr-2" />
+                                </span>
+                            </Tooltip>
                             <span>{modelData.battery_cap} kWh</span>
                         </ListItem>
 

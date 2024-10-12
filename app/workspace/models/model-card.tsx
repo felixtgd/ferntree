@@ -32,7 +32,7 @@ export async function ModelCard({modelData}: {modelData: ModelData}) {
                             </ListItem>
                             <ListItem key="roof_azimuth">
                                 <span className="flex items-center">
-                                    <RiCompassLine className="mr-2" /> Roof azimuth
+                                    <RiCompassLine className="mr-2" /> Roof orientation
                                 </span>
                                 <span>{modelData.roof_azimuth}°</span>
                             </ListItem>

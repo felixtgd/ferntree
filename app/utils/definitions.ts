@@ -74,7 +74,7 @@ export type SimResultsEval = {
 };
 
 export type DonutChartData = {
-  data: { name: string; value: number; share: number; }[];
+  data: { name: string; value: number; share: number; tooltip: string }[];
   labels: { center: number; title: number; };
   title: string;
 }

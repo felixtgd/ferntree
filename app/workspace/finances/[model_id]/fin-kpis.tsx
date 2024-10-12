@@ -1,7 +1,8 @@
 import { List, ListItem } from '@tremor/react';
 import { fetchFinResults } from './actions';
-import { BaseCard } from '../../../components/base-comps';
+import { BaseCard } from '@/app/components/base-comps';
 import { FinKPIs, FinResults } from '@/app/utils/definitions';
+import { Tooltip } from '@/app/components/components';
 
 const moneyFormatter = (number: number) =>
     `€ ${Math.round(number).toLocaleString()}`;
@@ -29,31 +30,45 @@ export async function FinKpis({model_id}: {model_id: string}) {
       <BaseCard title="Financial KPIs">
         <List className="mt-2">
             <ListItem key={kpis.investment.total}>
-              <span>Total investment</span>
+              <Tooltip content="Total investment of PV and battery">
+                <span>Total investment</span>
+              </Tooltip>
               <span><strong>{moneyFormatter(kpis.investment.total)}</strong></span>
             </ListItem>
-            <ListItem key={kpis.break_even_year}>
-              <span>Break-even</span>
-              <span><strong>{yearFormatter(kpis.break_even_year)}</strong></span>
-            </ListItem>
             <ListItem key={kpis.cum_profit}>
-              <span>Cum. profit</span>
+              <Tooltip content="Cumulative profit over the lifetime of the system">
+                <span>Cum. profit</span>
+              </Tooltip>
               <span><strong>{moneyFormatter(kpis.cum_profit)}</strong></span>
             </ListItem>
+            <ListItem key={kpis.break_even_year}>
+              <Tooltip content="Time at which the cumulative profit equals the total investment">
+                <span>Break-even</span>
+              </Tooltip>
+              <span><strong>{yearFormatter(kpis.break_even_year)}</strong></span>
+            </ListItem>
             <ListItem key={kpis.loan}>
-              <span>Total loan</span>
+              <Tooltip content="Total loan = total investment - down payment">
+                <span>Total loan</span>
+              </Tooltip>
               <span><strong>{moneyFormatter(kpis.loan)}</strong></span>
             </ListItem>
             <ListItem key={kpis.loan_paid_off}>
-              <span>Loan paid off</span>
+              <Tooltip content="Year when the loan is paid off">
+                <span>Loan paid off</span>
+              </Tooltip>
               <span><strong>{yearFormatter(kpis.loan_paid_off)}</strong></span>
             </ListItem>
             <ListItem key={kpis.lcoe}>
-              <span>LCOE</span>
+              <Tooltip content="Levelized cost of electricity = total system cost over its lifetime / total electricity output">
+                <span>LCOE</span>
+              </Tooltip>
               <span><strong>{lcoeFormatter(kpis.lcoe)}</strong></span>
             </ListItem>
             <ListItem key={kpis.solar_interest_rate}>
-              <span>Solar interest rate</span>
+              <Tooltip content="Average annual return on investment">
+                <span>ROI</span>
+              </Tooltip>
               <span><strong>{interestFormatter(kpis.solar_interest_rate)}</strong></span>
             </ListItem>
         </List>

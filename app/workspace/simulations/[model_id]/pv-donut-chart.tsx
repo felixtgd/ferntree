@@ -2,6 +2,7 @@ import { fetchSimResults } from './actions';
 import { SimResultsEval, DonutChartData } from '@/app/utils/definitions';
 import { List, ListItem } from '@tremor/react';
 import { BaseCard, BaseDonutChart } from '@/app/components/base-comps';
+import { Tooltip } from '@/app/components/components';
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ');
@@ -16,7 +17,7 @@ const shareFormatter = (number: number) =>
 
 function getChartData(chart_type: string, sim_results_eval: SimResultsEval | null): DonutChartData {
     const chart_data: DonutChartData = {
-        data: [ {name: '', value: 0, share: 0} ],
+        data: [ {name: '', value: 0, share: 0, tooltip: ''} ],
         labels: {center: 0, title: 0},
         title: ''
     }
@@ -27,12 +28,14 @@ function getChartData(chart_type: string, sim_results_eval: SimResultsEval | nul
                 {
                     name: 'PV',
                     value: sim_results_eval.energy_kpis.self_consumption,
-                    share: sim_results_eval.energy_kpis.self_consumption/sim_results_eval.energy_kpis.annual_consumption
+                    share: sim_results_eval.energy_kpis.self_consumption/sim_results_eval.energy_kpis.annual_consumption,
+                    tooltip: 'Consumption covered by the PV generation (self-consumption)'
                 },
                 {
                     name: 'Grid',
                     value: sim_results_eval.energy_kpis.grid_consumption,
-                    share: sim_results_eval.energy_kpis.grid_consumption/sim_results_eval.energy_kpis.annual_consumption
+                    share: sim_results_eval.energy_kpis.grid_consumption/sim_results_eval.energy_kpis.annual_consumption,
+                    tooltip: 'Consumption covered by electricity from the grid'
                 },
                 ]
 
@@ -49,12 +52,14 @@ function getChartData(chart_type: string, sim_results_eval: SimResultsEval | nul
                 {
                     name: 'Self-consumption',
                     value: sim_results_eval.energy_kpis.self_consumption,
-                    share: sim_results_eval.energy_kpis.self_consumption/sim_results_eval.energy_kpis.pv_generation
+                    share: sim_results_eval.energy_kpis.self_consumption/sim_results_eval.energy_kpis.pv_generation,
+                    tooltip: 'PV generation directly consumed by the household'
                 },
                 {
                     name: 'Grid Feed-in',
                     value: sim_results_eval.energy_kpis.grid_feed_in,
-                    share: sim_results_eval.energy_kpis.grid_feed_in/sim_results_eval.energy_kpis.pv_generation
+                    share: sim_results_eval.energy_kpis.grid_feed_in/sim_results_eval.energy_kpis.pv_generation,
+                    tooltip: 'PV generation fed into the grid'
                 },
                 ]
 
@@ -105,9 +110,11 @@ export async function PvDonutChart({chart_type, model_id}: {chart_type: string, 
                                 )}
                                 aria-hidden={true}
                             />
-                            <span className="truncate dark:text-dark-tremor-content-emphasis" style={{ maxWidth: '100px' }}>
-                                {item.name}
-                            </span>
+                            <Tooltip content={item.tooltip}>
+                                <span className="truncate dark:text-dark-tremor-content-emphasis" style={{ maxWidth: '100px' }}>
+                                    {item.name}
+                                </span>
+                            </Tooltip>
                         </div>
                         <div className="flex items-center space-x-2">
                             <span className="font-medium tabular-nums text-tremor-content-strong dark:text-dark-tremor-content-strong">
