@@ -50,7 +50,7 @@ export function ModelSelectForm({models}: {models: ModelData[]}) {
         <div className="flex flex-col w-full items-center">
             <form className="w-full">
                 <h2 className="w-full text-center mb-4">
-                    Select a model
+                    Model
                 </h2>
 
                 <div className="mb-4 w-full relative">
