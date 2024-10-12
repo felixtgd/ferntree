@@ -121,7 +121,7 @@ class MongoClient:
         return acknowledged
 
     async def delete_model(self, model_id: str) -> bool:
-        # Deletethe the model from collection "models"
+        # Delete the the model from collection "models"
         query_model_id: dict[str, ObjectId] = {"_id": ObjectId(model_id)}
         db_collection_models: AsyncIOMotorCollection = self.db["models"]
         delete_result: DeleteResult = await db_collection_models.delete_one(
@@ -129,7 +129,13 @@ class MongoClient:
         )
 
         # Delete all other docs associated with the model
-        collections: list[str] = ["simulations", "sim_results_ts", "sim_results_eval"]
+        collections: list[str] = [
+            "simulations",
+            "sim_results_ts",
+            "sim_results_eval",
+            "finances",
+            "fin_results",
+        ]
         for collection in collections:
             query: dict[str, str] = {"model_id": model_id}
             db_collection: AsyncIOMotorCollection = self.db[collection]
