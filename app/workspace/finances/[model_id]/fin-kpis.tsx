@@ -27,7 +27,7 @@ export async function FinKpis({model_id}: {model_id: string}) {
 
   return (
     <div>
-      <BaseCard title="Financial KPIs">
+      <BaseCard title="Key Performance Indicators">
         <List className="mt-2">
             <ListItem key={kpis.investment.total}>
               <Tooltip content="Total investment of PV and battery">

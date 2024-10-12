@@ -25,9 +25,6 @@ const moneyFormatter = (number: number) =>
 const kWFormatter2d: ValueFormatter = (number: number) =>
     `${number.toFixed(2)} kW`;
 
-// const kWhFormatter2d: ValueFormatter = (number: number) =>
-//     `${number.toFixed(2)} kWh`;
-
 const percentFormatter: ValueFormatter = (number: number) =>
     `${Math.round(number).toString()}%`;
 
@@ -35,7 +32,7 @@ const percentFormatter: ValueFormatter = (number: number) =>
 export function BaseCard({ title, children } : { title: string, children: React.ReactNode }) {
     return (
         <Card
-            className="flex flex-grow flex-col items-center justify-center w-full h-full max-h-80"
+            className="flex flex-grow flex-col items-center justify-center w-full h-full max-h-90"
             decoration="top"
             decorationColor="blue-300"
         >
@@ -90,7 +87,7 @@ export function BaseFinBarChart( { data }: { data: FinBarChartItem[]; } ) {
             categories={[ 'Operation costs', 'Feed-in revenue', 'Cost savings', 'PV', 'Battery']}
             colors={['green-600', 'green-500', 'green-400', 'red-700', 'red-500']}
             valueFormatter={moneyFormatter}
-            yAxisWidth={70}
+            yAxisWidth={90}
             showLegend={false}
             showAnimation={true}
             stack={true}
@@ -206,7 +203,7 @@ export function BaseFinLineChart({ data } : { data: FinChartData[]; }) {
                 Financial Performance
             </h3>
             <LineChart
-                className="w-full"
+                className="w-full h-[90%]"
                 data={data}
                 index="Year"
                 categories={['Cum. Profit', 'Investment', 'Cum. Cash Flow', 'Loan']}

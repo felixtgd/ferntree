@@ -15,13 +15,6 @@ export default async function Page({ params, searchParams }:
     return (
         <div className="grid gap-4 grid-cols-3 grid-rows-3 h-full">
 
-            {/* Placeholder */}
-            {/* <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full">
-                <Suspense key={params.model_id}  fallback={<FinKpiSkeleton/>}>
-                    <ModelSummary modelId={params.model_id}/>
-                </Suspense>
-            </div> */}
-
             {/* Donut chart for consumption */}
             <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full h-full">
                 <Suspense key={params.model_id}  fallback={<DonutSkeleton/>}>

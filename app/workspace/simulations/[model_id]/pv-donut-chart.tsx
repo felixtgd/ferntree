@@ -50,13 +50,13 @@ function getChartData(chart_type: string, sim_results_eval: SimResultsEval | nul
             case 'generation':
                 chart_data.data=[
                 {
-                    name: 'Self-consumption',
+                    name: 'Self-cons.',
                     value: sim_results_eval.energy_kpis.self_consumption,
                     share: sim_results_eval.energy_kpis.self_consumption/sim_results_eval.energy_kpis.pv_generation,
-                    tooltip: 'PV generation directly consumed by the household'
+                    tooltip: 'PV generation directly consumed by the household (self-consumption)'
                 },
                 {
-                    name: 'Grid Feed-in',
+                    name: 'Grid feed-in',
                     value: sim_results_eval.energy_kpis.grid_feed_in,
                     share: sim_results_eval.energy_kpis.grid_feed_in/sim_results_eval.energy_kpis.pv_generation,
                     tooltip: 'PV generation fed into the grid'

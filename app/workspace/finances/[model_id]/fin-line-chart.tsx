@@ -32,7 +32,7 @@ export async function FinLineChart({model_id}: {model_id: string}) {
 
   return (
     <Card
-      className="flex flex-grow flex-col items-center justify-center w-full max-h-120"
+      className="flex flex-grow flex-col items-center justify-center w-full h-full"
       decoration="top"
       decorationColor="blue-300"
     >
