@@ -47,7 +47,7 @@ export async function ModelSummary({model_id}: {model_id: string}) {
     <div>
       <BaseCard title="Model Summary">
       <div className="flex flex-row justify-between w-full">
-        <List className="mt-2 px-6">
+        <List className="mt-2 px-4">
           <ListItem key={model.location}>
             <RiHome4Line />
             <span>{ model.location }</span>
@@ -61,10 +61,10 @@ export async function ModelSummary({model_id}: {model_id: string}) {
             <span>{ azimuthFormatter(model.roof_azimuth) }</span>
           </ListItem>
         </List>
-        <List className="mt-2 px-6">
+        <List className="mt-2 px-4">
           <ListItem key={model.electr_cons}>
             <RiLightbulbFlashLine />
-            <span>{ valueFormatter(model.electr_cons, "kWh/a")}</span>
+            <span>{ valueFormatter(model.electr_cons, "kWh")}</span>
           </ListItem>
           <ListItem key={model.peak_power}>
             <RiSunLine />

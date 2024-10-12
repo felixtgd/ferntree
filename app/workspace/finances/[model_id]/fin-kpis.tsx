@@ -13,7 +13,7 @@ const interestFormatter = (number: number) =>
   `${number.toFixed(1).toLocaleString()} %`;
 
 const lcoeFormatter = (number: number) =>
-  `${number.toFixed(1).toLocaleString()} cents/kWh`;
+  `${number.toFixed(1).toLocaleString()} ct/kWh`;
 
 
 export async function FinKpis({model_id}: {model_id: string}) {
@@ -37,7 +37,7 @@ export async function FinKpis({model_id}: {model_id: string}) {
               <span><strong>{yearFormatter(kpis.break_even_year)}</strong></span>
             </ListItem>
             <ListItem key={kpis.cum_profit}>
-              <span>Cumulative profit over useful life</span>
+              <span>Cum. profit</span>
               <span><strong>{moneyFormatter(kpis.cum_profit)}</strong></span>
             </ListItem>
             <ListItem key={kpis.loan}>
@@ -49,7 +49,7 @@ export async function FinKpis({model_id}: {model_id: string}) {
               <span><strong>{yearFormatter(kpis.loan_paid_off)}</strong></span>
             </ListItem>
             <ListItem key={kpis.lcoe}>
-              <span>Levelised cost of electricity</span>
+              <span>LCOE</span>
               <span><strong>{lcoeFormatter(kpis.lcoe)}</strong></span>
             </ListItem>
             <ListItem key={kpis.solar_interest_rate}>

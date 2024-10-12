@@ -87,7 +87,7 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                 action={formAction}
             >
                 <h2 className="w-full text-center mb-4">
-                    Select a model and enter your financial parameters
+                    Select a model and enter financial parameters
                 </h2>
 
                 <div className="mb-4 w-full relative">
