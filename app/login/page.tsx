@@ -1,17 +1,25 @@
 import Image from 'next/image';
 import SignIn from './sign-in';
+import { Metadata } from 'next';
+import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: "Login"
+};
 
 export default function LoginPage() {
   return (
     <main className="flex items-center justify-center md:h-screen">
       <div className="relative mx-auto flex w-full max-w-[400px] flex-col space-y-2.5 p-4 md:-mt-32">
         <div className="flex flex-col items-center justify-between">
-          <Image
-            src="/ferntree.png"
-            alt="Ferntree"
-            width={200}
-            height={200}
-          />
+          <Link href="/">
+            <Image
+              src="/ferntree.png"
+              alt="Ferntree"
+              width={200}
+              height={200}
+            />
+          </Link>
         </div>
 
         <div className="flex flex-col items-center justify-between mt-16">
