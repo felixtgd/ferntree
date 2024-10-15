@@ -1,15 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import Head from "next/head";
 import { Button } from "@tremor/react";
 
 export default function Home() {
   return (
     <>
-      <Head>
-        <title>Simply-Solar</title>
-        <meta property="og:title" content="Simply-Solar" />
-      </Head>
       <div className="w-full flex min-h-screen items-center flex-col">
         <header className="flex items-center justify-between flex-row w-full max-w-7xl p-4 mt-4">
           <div className="flex items-center flex-row justify-start">
@@ -21,9 +16,8 @@ export default function Home() {
               className="object-cover mr-4"
             />
             <span className="text-2xl font-urbanist font-extrabold leading-tight tracking-widest uppercase">
-              <span className="text-blue-500">SIMPLY</span>
-              <span className="text-green-600">-</span>
-              <span className="text-green-600">SOLAR</span>
+              <span className="text-blue-500">FERN</span>
+              <span className="text-green-600">TREE</span>
             </span>
           </div>
           <div className="flex items-center justify-end">
@@ -49,7 +43,7 @@ export default function Home() {
                 Design and assess your own sustainable energy system for your home
               </h1>
               <span className="text-white p-2 text-xl leading-relaxed mb-8">
-                Simply-Solar enables you to make informed decisions about your
+                Ferntree enables you to make informed decisions about your
                 future energy system by providing easy-to-use tools that allow
                 you to design and assess your system according to your needs.
               </span>
@@ -98,7 +92,7 @@ export default function Home() {
                 <br></br>
                 <br></br>
                 <span>
-                  Simply-Solar does not have this conflict. We simply want to
+                  Ferntree does not have this conflict. We simply want to
                   help people make informed decisions, so that everyone can
                   decide on their own, what type of energy system makes the most
                   sense for them.
@@ -112,7 +106,7 @@ export default function Home() {
               <h1 className="text-green-800 text-4xl font-urbanist font-bold leading-tight mb-4">Unbiased decision support</h1>
               <span className="text-base leading-relaxed py-2 mb-12">
               <span>
-                  The aim of Simply-Solar is to give people who are thinking
+                  The aim of Ferntree is to give people who are thinking
                   about buying a solar system the opportunity to generate the
                   data they need to make an informed decision on their own.
                   Every person, with or without technical knowledge, should be
@@ -145,6 +139,21 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <footer className="w-full py-6">
+          <div className="max-w-7xl mx-auto px-4 flex justify-center items-center">
+            <span className="text-gray-600">
+              © 2024 Ferntree. Check out our{' '}
+              <Link
+                href="https://github.com/felixtgd/ferntree"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-700 underline"
+              >
+                GitHub repository
+              </Link>
+            </span>
+          </div>
+        </footer>
       </div>
     </>
   );
