@@ -3,6 +3,7 @@
 import { auth } from "@/auth"
 import { Session, User } from "next-auth"
 import { ModelData } from "@/app/utils/definitions"
+import { cache } from "react";
 
 
 export async function loadBackendBaseUri() {
@@ -32,7 +33,7 @@ export async function getUserID() {
     return user.id
 }
 
-export async function fetchModels() {
+export const fetchModels = cache(async (): Promise<ModelData[]> => {
 
     // Get the user ID
     const user_id = await getUserID();
@@ -45,4 +46,4 @@ export async function fetchModels() {
     console.log(`GET workspace/models/fetch-models: Models loaded (${response_load_models.status}).`);
 
     return models;
-}
+})

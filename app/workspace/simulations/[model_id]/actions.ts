@@ -3,9 +3,10 @@
 import { SimResultsEval, SimTimestep } from "@/app/utils/definitions";
 import { DateRangePickerValue } from "@tremor/react";
 import { getUserID, loadBackendBaseUri } from '@/app/utils/helpers';
+import { cache } from "react";
 
 
-export async function fetchSimResults(model_id: string) {
+export const fetchSimResults = cache(async (model_id: string): Promise<SimResultsEval | undefined> => {
 
     // Get the user ID
     const user_id = await getUserID();
@@ -16,8 +17,9 @@ export async function fetchSimResults(model_id: string) {
         return sim_results_eval
     } catch (error) {
         console.error(`Failed to fetch simResults: ${error}`);
+        return undefined
     }
-};
+});
 
 
 export async function fetchPowerData(model_id: string, date_range: DateRangePickerValue) {
