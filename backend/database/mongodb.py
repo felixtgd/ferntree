@@ -170,10 +170,6 @@ class MongoClient:
                 "Failed to insert or update the document in the database."
             )
 
-        # Return the document ID
-        if not result.upserted_id:
-            raise RuntimeError("Failed to get the ID of the inserted document.")
-
         return str(result.upserted_id)
 
     async def clean_collection(self, collection: str) -> None:
