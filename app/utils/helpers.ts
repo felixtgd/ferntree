@@ -4,6 +4,7 @@ import { auth } from "@/auth"
 import { Session, User } from "next-auth"
 import { ModelData } from "@/app/utils/definitions"
 import { cache } from "react";
+import nodemailer from 'nodemailer';
 
 
 export async function loadBackendBaseUri() {
@@ -47,3 +48,34 @@ export const fetchModels = cache(async (): Promise<ModelData[]> => {
 
     return models;
 })
+
+
+export async function sendEmail(formData: FormData) {
+
+    const user_name: string = formData.get("name") as string;
+    const user_email: string = formData.get("email") as string;
+    const category: string = formData.get("category") as string;
+    const message: string = formData.get("message") as string;
+
+    const transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: process.env.EMAIL_PORT,
+        secure: false,
+        auth: {
+            user: process.env.EMAIL_SENDER,
+            pass: process.env.EMAIL_PASS
+        }
+    } as nodemailer.TransportOptions);
+
+    try {
+        const info = await transporter.sendMail({
+            from: process.env.EMAIL_SENDER,
+            to: process.env.EMAIL_RECEIVER,
+            subject: category,
+            html: `<p>From: ${user_name} (${user_email})</p><p>${message}</p>`
+        })
+        console.log("Message sent: %s", info.messageId);
+    } catch (error) {
+        console.error("Error sending email: %s", error);
+    }
+}

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@tremor/react";
+import ContactForm from "./components/contact-form";
 
 export default function Home() {
   return (
@@ -139,6 +140,16 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        <div className="w-full py-16">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-center items-center">
+            <div className="w-full md:w-1/2 flex flex-col justify-center items-center">
+              <h1 className="text-blue-500 text-4xl font-urbanist font-bold leading-tight mb-4">Contact us</h1>
+              <ContactForm />
+            </div>
+          </div>
+        </div>
+
         <footer className="w-full py-6">
           <div className="max-w-7xl mx-auto px-4 flex justify-center items-center">
             <span className="text-gray-600">
