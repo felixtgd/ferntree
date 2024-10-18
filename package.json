@@ -19,8 +19,9 @@
     "bcrypt": "^5.1.1",
     "clsx": "^2.1.0",
     "mongodb": "^6.8.0",
-    "next": "14.2.1",
+    "next": "^14.2.15",
     "next-auth": "^5.0.0-beta.20",
+    "nodemailer": "^6.9.15",
     "react": "^18",
     "react-dom": "^18",
     "zod": "^3.23.8"
