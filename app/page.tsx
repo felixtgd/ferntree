@@ -38,15 +38,14 @@ export default function Home() {
           <div className="max-w-7xl mx-auto flex items-center">
             <div className="flex-none w-2/3 flex flex-col items-start mr-8 mb-12">
               <span className="text-white p-2 text-sm font-urbanist font-extrabold leading-tight tracking-widest uppercase mb-4">
-                Sustainable energy solutions
+                Sustainable Energy Solutions
               </span>
               <h1 className="text-white p-2 text-6xl font-urbanist font-semibold leading-tight mb-4">
-                Design and assess your own sustainable energy system for your home
+                Design Your Home&apos;s Sustainable Energy System
               </h1>
               <span className="text-white p-2 text-xl leading-relaxed mb-8">
-                Ferntree enables you to make informed decisions about your
-                future energy system by providing easy-to-use tools that allow
-                you to design and assess your system according to your needs.
+                Make informed decisions with Ferntree&apos;s easy-to-use tools
+                for designing and assessing your ideal energy system.
               </span>
               <div className="flex w-full p-2">
                 <Link href="/workspace">
@@ -65,70 +64,64 @@ export default function Home() {
         </div>
         <div className="w-full py-16">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start">
-            <div className="w-full md:w-1/2 flex flex-col justify-center md:ml-8">
-              <span className="text-green-600 py-2">OPEN SOURCE AND FREE-TO-USE</span>
-              <h1 className="text-green-800 text-4xl font-urbanist font-bold leading-tight mb-4">Your free solar calculator</h1>
+            <div className="w-full md:w-1/2 flex flex-col justify-center mr-8">
+              <span className="text-green-600 py-2">
+                OPEN SOURCE AND FREE-TO-USE
+              </span>
+              <h1 className="text-green-800 text-4xl font-urbanist font-bold leading-tight mb-4">
+                Your Independent Solar Calculator
+              </h1>
               <span className="text-base leading-relaxed py-2 mb-12">
-              <span>
-                  When deciding whether or not to purchase a photovoltaic system
-                  for your own home, you are confronted with many questions: How
-                  big does the PV system need to be? Does a battery make sense?
-                  How much will this investment cost and does it make economic
-                  sense for me?
+                <span>
+                  Considering a solar system for your home?
+                  You likely have questions about size, battery options, costs, and economic viability.
+                  While many online calculators exist, they often come with commercial interests.
                 </span>
                 <br></br>
                 <br></br>
                 <span>
-                  There are a large number of websites on the Internet,
-                  especially solar calculators, which are supposed to help you
-                  make this decision. At the same time, however, they have a
-                  commercial interest in selling solar systems. These resources
-                  therefore often offer distorted information to tempt potential
-                  buyers into making a purchase. It is therefore almost
-                  impossible to form an unbiased opinion based on objective and
-                  undistorted data. In most cases, all you get is the statement
-                  that an investment is worthwhile, and shortly afterwards you
-                  are flooded with spam e-mails with sales offers.
+                  Ferntree offers an unbiased, free tool to help you make informed decisions.
+                  Our open-source calculator allows you to:
                 </span>
                 <br></br>
                 <br></br>
                 <span>
-                  Ferntree does not have this conflict. We simply want to
-                  help people make informed decisions, so that everyone can
-                  decide on their own, what type of energy system makes the most
-                  sense for them.
+                  <ul className="list-disc list-inside">
+                    <li>Design and simulate various energy systems</li>
+                    <li>Compare different setups</li>
+                    <li>Customize financial parameters</li>
+                    <li>Assess investment potential</li>
+                  </ul>
                 </span>
                 <br></br>
-                <br></br>
+                <span>
+                  No sales pressure, no spam - just the data you need to decide what&apos;s best for your home.
+                </span>
               </span>
             </div>
-            <div className="w-full md:w-1/2 flex flex-col justify-center md:ml-8">
-              <span className="text-green-600 py-2">HELPING YOU MAKE BETTER DECISIONS</span>
-              <h1 className="text-green-800 text-4xl font-urbanist font-bold leading-tight mb-4">Unbiased decision support</h1>
+            <div className="w-full md:w-1/2 flex flex-col justify-center ml-8">
+              <span className="text-green-600 py-2">
+                HELPING YOU MAKE BETTER DECISIONS
+              </span>
+              <h1 className="text-green-800 text-4xl font-urbanist font-bold leading-tight mb-4">
+                Unbiased decision support
+              </h1>
               <span className="text-base leading-relaxed py-2 mb-12">
-              <span>
-                  The aim of Ferntree is to give people who are thinking
-                  about buying a solar system the opportunity to generate the
-                  data they need to make an informed decision on their own.
-                  Every person, with or without technical knowledge, should be
-                  able to make this decision independently, based on objective
-                  data, without being influenced by the business interests of
-                  others.
+                <span>
+                  Ferntree aims to help you in your decision-making process.
+                  Whether you&apos;re tech-savvy or not, our tool provides objective data to support your choice.
                 </span>
                 <br></br>
                 <br></br>
                 <span>
-                  Our tool allows you to freely design and simulate different
-                  energy systems, compare them with each other and set your
-                  individual financial parameters. Try out for yourself when a
-                  battery makes sense for you. Investigate the conditions under
-                  which an investment is worthwhile for you. We don&apos;t give
-                  you any guidelines. You have full control. We simply provide
-                  you with the tools you need to make an informed decision on
-                  your own. And best of all: it&apos;s free to use. Get started
-                  now and try it out!
+                  Experiment freely with system designs, financial scenarios, and energy options.
+                  You&apos;re in control - we simply provide the tools for your analysis.
                 </span>
                 <br></br>
+                <br></br>
+                <span>
+                  Start exploring your solar possibilities today - it&apos;s free, unbiased, and tailored to your needs.
+                </span>
               </span>
               <div className="flex">
                 <Link href="/workspace">
