@@ -2,7 +2,7 @@
 
 import { sendEmail } from "@/app/utils/helpers";
 import { EmailFormData, FormState } from "../utils/definitions";
-import { useState } from "react";
+import { useOptimistic, useState } from "react";
 import { Button, Select, SelectItem, Textarea, TextInput } from "@tremor/react";
 import { RiMailSendLine, RiRefreshLine } from "@remixicon/react";
 import { useFormState, useFormStatus } from "react-dom";
@@ -12,14 +12,14 @@ function SubmitButton() {
     const { pending } = useFormStatus()
 
     return (
-      <Button
-        type="submit"
-        icon={RiMailSendLine}
-        disabled={pending}
-        aria-label="Send message"
-      >
-        Send
-      </Button>
+        <Button
+            type="submit"
+            icon={RiMailSendLine}
+            disabled={pending}
+            aria-label="Send message"
+        >
+            Send
+        </Button>
     )
   }
 
@@ -32,17 +32,30 @@ export default function ContactForm() {
         message: ""
     };
 
-      const [formData, setFormData] = useState(defaultEmailFormData);
-      const [isSubmitted, setIsSubmitted] = useState(false);
-      const initialState : FormState = { message: null, errors: {} };
+    const [formData, setFormData] = useState(defaultEmailFormData);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const initialState : FormState = { message: null, errors: {} };
 
-      const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    type OptimisticFormState = {
+        isSubmitted: boolean;
+    };
+
+    const [optimisticFormState, addOptimisticFormState] = useOptimistic<
+            OptimisticFormState,
+            Partial<OptimisticFormState>
+        >(
+        { isSubmitted: false },
+        (state: OptimisticFormState, newState: Partial<OptimisticFormState>) => ({ ...state, ...newState })
+    );
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = event.target;
         const sanitized_value = DOMPurify.sanitize(value as string)
         setFormData({ ...formData, [name]: sanitized_value });
     };
 
     const handleSubmit = async (prev_state: FormState, form_data: FormData) => {
+        addOptimisticFormState({ isSubmitted: true });
         const state: FormState = await sendEmail(prev_state, form_data);
         if (state.message === 'success')
             setIsSubmitted(true);
@@ -54,17 +67,20 @@ export default function ContactForm() {
     const handleReset = () => {
         setFormData(defaultEmailFormData);
         setIsSubmitted(false);
-      };
+        addOptimisticFormState({ isSubmitted: false });
+    };
 
-    if (isSubmitted) {
+    if (optimisticFormState.isSubmitted || isSubmitted) {
         return (
-        <div className="text-center max-w-md w-full mx-auto">
-            <p className="text-green-600 mb-4">
+        <div className="h-[300px] text-center max-w-md w-full mx-auto">
+            <p className="text-blue-600 mb-4">
                 Thank you for your message. We&apos;ll get back to you soon!
             </p>
-            <Button onClick={handleReset} icon={RiRefreshLine}>
-                Send another message
-            </Button>
+            {isSubmitted && (
+                <Button onClick={handleReset} icon={RiRefreshLine}>
+                    Send another message
+                </Button>
+            )}
         </div>
         );
     }
@@ -74,16 +90,13 @@ export default function ContactForm() {
 
             {/* Name */}
             <div className="mb-4">
-                <label htmlFor="name" className="mb-2 ml-2 block text-sm font-medium">
-                    Name
-                </label>
                 <div className="relative">
                     <TextInput
                     id="name"
                     name="name"
                     type="text"
                     onChange={handleChange}
-                    placeholder="(optional)"
+                    placeholder="Name"
                     />
                 </div>
                 <div id="name-error" aria-live="polite" aria-atomic="true">
@@ -98,16 +111,13 @@ export default function ContactForm() {
 
             {/* E-Mail */}
             <div className="mb-4">
-                <label htmlFor="email" className="mb-2 ml-2 block text-sm font-medium">
-                    E-Mail
-                </label>
                 <div className="relative">
                     <TextInput
                     id="email"
                     name="email"
                     type="text"
                     onChange={handleChange}
-                    placeholder="(optional)"
+                    placeholder="E-mail"
                     />
                 </div>
                 <div id="email-error" aria-live="polite" aria-atomic="true">
@@ -135,7 +145,6 @@ export default function ContactForm() {
                             }
                         }
                         value = {formData.category.toString()}
-                        // required
                         >
                         <SelectItem value="feedback">Feedback</SelectItem>
                         <SelectItem value="feature">Feature Request</SelectItem>
