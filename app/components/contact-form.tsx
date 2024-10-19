@@ -1,12 +1,12 @@
 'use client'
 
 import { sendEmail } from "@/app/utils/helpers";
-import { EmailFormData } from "../utils/definitions";
+import { EmailFormData, FormState } from "../utils/definitions";
 import { useState } from "react";
 import { Button, Select, SelectItem, Textarea, TextInput } from "@tremor/react";
 import { RiMailSendLine, RiRefreshLine } from "@remixicon/react";
-import { useFormStatus } from "react-dom";
-
+import { useFormState, useFormStatus } from "react-dom";
+import DOMPurify from 'dompurify';
 
 function SubmitButton() {
     const { pending } = useFormStatus()
@@ -34,16 +34,22 @@ export default function ContactForm() {
 
       const [formData, setFormData] = useState(defaultEmailFormData);
       const [isSubmitted, setIsSubmitted] = useState(false);
+      const initialState : FormState = { message: null, errors: {} };
 
       const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = event.target;
-        setFormData({ ...formData, [name]: value });
+        const sanitized_value = DOMPurify.sanitize(value as string)
+        setFormData({ ...formData, [name]: sanitized_value });
     };
 
-    const handleSubmit = async (formData: FormData) => {
-        await sendEmail(formData);
-        setIsSubmitted(true);
+    const handleSubmit = async (prev_state: FormState, form_data: FormData) => {
+        const state: FormState = await sendEmail(prev_state, form_data);
+        if (state.message === 'success')
+            setIsSubmitted(true);
+        return state;
     }
+
+    const [state, formAction] = useFormState(handleSubmit, initialState);
 
     const handleReset = () => {
         setFormData(defaultEmailFormData);
@@ -64,7 +70,7 @@ export default function ContactForm() {
     }
 
     return (
-        <form action={handleSubmit} className="max-w-md w-full mx-auto">
+        <form action={formAction} className="max-w-md w-full mx-auto">
 
             {/* Name */}
             <div className="mb-4">
@@ -79,6 +85,14 @@ export default function ContactForm() {
                     onChange={handleChange}
                     placeholder="(optional)"
                     />
+                </div>
+                <div id="name-error" aria-live="polite" aria-atomic="true">
+                    {state.errors?.name &&
+                    state.errors.name.map((error: string) => (
+                        <p className="mt-2 ml-2 text-sm text-red-500" key={error}>
+                        {error}
+                        </p>
+                    ))}
                 </div>
             </div>
 
@@ -95,6 +109,14 @@ export default function ContactForm() {
                     onChange={handleChange}
                     placeholder="(optional)"
                     />
+                </div>
+                <div id="email-error" aria-live="polite" aria-atomic="true">
+                    {state.errors?.email &&
+                    state.errors.email.map((error: string) => (
+                        <p className="mt-2 ml-2 text-sm text-red-500" key={error}>
+                        {error}
+                        </p>
+                    ))}
                 </div>
             </div>
 
@@ -113,7 +135,7 @@ export default function ContactForm() {
                             }
                         }
                         value = {formData.category.toString()}
-                        required
+                        // required
                         >
                         <SelectItem value="feedback">Feedback</SelectItem>
                         <SelectItem value="feature">Feature Request</SelectItem>
@@ -121,6 +143,14 @@ export default function ContactForm() {
                         <SelectItem value="question">Question</SelectItem>
                         <SelectItem value="general">General</SelectItem>
                     </Select>
+                </div>
+                <div id="category-error" aria-live="polite" aria-atomic="true">
+                    {state.errors?.category &&
+                    state.errors.category.map((error: string) => (
+                        <p className="mt-2 ml-2 text-sm text-red-500" key={error}>
+                        {error}
+                        </p>
+                    ))}
                 </div>
             </div>
 
@@ -136,6 +166,14 @@ export default function ContactForm() {
                     placeholder="Your message here"
                     rows={6}
                     />
+                </div>
+                <div id="message-error" aria-live="polite" aria-atomic="true">
+                    {state.errors?.message &&
+                    state.errors.message.map((error: string) => (
+                        <p className="mt-2 ml-2 text-sm text-red-500" key={error}>
+                        {error}
+                        </p>
+                    ))}
                 </div>
             </div>
 

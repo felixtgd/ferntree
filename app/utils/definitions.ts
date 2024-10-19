@@ -209,3 +209,18 @@ export type EmailFormData = {
   category: string;
   message: string;
 };
+
+export const EmailDataSchema = z.object({
+  name: z.string()
+    .min(1, { message: 'Please specify a name' })
+    .max(100, { message: 'Name must be at most 100 characters long' }),
+  email: z.string()
+    .email({ message: 'Please enter a valid email address' })
+    .max(100, { message: 'Email must be at most 100 characters long' }),
+  category: z.string()
+    .max(100, { message: 'Category must be at most 100 characters long' })
+    .min(1, { message: 'Please specify a category' }),
+  message: z.string()
+    .max(1000, { message: 'Message must be at most 1000 characters long' })
+    .min(1, { message: 'Please specify a message' }),
+});

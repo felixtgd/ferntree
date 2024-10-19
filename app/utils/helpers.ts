@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth"
 import { Session, User } from "next-auth"
-import { ModelData } from "@/app/utils/definitions"
+import { EmailDataSchema, FormState, ModelData } from "@/app/utils/definitions"
 import { cache } from "react";
 import nodemailer from 'nodemailer';
 
@@ -50,12 +50,22 @@ export const fetchModels = cache(async (): Promise<ModelData[]> => {
 })
 
 
-export async function sendEmail(formData: FormData) {
+export async function sendEmail(prev_state: FormState, form_data: FormData) {
 
-    const user_name: string = formData.get("name") as string;
-    const user_email: string = formData.get("email") as string;
-    const category: string = formData.get("category") as string;
-    const message: string = formData.get("message") as string;
+    // Validate that formData has schema of ModelDataSchema
+    const validated_fields = EmailDataSchema.safeParse(Object.fromEntries(form_data));
+
+    let state: FormState = prev_state;
+    if (!validated_fields.success) {
+        console.error(`Invalid form data: ${validated_fields.error}`);
+        state = {
+            errors: validated_fields.error.flatten().fieldErrors,
+            message: 'Invalid Fields. Failed to submit form.',
+          };
+        return state;
+    }
+
+    const sanitized_message = `From: ${validated_fields.data.name} (${validated_fields.data.email})\n${validated_fields.data.message}`;
 
     const transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
@@ -71,11 +81,21 @@ export async function sendEmail(formData: FormData) {
         const info = await transporter.sendMail({
             from: process.env.EMAIL_SENDER,
             to: process.env.EMAIL_RECEIVER,
-            subject: category,
-            html: `<p>From: ${user_name} (${user_email})</p><p>${message}</p>`
+            subject: validated_fields.data.category,
+            text: sanitized_message,
         })
         console.log("Message sent: %s", info.messageId);
+        state = {
+            errors: {},
+            message: 'success',
+        };
     } catch (error) {
         console.error("Error sending email: %s", error);
+        state = {
+            errors: {},
+            message: 'Failed to submit form.',
+        };
     }
+
+    return state;
 }
