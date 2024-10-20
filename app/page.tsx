@@ -75,12 +75,12 @@ export default function Home() {
                 <span>
                   Considering a solar system for your home?
                   You likely have questions about size, battery options, costs, and economic viability.
-                  While many online calculators exist, they often come with commercial interests.
+                  While many online calculators exist for this purpose, they often come with commercial interests.
                 </span>
                 <br></br>
                 <br></br>
                 <span>
-                  Ferntree offers an unbiased, free tool to help you make informed decisions.
+                  Ferntree, on the other hand, offers an independent, free tool to help you make informed decisions.
                   Our open-source calculator allows you to:
                 </span>
                 <br></br>
@@ -104,12 +104,12 @@ export default function Home() {
                 HELPING YOU MAKE BETTER DECISIONS
               </span>
               <h1 className="text-green-800 text-4xl font-urbanist font-bold leading-tight mb-4">
-                Unbiased decision support
+                Unbiased Decision Support
               </h1>
               <span className="text-base leading-relaxed py-2 mb-12">
                 <span>
                   Ferntree aims to help you in your decision-making process.
-                  Whether you&apos;re tech-savvy or not, our tool provides objective data to support your choice.
+                  Whether you&apos;re tech-savvy or not, our easy-to-use tool provides objective data to support your choice.
                 </span>
                 <br></br>
                 <br></br>
