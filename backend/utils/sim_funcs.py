@@ -85,7 +85,7 @@ async def def_system_settings(model_data: ModelDataOut) -> SystemSettings:
     battery: Battery = Battery(
         capacity=model_data.battery_cap,
         max_power=model_data.battery_cap,  # TODO: Add max_power to user input?
-        soc_init=0.0,
+        soc_init=model_data.battery_cap * 0.1,
         battery_ctrl=battery_ctrl,
     )
 
@@ -209,8 +209,12 @@ async def calc_energy_kpis(sim_results: list[dict[str, float]]) -> EnergyKPIs:
         grid_consumption=annual_grid_consumption,
         grid_feed_in=annual_grid_feed_in,
         self_consumption=annual_self_consumption,
-        self_consumption_rate=annual_self_consumption / annual_pv_generation,
-        self_sufficiency=annual_self_consumption / annual_baseload_demand,
+        self_consumption_rate=annual_self_consumption / annual_pv_generation
+        if annual_pv_generation > 0
+        else 0,
+        self_sufficiency=annual_self_consumption / annual_baseload_demand
+        if annual_baseload_demand > 0
+        else 0,
     )
 
     return energy_kpis

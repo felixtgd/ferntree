@@ -232,12 +232,19 @@ async def fetch_sim_timeseries(
             PV=timestep.P_pv,
             Battery=timestep.P_bat,
             Total=timestep.P_base + timestep.P_pv + timestep.P_bat,
-            StateOfCharge=timestep.Soc_bat / battery_cap * 100,  # in %
+            StateOfCharge=timestep.Soc_bat / battery_cap * 100
+            if battery_cap > 0
+            else 0,  # in %
         )
         for timestep in sim_results
         if start_time <= timestep.time <= end_time
     ]
 
+    if len(sim_timeseries_data) > 20 * 24:
+        sim_timeseries_data = sim_timeseries_data[: 20 * 24]
+        logger.info(
+            "POST:\t/workspace/simulations/fetch-sim-timeseries --> Fetch too large, returning only 20 days of data"
+        )
     logger.info(
         f"POST:\t/workspace/simulations/fetch-sim-timeseries --> Return timeseries data: {len(sim_timeseries_data)} data points"
     )

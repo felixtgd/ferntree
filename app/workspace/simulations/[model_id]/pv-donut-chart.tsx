@@ -28,13 +28,17 @@ function getChartData(chart_type: string, sim_results_eval: SimResultsEval | nul
                 {
                     name: 'PV',
                     value: sim_results_eval.energy_kpis.self_consumption,
-                    share: sim_results_eval.energy_kpis.self_consumption/sim_results_eval.energy_kpis.annual_consumption,
+                    share: sim_results_eval.energy_kpis.annual_consumption !== 0
+                        ? sim_results_eval.energy_kpis.self_consumption / sim_results_eval.energy_kpis.annual_consumption
+                        : 0,
                     tooltip: 'Consumption covered by the PV generation (self-consumption)'
                 },
                 {
                     name: 'Grid',
                     value: sim_results_eval.energy_kpis.grid_consumption,
-                    share: sim_results_eval.energy_kpis.grid_consumption/sim_results_eval.energy_kpis.annual_consumption,
+                    share: sim_results_eval.energy_kpis.annual_consumption !== 0
+                        ? sim_results_eval.energy_kpis.grid_consumption / sim_results_eval.energy_kpis.annual_consumption
+                        : 0,
                     tooltip: 'Consumption covered by electricity from the grid'
                 },
                 ]
@@ -52,13 +56,17 @@ function getChartData(chart_type: string, sim_results_eval: SimResultsEval | nul
                 {
                     name: 'Self-cons.',
                     value: sim_results_eval.energy_kpis.self_consumption,
-                    share: sim_results_eval.energy_kpis.self_consumption/sim_results_eval.energy_kpis.pv_generation,
+                    share: sim_results_eval.energy_kpis.pv_generation !== 0
+                    ? sim_results_eval.energy_kpis.self_consumption/sim_results_eval.energy_kpis.pv_generation
+                    : 0,
                     tooltip: 'PV generation directly consumed by the household (self-consumption)'
                 },
                 {
                     name: 'Grid feed-in',
                     value: sim_results_eval.energy_kpis.grid_feed_in,
-                    share: sim_results_eval.energy_kpis.grid_feed_in/sim_results_eval.energy_kpis.pv_generation,
+                    share: sim_results_eval.energy_kpis.pv_generation !== 0
+                    ? sim_results_eval.energy_kpis.grid_feed_in/sim_results_eval.energy_kpis.pv_generation
+                    : 0,
                     tooltip: 'PV generation fed into the grid'
                 },
                 ]
