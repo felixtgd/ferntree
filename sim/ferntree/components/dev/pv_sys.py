@@ -15,7 +15,7 @@ class PVSys(device.Device):
 
         # Peak power of the PV system [kWp]
         if not dev_specs["peak_power"]:
-            self.peak_power = 10  # Default [kWp]
+            self.peak_power = 0.0  # Default [kWp]
         else:
             self.peak_power = dev_specs["peak_power"]
 
