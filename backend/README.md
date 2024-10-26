@@ -79,4 +79,4 @@ Contributions to improve the simulation accuracy, add new features, or enhance t
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](../LICENSE) file for details.
