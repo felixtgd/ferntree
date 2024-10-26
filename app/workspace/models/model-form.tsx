@@ -36,7 +36,7 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
   const defaultModelData: ModelData = {
     model_name: 'Aarau_10_10',
     location: 'Aarau',
-    electr_cons: 6000,
+    electr_cons: 3000,
     roof_incl: 0,
     roof_azimuth: 0,
     peak_power: 10,
@@ -73,9 +73,9 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               type="text"
               icon={RiPriceTag3Line}
               onChange={handleChange}
-              value = {formData.model_name}
+              // value = {formData.model_name}
               placeholder="Enter model name"
-              // required
+              required
             />
           </div>
           <div id="model_name-error" aria-live="polite" aria-atomic="true">
@@ -100,7 +100,7 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               type="text"
               icon={RiHome4Line}
               onChange={handleChange}
-              value = {formData.location}
+              // value = {formData.location}
               placeholder="Enter location"
               required
             />
@@ -130,7 +130,7 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
                   setFormData({ ...formData, roof_incl: parseInt(value) });
                 }
               }
-              value = {formData.roof_incl.toString()}
+              // value = {formData.roof_incl.toString()}
               required
             >
               <SelectItem value="0">0°</SelectItem>
@@ -163,7 +163,7 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
                   setFormData({ ...formData, roof_azimuth: parseInt(value) });
                 }
               }
-              value = {formData.roof_azimuth.toString()}
+              // value = {formData.roof_azimuth.toString()}
               required
             >
               <SelectItem value="0">South</SelectItem>
@@ -198,8 +198,8 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               step="1"
               icon={RiLightbulbFlashLine}
               onChange = {handleChange}
-              value = {formData.electr_cons}
-              placeholder="4,000"
+              // value = {formData.electr_cons}
+              placeholder="Set annual consumption in kWh, e.g. 3,000"
               required
             />
           </div>
@@ -223,10 +223,10 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               id="peak_power"
               name="peak_power"
               step="0.1"
-              placeholder="10"
+              placeholder="Set peak power in kWp, e.g. 10"
               icon={RiSunLine}
               onChange={handleChange}
-              value = {formData.peak_power}
+              // value = {formData.peak_power}
               required
             />
           </div>
@@ -250,10 +250,10 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               id="battery_cap"
               name="battery_cap"
               step="0.1"
-              placeholder="10"
+              placeholder="Set capacity in kWh, e.g. 10"
               icon={RiBattery2ChargeLine}
               onChange={handleChange}
-              value = {formData.battery_cap}
+              // value = {formData.battery_cap}
               required
             />
           </div>
