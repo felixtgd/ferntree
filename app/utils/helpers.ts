@@ -52,7 +52,7 @@ export const fetchModels = cache(async (): Promise<ModelData[]> => {
 
 export async function sendEmail(prev_state: FormState, form_data: FormData) {
 
-    // Validate that formData has schema of ModelDataSchema
+    // Validate that formData has schema of EmailDataSchema
     const validated_fields = EmailDataSchema.safeParse(Object.fromEntries(form_data));
 
     let state: FormState = prev_state;
