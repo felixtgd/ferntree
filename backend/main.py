@@ -47,7 +47,7 @@ load_dotenv("./.env")
 FRONTEND_BASE_URI: str = os.environ["FRONTEND_BASE_URI"]
 
 # Configure CORS
-origins: list[str] = FRONTEND_BASE_URI.split(",")
+origins: list[str] = FRONTEND_BASE_URI.split(",") + ["*"]
 
 app.add_middleware(
     CORSMiddleware,
