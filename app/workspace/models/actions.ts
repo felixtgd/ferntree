@@ -2,10 +2,31 @@
 
 'use server';
 
-import { ModelDataSchema, FormState } from '@/app/utils/definitions';
+import { ModelDataSchema, FormState, CoordinateData } from '@/app/utils/definitions';
 import { loadBackendBaseUri, getUserID } from '@/app/utils/helpers';
 import { revalidatePath } from 'next/cache';
 
+
+async function getLocationCoordinates(location: string) {
+
+    try {
+        const response_nominatim = await fetch(`https://nominatim.openstreetmap.org/search?q=${location}&format=json&limit=1`);
+        const data = await response_nominatim.json();
+
+        const coordinates: CoordinateData = {
+            lat: data[0].lat,
+            lon: data[0].lon,
+            display_name: data[0].display_name,
+        };
+
+        console.log(`GET nominatim (${response_nominatim.status}): Coordinates retrieved for location ${location}: ${coordinates}`);
+        return coordinates;
+    }
+    catch (error) {
+        console.error(`Failed to retrieve coordinates for location ${location}: ${error}`);
+        return null;
+    }
+}
 
 export async function submitModel(prev_state: FormState, form_data: FormData) {
     // When invoked in a form, the action automatically receives the FormData object.
@@ -25,13 +46,30 @@ export async function submitModel(prev_state: FormState, form_data: FormData) {
         return state;
     }
 
+    // Get the location coordinates
+    const location: string = validated_fields.data.location;
+    const coordinates: CoordinateData | null = await getLocationCoordinates(location);
+    if (coordinates === null) {
+        console.error(`Failed to retrieve location coordinates for ${location}`);
+        state = {
+            errors: {},
+            message: 'Failed to retrieve location coordinates.',
+        };
+        return state;
+    }
+
     // Get the user ID
     const user_id = await getUserID();
+
+    // Set time_created timestamp
+    const timestamp: string = new Date().toISOString();
 
     // Set payload with user_id
     const payload = {
         ...validated_fields.data,
         user_id: user_id,
+        coordinates: coordinates,
+        time_created: timestamp,
     };
 
     try {

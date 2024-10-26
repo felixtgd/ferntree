@@ -42,6 +42,11 @@ async def get_sim_input_data(model_data: ModelDataOut) -> SimDataIn:
     except Exception as ex:
         raise ValueError(f"Error fetching solar data: {ex}")
 
+    # TODO: overwrite coordinates with data fetched in frontend
+    # (querying Nominatim in backend is not working on Render)
+    if model_data.coordinates:
+        coordinates = model_data.coordinates.model_dump()
+
     # Determine timezone based on coordinates
     timezone: str = await geolocator.get_timezone(coordinates)
 
