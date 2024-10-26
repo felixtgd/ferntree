@@ -3,7 +3,7 @@ import logging
 
 from typing import Union, Optional, Any
 
-from backend.solar_data.geolocator import get_location_coordinates
+# from backend.solar_data.geolocator import get_location_coordinates
 
 
 # Set up logger
@@ -98,7 +98,12 @@ async def get_solar_data_for_location(
         Tuple of two lists with the temperature and solar irradiance data
 
     """
-    coordinates: Optional[dict[str, str]] = await get_location_coordinates(location)
+    # coordinates: Optional[dict[str, str]] = await get_location_coordinates(location)
+    coordinates: Optional[dict[str, str]] = {
+        "lat": "47.9960901",
+        "lon": "7.8494005",
+        "display_name": "Freiburg im Breisgau, Ehrenkirchen, Baden-Württemberg, Germany",
+    }  # TODO: temporaray fix, Render currently blocks Nominatim requests for locations
     if coordinates is None:
         logger.error("No coordinates found for location")
         raise RuntimeError("No coordinates found for location")
