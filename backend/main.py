@@ -1,35 +1,32 @@
-import os
 import logging
-from logging import Logger
-from typing import Optional, Any
-from dotenv import load_dotenv
-
+import os
 from datetime import datetime
+from logging import Logger
+from typing import Any, Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.database.models import (
+    FinFormData,
+    FinResults,
     ModelDataIn,
     ModelDataOut,
     SimDataIn,
     SimResultsEval,
-    StartEndTimes,
     SimTimestep,
     SimTimestepOut,
-    FinFormData,
-    FinResults,
+    StartEndTimes,
 )
 from backend.database.mongodb import MongoClient
+from backend.utils.auth_funcs import check_user_exists
 from backend.utils.sim_funcs import (
+    calc_fin_results,
+    eval_sim_results,
     get_sim_input_data,
     run_ferntree_simulation,
-    eval_sim_results,
-    calc_fin_results,
 )
-
-from backend.utils.auth_funcs import check_user_exists
-
 
 # Set up logger
 LOGGERNAME: str = "fastapi_logger"
@@ -61,8 +58,22 @@ app.add_middleware(
 @app.post("/workspace/models/submit-model", response_model=str)
 @check_user_exists(db_client)
 async def submit_model(user_id: str, model_data: ModelDataIn) -> str:
+    """Submit a new model to the database.
+
+    Args:
+        user_id (str): The ID of the user submitting the model.
+        model_data (ModelDataIn): The model data to be submitted.
+
+    Returns:
+        str: The ID of the newly created model.
+
+    Raises:
+        HTTPException: If there's an error inserting the model data into the database.
+
+    """
     logger.info(
-        f"\nPOST:\t/workspace/models/submit-model --> Received request: user_id={user_id}, model_data={model_data}"
+        f"\nPOST:\t/workspace/models/submit-model --> "
+        f"Received request: user_id={user_id}, model_data={model_data}"
     )
 
     # Insert model data into database
@@ -83,6 +94,15 @@ async def submit_model(user_id: str, model_data: ModelDataIn) -> str:
 @app.get("/workspace/models/fetch-models", response_model=list[ModelDataOut])
 @check_user_exists(db_client)
 async def fetch_models(user_id: str) -> list[ModelDataOut]:
+    """Fetch all models for a given user.
+
+    Args:
+        user_id (str): The ID of the user whose models are to be fetched.
+
+    Returns:
+        list[ModelDataOut]: A list of models associated with the user.
+
+    """
     logger.info(
         f"GET:\t/workspace/models/fetch-models --> Received request: user_id={user_id}"
     )
@@ -98,8 +118,22 @@ async def fetch_models(user_id: str) -> list[ModelDataOut]:
 @app.delete("/workspace/models/delete-model", response_model=str)
 @check_user_exists(db_client)
 async def delete_model(user_id: str, model_id: str) -> str:
+    """Delete a specific model.
+
+    Args:
+        user_id (str): The ID of the user requesting the deletion.
+        model_id (str): The ID of the model to be deleted.
+
+    Returns:
+        str: The ID of the deleted model.
+
+    Raises:
+        HTTPException: If the model with the given ID is not found.
+
+    """
     logger.info(
-        f"DELETE:\t/workspace/models/delete-model --> Received request: user_id={user_id}, model_id={model_id}"
+        f"DELETE:\t/workspace/models/delete-model --> "
+        f"Received request: user_id={user_id}, model_id={model_id}"
     )
 
     # Delete the model
@@ -120,8 +154,22 @@ async def delete_model(user_id: str, model_id: str) -> str:
 @app.get("/workspace/simulations/run-sim", response_model=dict[str, bool])
 @check_user_exists(db_client)
 async def run_simulation(user_id: str, model_id: str) -> dict[str, bool]:
+    """Run a simulation for a specific model.
+
+    Args:
+        user_id (str): The ID of the user requesting the simulation.
+        model_id (str): The ID of the model to simulate.
+
+    Returns:
+        dict[str, bool]: A dictionary indicating whether simulation run was successful.
+
+    Raises:
+        HTTPException: If there's an error updating the sim ID or running the sim.
+
+    """
     logger.info(
-        f"GET:\t/workspace/simulations/run-sim --> Received request: user_id={user_id}, model_id={model_id}"
+        f"GET:\t/workspace/simulations/run-sim --> "
+        f"Received request: user_id={user_id}, model_id={model_id}"
     )
 
     # Fetch model data from database
@@ -145,7 +193,8 @@ async def run_simulation(user_id: str, model_id: str) -> dict[str, bool]:
                 detail=f"Error updating sim_id {sim_id} of model {model_id}.",
             )
         logger.info(
-            f"GET:\t/workspace/simulations/run-simulation --> Sim {sim_id} ran successfully!"
+            f"GET:\t/workspace/simulations/run-simulation --> "
+            f"Sim {sim_id} ran successfully!"
         )
         return {"run_successful": True}
     else:
@@ -161,8 +210,19 @@ async def run_simulation(user_id: str, model_id: str) -> dict[str, bool]:
 @app.get("/workspace/simulations/fetch-sim-results", response_model=SimResultsEval)
 @check_user_exists(db_client)
 async def fetch_sim_results(user_id: str, model_id: str) -> SimResultsEval:
+    """Fetch simulation results for a specific model.
+
+    Args:
+        user_id (str): The ID of the user requesting the results.
+        model_id (str): The ID of the model for which to fetch results.
+
+    Returns:
+        SimResultsEval: The evaluated simulation results.
+
+    """
     logger.info(
-        f"GET:\t/workspace/simulations/fetch-sim-results --> Received request: user_id={user_id}, model_id={model_id}"
+        f"GET:\t/workspace/simulations/fetch-sim-results --> "
+        f"Received request: user_id={user_id}, model_id={model_id}"
     )
 
     # Check if sim results are already evaluated
@@ -176,7 +236,8 @@ async def fetch_sim_results(user_id: str, model_id: str) -> SimResultsEval:
     # If not, evaluate sim results
     if sim_results_eval_existing is None:
         logger.info(
-            f"GET:\t/workspace/simulations/fetch-sim-results --> Evaluating sim results for model_id={model_id}"
+            f"GET:\t/workspace/simulations/fetch-sim-results --> "
+            f"Evaluating sim results for model_id={model_id}"
         )
         sim_results_eval_new: SimResultsEval = await eval_sim_results(
             db_client, model_id
@@ -194,8 +255,23 @@ async def fetch_sim_results(user_id: str, model_id: str) -> SimResultsEval:
 async def fetch_sim_timeseries(
     user_id: str, model_id: str, request_body: StartEndTimes
 ) -> list[SimTimestepOut]:
+    """Fetch simulation timeseries data for a specific model within a given time range.
+
+    Args:
+        user_id (str): The ID of the user requesting the data.
+        model_id (str): The ID of the model for which to fetch timeseries data.
+        request_body (StartEndTimes): The start and end times for the requested data.
+
+    Returns:
+        list[SimTimestepOut]: A list of sim timesteps within the specified time range.
+
+    Raises:
+        HTTPException: If there's an error parsing the datetime or fetching the data.
+
+    """
     logger.info(
-        f"POST:\t/workspace/simulations/fetch-sim-timeseries --> Received request: user_id={user_id}, model_id={model_id}, requets body={request_body}"
+        f"POST:\t/workspace/simulations/fetch-sim-timeseries --> "
+        f"Received request: user={user_id}, model={model_id}, request={request_body}"
     )
 
     try:
@@ -240,10 +316,12 @@ async def fetch_sim_timeseries(
     if len(sim_timeseries_data) > 20 * 24:
         sim_timeseries_data = sim_timeseries_data[: 20 * 24]
         logger.info(
-            "POST:\t/workspace/simulations/fetch-sim-timeseries --> Fetch too large, returning only 20 days of data"
+            "POST:\t/workspace/simulations/fetch-sim-timeseries --> "
+            "Fetch too large, returning only 20 days of data"
         )
     logger.info(
-        f"POST:\t/workspace/simulations/fetch-sim-timeseries --> Return timeseries data: {len(sim_timeseries_data)} data points"
+        f"POST:\t/workspace/simulations/fetch-sim-timeseries --> "
+        f"Return timeseries data: {len(sim_timeseries_data)} data points"
     )
 
     return sim_timeseries_data
@@ -252,8 +330,19 @@ async def fetch_sim_timeseries(
 @app.post("/workspace/finances/submit-fin-form-data", response_model=str)
 @check_user_exists(db_client)
 async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> str:
+    """Submit financial form data for a model and calculate fin results if necessary.
+
+    Args:
+        user_id (str): The ID of the user submitting the data.
+        fin_form_data_sub (FinFormData): The financial form data to be submitted.
+
+    Returns:
+        str: The ID of the model for which financial data was submitted.
+
+    """
     logger.info(
-        f"\nPOST:\t/workspace/finances/submit-fin-form-data --> Received request: user_id={user_id}"
+        f"\nPOST:\t/workspace/finances/submit-fin-form-data --> "
+        f"Received request: user_id={user_id}"
     )
 
     # Fetch fin form data from database
@@ -265,10 +354,11 @@ async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> 
     # then write form data to database and calculate financial results
     # If model has form data, then check if form data has changed and if so,
     # write new form data to database and calculate financial results
-    # Else nothing to do because finances have already been calculated for this form data
+    # Else nothing to do because finances have already been calculated for this formdata
     if (fin_form_data_db is None) or (fin_form_data_sub != fin_form_data_db):
         logger.info(
-            f"POST:\t/workspace/finances/submit-fin-form-data --> Calculating financial results for model {model_id}"
+            f"POST:\t/workspace/finances/submit-fin-form-data --> "
+            f"Calculating financial results for model {model_id}"
         )
         # Write fin form data to database
         await db_client.insert_document("finances", fin_form_data_sub)
@@ -277,11 +367,13 @@ async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> 
         await db_client.insert_document("fin_results", fin_results)
     else:
         logger.info(
-            f"POST:\t/workspace/finances/submit-fin-form-data --> Financial results already calculated for model {model_id}"
+            f"POST:\t/workspace/finances/submit-fin-form-data --> "
+            f"Financial results already calculated for model {model_id}"
         )
 
     logger.info(
-        f"POST:\t/workspace/finances/submit-fin-form-data --> Financial results ready for model {model_id}"
+        f"POST:\t/workspace/finances/submit-fin-form-data --> "
+        f"Financial results ready for model {model_id}"
     )
 
     return model_id
@@ -290,8 +382,22 @@ async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> 
 @app.get("/workspace/finances/fetch-fin-results", response_model=FinResults)
 @check_user_exists(db_client)
 async def fetch_fin_results(user_id: str, model_id: str) -> FinResults:
+    """Fetch financial results for a specific model.
+
+    Args:
+        user_id (str): The ID of the user requesting the results.
+        model_id (str): The ID of the model for which to fetch financial results.
+
+    Returns:
+        FinResults: The financial results for the specified model.
+
+    Raises:
+        RuntimeError: If fetching the financial results fails.
+
+    """
     logger.info(
-        f"GET:\t/workspace/finances/fetch-fin-results --> Received request: user_id={user_id}, model_id={model_id}"
+        f"GET:\t/workspace/finances/fetch-fin-results --> "
+        f"Received request: user_id={user_id}, model_id={model_id}"
     )
 
     # Fetch financial results from database
@@ -303,7 +409,8 @@ async def fetch_fin_results(user_id: str, model_id: str) -> FinResults:
     fin_results: FinResults = FinResults(**doc)
 
     logger.info(
-        f"GET:\t/workspace/finances/fetch-fin-results --> Return financial results for model {model_id}"
+        f"GET:\t/workspace/finances/fetch-fin-results --> "
+        f"Return financial results for model {model_id}"
     )
 
     return fin_results
