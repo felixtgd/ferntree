@@ -9,6 +9,12 @@ export type FormState = {
   timestamp?: string | null;
 };
 
+export type CoordinateData = {
+  lat: string;
+  lon: string;
+  display_name: string;
+};
+
 // MODEL DATA for /workspace/models
 export type ModelData = {
   model_name: string;
@@ -20,6 +26,8 @@ export type ModelData = {
   battery_cap: number;
   sim_id?: string;
   model_id?: string;
+  coordinates?: CoordinateData;
+  time_created?: string;
 };
 
 export const ModelDataSchema = z.object({

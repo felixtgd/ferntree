@@ -10,6 +10,12 @@ class User(BaseModel):
     emailVerified: Optional[str]
 
 
+class Coordinates(BaseModel):
+    lat: str
+    lon: str
+    display_name: str
+
+
 class ModelDataIn(BaseModel):
     user_id: str
     model_name: str
@@ -19,6 +25,8 @@ class ModelDataIn(BaseModel):
     electr_cons: float
     peak_power: float
     battery_cap: float
+    coordinates: Optional[Coordinates] = None
+    time_created: Optional[str] = None
 
     class Config:
         protected_namespaces = ()
