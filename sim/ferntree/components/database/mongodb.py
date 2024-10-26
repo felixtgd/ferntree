@@ -1,6 +1,7 @@
 import os
 import certifi
 
+from datetime import datetime
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
@@ -22,28 +23,34 @@ MONGODB_DATABASE = os.environ["MONGODB_DATABASE"]
 
 
 class pyMongoClient:
-    def __init__(self, model_id: str, sim_id: str):
+    def __init__(self, sim_id: str, model_id: str):
         self.client = MongoClient(MONGODB_URI, server_api=ServerApi("1"), tlsCAFile=ca)
 
         self.db = self.client[MONGODB_DATABASE]
+        self.results_collection = self.db["sim_results_ts"]
+        self.results_collection.create_index("sim_id", unique=True)
+        self.results_collection.create_index("model_id", unique=True)
 
-        self.model_id = ObjectId(model_id)
-        self.sim_id = ObjectId(sim_id)
+        # Replace the document if it exists, or insert a new one
+        self.results_collection.replace_one(
+            {"sim_id": sim_id},
+            {
+                "sim_id": sim_id,
+                "model_id": model_id,
+                "run_time": datetime.now().isoformat(),
+            },
+            upsert=True,
+        )
+
+        self.sim_id = sim_id
 
         self.batch_size = 1000
         self.data_buffer = []
 
     def load_config(self) -> dict:
-        # Load model specifications from database
-        collection = self.db["model_specs"]
-        result = collection.find_one({"_id": self.model_id})
-
-        return result
-
-    def load_simulation_input(self) -> dict:
-        # Load simulation input data from database
-        collection = self.db["sim_timeseries"]
-        result = collection.find_one({"_id": self.sim_id})
+        # Load sim config from database
+        collection = self.db["simulations"]
+        result = collection.find_one({"_id": ObjectId(self.sim_id)})
 
         return result
 
@@ -67,10 +74,9 @@ class pyMongoClient:
             self.data_buffer = []
 
     def write_batch(self, batch: list):
-        collection = self.db["sim_timeseries"]
-        # Find document with id sim_id and push batch to timeseries_data
-        collection.update_one(
-            {"_id": self.sim_id}, {"$push": {"timeseries_data": {"$each": batch}}}
+        # Find document with sim_id and push batch
+        self.results_collection.update_one(
+            {"sim_id": self.sim_id}, {"$push": {"timeseries": {"$each": batch}}}
         )
 
     def shutdown(self):
@@ -82,12 +88,6 @@ class pyMongoClient:
         if self.data_buffer:
             self.write_batch(self.data_buffer)
             self.data_buffer = []
-
-        # Delete input arrays T_amb and G_i from document
-        collection = self.db["sim_timeseries"]
-        collection.update_one(
-            {"_id": self.sim_id}, {"$unset": {"T_amb": "", "G_i": ""}}
-        )
 
         # Close connection to database
         self.client.close()

@@ -1,65 +1,55 @@
-# import os
+import os
 import logging
-
-# from dotenv import load_dotenv
+from logging import Logger
+from typing import Optional, Any
+from dotenv import load_dotenv
 
 from datetime import datetime
-from enum import Enum
+
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.database.models import (
-    UserInputForm,
-    TimeseriesDataRequest,
-    FilteredTimeseriesData,
-    ModelSpecsDoc,
+    ModelDataIn,
+    ModelDataOut,
+    SimDataIn,
+    SimResultsEval,
+    StartEndTimes,
+    SimTimestep,
+    SimTimestepOut,
+    FinFormData,
+    FinResults,
 )
 from backend.database.mongodb import MongoClient
 from backend.utils.sim_funcs import (
-    process_user_input,
+    get_sim_input_data,
     run_ferntree_simulation,
-    evaluate_simulation_results,
-    calc_monthly_pv_gen_data,
+    eval_sim_results,
+    calc_fin_results,
 )
-from backend.utils.data_model_helpers import format_timeseries_data
 
-
-class RoofTilt(int, Enum):
-    flat = 0
-    tilted30 = 30
-    tilted45 = 45
-
-
-class RoofAzimuth(int, Enum):
-    south = 0
-    south_east = -45
-    south_west = 45
-    east = -90
-    west = 90
-    north_east = -135
-    north_west = 135
-    north = 180
+from backend.utils.auth_funcs import check_user_exists
 
 
 # Set up logger
-LOGGERNAME = "fastapi_logger"
+LOGGERNAME: str = "fastapi_logger"
 logging.basicConfig(level=logging.INFO, format="%(message)s")
-logger = logging.getLogger(LOGGERNAME)
+logger: Logger = logging.getLogger(LOGGERNAME)
 
 # Create a FastAPI instance
-app = FastAPI()
+app: FastAPI = FastAPI()
 
 # Create a MongoDB client
-db_client = MongoClient()
+db_client: MongoClient = MongoClient()
 
 # Load config from .env file:
-# load_dotenv("../.env")
-# FRONTEND_BASE_URI = os.environ["FRONTEND_BASE_URI"]
+load_dotenv("./.env")
+FRONTEND_BASE_URI: str = os.environ["FRONTEND_BASE_URI"]
 
 # Configure CORS
-origins = [
-    # FRONTEND_BASE_URI,
-    "*",
+origins: list[str] = [
+    FRONTEND_BASE_URI,
+    # "*",
 ]
 
 app.add_middleware(
@@ -71,144 +61,252 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.post("/dashboard/submit-model")
-# TODO: add response_model = ... for data validation
-async def pv_calc(user_input: UserInputForm):
+@app.post("/workspace/models/submit-model", response_model=str)
+@check_user_exists(db_client)
+async def submit_model(user_id: str, model_data: ModelDataIn) -> str:
     logger.info(
-        f"\nPOST:\t/dashboard/submit-model --> Received request: user_input={user_input}"
+        f"\nPOST:\t/workspace/models/submit-model --> Received request: user_id={user_id}, model_data={model_data}"
     )
 
-    # Determine user_id
-    user_id = 123
-
-    # Process user input and write to database
-    model_id = await process_user_input(db_client, user_input, user_id)
-    if not model_id:
-        logger.error("Error processing user input")
+    # Insert model data into database
+    model_id: Optional[str] = await db_client.insert_model(model_data.model_dump())
+    if model_id is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Error processing user input",
+            detail="Error inserting model data into database.",
         )
 
-    logger.info(f"\nPOST:\t/dashboard/submit-model --> Return Model ID: {model_id}")
+    logger.info(
+        f"POST:\t/workspace/models/submit-model --> Return Model ID: {model_id}"
+    )
 
     return model_id
 
 
-@app.get("/dashboard/run-simulation")
-async def run_simulation(model_id: str):
+@app.get("/workspace/models/fetch-models", response_model=list[ModelDataOut])
+@check_user_exists(db_client)
+async def fetch_models(user_id: str) -> list[ModelDataOut]:
     logger.info(
-        f"\nGET:\t/dashboard/run-simulation --> Received request: model_id={model_id}"
+        f"GET:\t/workspace/models/fetch-models --> Received request: user_id={user_id}"
     )
-    # Fetch the model specifications
-    sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
-    sim_id = sim_model_specs["sim_id"]
 
-    # Start ferntree simulation
-    sim_run = await run_ferntree_simulation(sim_id, model_id)
+    # Fetch all models of the user
+    models: list[ModelDataOut] = await db_client.fetch_models(user_id)
 
-    if sim_run:
-        logger.info(
-            f"\nGET:\t/dashboard/run-simulation --> Sim {sim_id} ran successfully!"
+    logger.info(f"GET:\t/workspace/models/fetch-models --> Return {len(models)} models")
+
+    return models
+
+
+@app.delete("/workspace/models/delete-model", response_model=str)
+@check_user_exists(db_client)
+async def delete_model(user_id: str, model_id: str) -> str:
+    logger.info(
+        f"DELETE:\t/workspace/models/delete-model --> Received request: user_id={user_id}, model_id={model_id}"
+    )
+
+    # Delete the model
+    delete_result_acknowledged: bool = await db_client.delete_model(model_id)
+    if not delete_result_acknowledged:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Model with ID {model_id} not found.",
         )
-        return {"sim_run_success": True}
+
+    logger.info(
+        f"DELETE:\t/workspace/models/delete-model --> Deleted model with ID: {model_id}"
+    )
+
+    return model_id
+
+
+@app.get("/workspace/simulations/run-sim", response_model=dict[str, bool])
+@check_user_exists(db_client)
+async def run_simulation(user_id: str, model_id: str) -> dict[str, bool]:
+    logger.info(
+        f"GET:\t/workspace/simulations/run-sim --> Received request: user_id={user_id}, model_id={model_id}"
+    )
+
+    # Fetch model data from database
+    model_data: ModelDataOut = await db_client.fetch_model_by_id(model_id)
+
+    # Get simulation input data
+    sim_input_data: SimDataIn = await get_sim_input_data(model_data)
+
+    # Insert simulation input data into database
+    sim_id: str = await db_client.insert_document("simulations", sim_input_data)
+
+    # Run the simulation
+    sim_run: bool = await run_ferntree_simulation(model_id, sim_id)
+
+    # If sim run was successful, insert sim_id into model doc in database
+    if sim_run:
+        sim_id_updated: bool = await db_client.update_sim_id_of_model(model_id, sim_id)
+        if not sim_id_updated:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Error updating sim_id {sim_id} of model {model_id}.",
+            )
+        logger.info(
+            f"GET:\t/workspace/simulations/run-simulation --> Sim {sim_id} ran successfully!"
+        )
+        return {"run_successful": True}
     else:
-        logger.info(f"\n/dashboard/run-simulation --> Sim {sim_id} failed!")
+        logger.info(
+            f"ERROR:\t/workspace/simulations/run-simulation --> Sim {sim_id} failed!"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error running simulation",
         )
 
 
-@app.get("/dashboard/simulation-results")
-async def fetch_simulation_results(model_id: str):
+@app.get("/workspace/simulations/fetch-sim-results", response_model=SimResultsEval)
+@check_user_exists(db_client)
+async def fetch_sim_results(user_id: str, model_id: str) -> SimResultsEval:
     logger.info(
-        f"\nGET:\t/dashboard/simulation-results --> Received request: model_id={model_id}"
+        f"GET:\t/workspace/simulations/fetch-sim-results --> Received request: user_id={user_id}, model_id={model_id}"
     )
 
-    # Fetch the model specifications TODO: stupid to do this again here!!!
-    sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
-    sim_model_specs_doc = ModelSpecsDoc(**sim_model_specs)
-    sim_id = sim_model_specs_doc.sim_id
-
-    # Evaluate simulation results
-    sim_eval_id, sim_evaluation = await evaluate_simulation_results(
-        db_client, sim_id, sim_model_specs_doc.sim_model_specs
+    # Check if sim results are already evaluated
+    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
+        "sim_results_eval", model_id
     )
-    if not sim_evaluation or not sim_eval_id:
-        logger.error(
-            f"Error evaluating simulation results. model_id={model_id}, sim_id={sim_id}, sim_eval_id={sim_eval_id}"
+    sim_results_eval_existing: Optional[SimResultsEval] = (
+        SimResultsEval(**doc) if doc else None
+    )
+
+    # If not, evaluate sim results
+    if sim_results_eval_existing is None:
+        logger.info(
+            f"GET:\t/workspace/simulations/fetch-sim-results --> Evaluating sim results for model_id={model_id}"
         )
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Error evaluating simulation results",
+        sim_results_eval_new: SimResultsEval = await eval_sim_results(
+            db_client, model_id
         )
+        await db_client.insert_document("sim_results_eval", sim_results_eval_new)
+        return sim_results_eval_new
+    else:
+        return sim_results_eval_existing
 
+
+@app.post(
+    "/workspace/simulations/fetch-sim-timeseries", response_model=list[SimTimestepOut]
+)
+@check_user_exists(db_client)
+async def fetch_sim_timeseries(
+    user_id: str, model_id: str, request_body: StartEndTimes
+) -> list[SimTimestepOut]:
     logger.info(
-        f"\nGET:\t/dashboard/simulation-results --> Return Simulation Evaluation: {sim_evaluation.sim_id}"
+        f"POST:\t/workspace/simulations/fetch-sim-timeseries --> Received request: user_id={user_id}, model_id={model_id}, requets body={request_body}"
     )
-    return sim_evaluation
-
-
-@app.post("/dashboard/sim-timeseries-data")
-async def fetch_timeseries_data(request_body: TimeseriesDataRequest):
-    logger.info(
-        f"\nPOST:\t/dashboard/sim-timeseries-data --> Received request: {request_body}"
-    )
-
-    # Fetch the model specifications TODO: stupid to do this again here!!!
-    sim_model_specs = await db_client.find_one_by_id(
-        "model_specs", request_body.s_model_id
-    )
-    sim_id = sim_model_specs["sim_id"]
 
     try:
-        start_date = datetime.fromisoformat(request_body.start_date).timestamp()
-        end_date = datetime.fromisoformat(request_body.end_date).timestamp()
+        start_time: float = datetime.fromisoformat(request_body.start_time).timestamp()
+        end_time: float = datetime.fromisoformat(request_body.end_time).timestamp()
     except ValueError as e:
         logger.error(f"Error parsing datetime: {e}")
         raise HTTPException(status_code=400, detail="Invalid datetime format")
 
-    # Fetch the timeseries data of the simulation
-    timeseries_data = await db_client.fetch_timeseries_data(sim_id=sim_id)
-
-    # Filter the timeseries data to only include data within the given date range
-    filtered_timeseries_data = [
-        FilteredTimeseriesData(**data)
-        for data in timeseries_data
-        if start_date <= data["time"] <= end_date
+    # Fetch sim results timeseries data
+    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
+        "sim_results_ts", model_id
+    )
+    if doc is None:
+        raise RuntimeError(
+            f"Failed to fetch sim results timeseries for model_id {model_id}"
+        )
+    sim_results: list[SimTimestep] = [
+        SimTimestep(**timestep) for timestep in doc["timeseries"]
     ]
 
-    formatted_timeseries_data = format_timeseries_data(filtered_timeseries_data)
+    # Fetch model data
+    model_data: ModelDataOut = await db_client.fetch_model_by_id(model_id)
+    battery_cap: float = model_data.battery_cap
 
+    # Filter the timeseries data to only include data within the given date range
+    sim_timeseries_data: list[SimTimestepOut] = [
+        SimTimestepOut(
+            time=datetime.fromtimestamp(timestep.time).strftime("%d-%m-%Y %H:%M"),
+            Load=timestep.P_base,
+            PV=timestep.P_pv,
+            Battery=timestep.P_bat,
+            Total=timestep.P_base + timestep.P_pv + timestep.P_bat,
+            StateOfCharge=timestep.Soc_bat / battery_cap * 100
+            if battery_cap > 0
+            else 0,  # in %
+        )
+        for timestep in sim_results
+        if start_time <= timestep.time <= end_time
+    ]
+
+    if len(sim_timeseries_data) > 20 * 24:
+        sim_timeseries_data = sim_timeseries_data[: 20 * 24]
+        logger.info(
+            "POST:\t/workspace/simulations/fetch-sim-timeseries --> Fetch too large, returning only 20 days of data"
+        )
     logger.info(
-        f"\nPOST:\t/dashboard/sim-timeseries-data --> Return timeseries data: {len(formatted_timeseries_data)} data points"
+        f"POST:\t/workspace/simulations/fetch-sim-timeseries --> Return timeseries data: {len(sim_timeseries_data)} data points"
     )
 
-    return formatted_timeseries_data  # TODO: define data model for response
+    return sim_timeseries_data
 
 
-@app.get("/dashboard/pv-monthly-gen")
-async def fetch_pv_monthly_gen_data(model_id: str):
+@app.post("/workspace/finances/submit-fin-form-data", response_model=str)
+@check_user_exists(db_client)
+async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> str:
     logger.info(
-        f"\nGET:\t/dashboard/pv-monthly-gen --> Received request: model_id={model_id}"
+        f"\nPOST:\t/workspace/finances/submit-fin-form-data --> Received request: user_id={user_id}"
     )
-    # Fetch the model specifications TODO: stupid to do this again here!!!
-    sim_model_specs = await db_client.find_one_by_id("model_specs", model_id)
-    sim_id = sim_model_specs["sim_id"]
 
-    # Fetch the timeseries data of the simulation
-    timeseries_data = await db_client.fetch_timeseries_data(sim_id=sim_id)
+    # Fetch fin form data from database
+    model_id: str = fin_form_data_sub.model_id
+    doc: Optional[dict[str, Any]] = await db_client.fetch_document("finances", model_id)
+    fin_form_data_db: Optional[FinFormData] = FinFormData(**doc) if doc else None
 
-    # Calculate the monthly PV generation data
-    monthly_pv_gen_data = await calc_monthly_pv_gen_data(timeseries_data)
+    # If model has no form data (1:1 relation),
+    # then write form data to database and calculate financial results
+    # If model has form data, then check if form data has changed and if so,
+    # write new form data to database and calculate financial results
+    # Else nothing to do because finances have already been calculated for this form data
+    if (fin_form_data_db is None) or (fin_form_data_sub != fin_form_data_db):
+        logger.info(
+            f"POST:\t/workspace/finances/submit-fin-form-data --> Calculating financial results for model {model_id}"
+        )
+        # Write fin form data to database
+        await db_client.insert_document("finances", fin_form_data_sub)
+        # Calculate financial results
+        fin_results: FinResults = await calc_fin_results(db_client, fin_form_data_sub)
+        await db_client.insert_document("fin_results", fin_results)
+    else:
+        logger.info(
+            f"POST:\t/workspace/finances/submit-fin-form-data --> Financial results already calculated for model {model_id}"
+        )
 
     logger.info(
-        f"\nGET:\t/dashboard/pv-monthly-gen --> Return Monthly PV Generation Data: {monthly_pv_gen_data}"
+        f"POST:\t/workspace/finances/submit-fin-form-data --> Financial results ready for model {model_id}"
     )
-    return monthly_pv_gen_data
+
+    return model_id
+
+
+@app.get("/workspace/finances/fetch-fin-results", response_model=FinResults)
+@check_user_exists(db_client)
+async def fetch_fin_results(user_id: str, model_id: str) -> FinResults:
+    logger.info(
+        f"GET:\t/workspace/finances/fetch-fin-results --> Received request: user_id={user_id}, model_id={model_id}"
+    )
+
+    # Fetch financial results from database
+    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
+        "fin_results", model_id
+    )
+    if doc is None:
+        raise RuntimeError(f"Failed to fetch financial results for model_id {model_id}")
+    fin_results: FinResults = FinResults(**doc)
+
+    logger.info(
+        f"GET:\t/workspace/finances/fetch-fin-results --> Return financial results for model {model_id}"
+    )
+
+    return fin_results

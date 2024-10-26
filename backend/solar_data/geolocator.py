@@ -1,12 +1,13 @@
 import aiohttp
 import logging
+from typing import Any, Optional
 
 # Set up logger
 LOGGERNAME = "fastapi_logger"
 logger = logging.getLogger(LOGGERNAME)
 
 
-async def get_location_coordinates(location: str):
+async def get_location_coordinates(location: str) -> Optional[dict[str, str]]:
     """
     Convert address from user input to lat/lon coordinates using aiohttp library
     with Nominatim geocoder. The coordinates are required to obtain the solar
@@ -21,7 +22,7 @@ async def get_location_coordinates(location: str):
     """
     logger.info(f"\nGeolocator: Requesting coordinates for address: {location}")
 
-    url = f"https://nominatim.openstreetmap.org/search?format=json&q={location}"
+    url: str = f"https://nominatim.openstreetmap.org/search?format=json&q={location}"
 
     async with aiohttp.ClientSession() as session:
         try:
@@ -32,8 +33,8 @@ async def get_location_coordinates(location: str):
                         f"Geolocator: Failed to get coordinates for address: {location}"
                     )
                     return None
-                data = await response.json()
-                coordinates = {
+                data: list[dict[str, Any]] = await response.json()
+                coordinates: dict[str, str] = {
                     key: data[0][key] for key in ["lat", "lon", "display_name"]
                 }
                 logger.info(f"Geolocator: Coordinates: {coordinates}")
@@ -43,7 +44,7 @@ async def get_location_coordinates(location: str):
             return None
 
 
-async def get_timezone(coordinates: dict):
+async def get_timezone(coordinates: dict[str, str]) -> str:
     """
     Get the timezone for the specified coordinates using the GeoNames API.
     Important limits for the free GeoNames API:
@@ -60,11 +61,11 @@ async def get_timezone(coordinates: dict):
     """
     logger.info(f"\nGeoNames API: Requesting timezone for coordinates: {coordinates}")
 
-    lat = coordinates["lat"]
-    lon = coordinates["lon"]
-    USERNAME = "felixtgd"
+    lat: str = coordinates["lat"]
+    lon: str = coordinates["lon"]
+    USERNAME: str = "felixtgd"
 
-    url = (
+    url: str = (
         f"http://api.geonames.org/timezoneJSON?lat={lat}&lng={lon}&username={USERNAME}"
     )
 
@@ -76,11 +77,11 @@ async def get_timezone(coordinates: dict):
                     logger.error(
                         f"GeoNames API: An error occurred: {response.status} {response.reason}"
                     )
-                    return None
-                data = await response.json()
-                timezone = data["timezoneId"]
+                    raise RuntimeError("Failed to get timezone")
+                data: dict[str, Any] = await response.json()
+                timezone: str = data["timezoneId"]
                 logger.info(f"GeoNames API: Timezone: {timezone}")
                 return timezone
         except Exception as ex:
             logger.error(f"GeoNames API: An error occurred: {ex}")
-            return None
+            raise RuntimeError("Failed to get timezone")

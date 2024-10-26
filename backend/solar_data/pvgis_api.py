@@ -1,6 +1,8 @@
 import aiohttp
 import logging
 
+from typing import Union, Optional, Any
+
 from backend.solar_data.geolocator import get_location_coordinates
 
 
@@ -10,8 +12,8 @@ logger = logging.getLogger(LOGGERNAME)
 
 
 async def api_request_solar_irr(
-    lat: float,
-    lon: float,
+    lat: str,
+    lon: str,
     year: int = 2019,
     pvcalc: int = 0,
     peakpower: float = 5,
@@ -19,7 +21,7 @@ async def api_request_solar_irr(
     angle: float = 35.0,
     aspect: float = 0,
     opt: int = 0,
-) -> dict:
+) -> dict[str, Any]:
     """
     API request to PVGIS
     Queries data for HOURLY SOLAR IRRADIANCE
@@ -41,7 +43,9 @@ async def api_request_solar_irr(
     )
 
     # INPUTS Hourly radiation (minum example: https://re.jrc.ec.europa.eu/api/seriescalc?lat=45&lon=8)
-    params = {  # type, obligatory, default, default, comment
+    params: dict[
+        str, Union[str, float, int]
+    ] = {  # type, obligatory, default, default, comment
         "lat": lat,  # float, y, - , Latitude, in decimal degrees, south is negative.
         "lon": lon,  # float, y, - , Longitude, in decimal degrees, west is negative.
         "usehorizon": 1,  # int,   n,	1 , Calculate taking into account shadows from high horizon.
@@ -61,7 +65,7 @@ async def api_request_solar_irr(
         "browser": 1,  # int,   n , 0 , Use this with a value of "1" if you access the web service from a web browser and want to save the data to a file.
     }
 
-    url = "https://re.jrc.ec.europa.eu/api/v5_2/seriescalc"
+    url: str = "https://re.jrc.ec.europa.eu/api/v5_2/seriescalc"
 
     async with aiohttp.ClientSession() as session:
         try:
@@ -71,17 +75,17 @@ async def api_request_solar_irr(
                     logger.error(
                         f"PVGIS API: An error occurred: {response.status} {response.reason}"
                     )
-                    return None
-                data = await response.json()
+                    raise RuntimeError("PVGIS API request failed")
+                data: dict[str, Any] = await response.json()
                 return data
         except Exception as ex:
             logger.error(f"PVGIS API: An error occurred: {ex}")
-            return None
+            raise RuntimeError("PVGIS API request failed")
 
 
 async def get_solar_data_for_location(
     location: str, roof_azimuth: float, roof_incl: float
-) -> tuple:
+) -> tuple[list[float], list[float], dict[str, str]]:
     """
     Get solar irradiance data from PVGIS API for a specified location.
 
@@ -94,30 +98,30 @@ async def get_solar_data_for_location(
         Tuple of two lists with the temperature and solar irradiance data
 
     """
-    coordinates = await get_location_coordinates(location)
+    coordinates: Optional[dict[str, str]] = await get_location_coordinates(location)
     if coordinates is None:
         logger.error("No coordinates found for location")
-        return None
+        raise RuntimeError("No coordinates found for location")
 
-    lat = coordinates["lat"]
-    lon = coordinates["lon"]
+    lat: str = coordinates["lat"]
+    lon: str = coordinates["lon"]
 
     try:
-        response_data = await api_request_solar_irr(
+        response_data: Optional[dict[str, Any]] = await api_request_solar_irr(
             lat=lat, lon=lon, angle=roof_incl, aspect=roof_azimuth
         )
     except Exception as ex:
         logger.error(f"Get Solar Data: An error occurred: {ex}")
-        return None
+        raise RuntimeError("Failed to get solar data")
 
     if response_data is None:
         logger.error("No data returned from PVGIS API request")
-        return None
+        raise RuntimeError("No data returned from PVGIS API request")
 
-    hourly_data = response_data["outputs"]["hourly"]
+    hourly_data: list[dict[str, float]] = response_data["outputs"]["hourly"]
 
-    T_amb = [item["T2m"] for item in hourly_data]
-    G_i = [item["G(i)"] for item in hourly_data]
+    T_amb: list[float] = [item["T2m"] for item in hourly_data]
+    G_i: list[float] = [item["G(i)"] for item in hourly_data]
 
     logger.info(f"Solar Data: {len(hourly_data)} data points\n")
 

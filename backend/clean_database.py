@@ -1,15 +1,15 @@
 import asyncio
 
-from backend.database.mongodb import MongoClient
+from database.mongodb import MongoClient
 
 # Create a MongoDB client
-db_client = MongoClient()
+db_client: MongoClient = MongoClient()
 
 # Clean the collections
-collections = ["model_specs", "sim_evaluation", "sim_timeseries"]
+collections: list[str] = ["model_specs", "sim_evaluation", "sim_timeseries"]
 
 
-async def clean_collections(collections):
+async def clean_collections(collections: list[str]) -> None:
     # Delete all documents in the collections
     for collection in collections:
         await db_client.clean_collection(collection)

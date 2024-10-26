@@ -5,31 +5,22 @@ const nextConfig = {
             fullUrl: true,
         },
     },
-    // rewrites: async () => {
-    //     return [
-    //       {
-    //         source: "/api/:path*",
-    //         destination:
-    //           process.env.NODE_ENV === "development"
-    //             ? "http://127.0.0.1:8000/api/:path*"
-    //             : "/api/",
-    //       },
-    //       {
-    //         source: "/docs",
-    //         destination:
-    //           process.env.NODE_ENV === "development"
-    //             ? "http://127.0.0.1:8000/docs"
-    //             : "/api/docs",
-    //       },
-    //       {
-    //         source: "/openapi.json",
-    //         destination:
-    //           process.env.NODE_ENV === "development"
-    //             ? "http://127.0.0.1:8000/openapi.json"
-    //             : "/api/openapi.json",
-    //       },
-    //     ];
-    // },
+    images: {
+        remotePatterns: [
+          {
+            protocol: 'https',
+            hostname: 'avatars.githubusercontent.com',
+            port: '',
+            pathname: '/u/**',
+          },
+          {
+              protocol: 'https',
+              hostname: 'lh3.googleusercontent.com',
+              port: '',
+              pathname: '/a/**',
+          },
+        ],
+      },
 };
 
 export default nextConfig;

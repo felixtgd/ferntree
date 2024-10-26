@@ -18,7 +18,7 @@ else:
     logging.basicConfig(level=logging.CRITICAL, format="%(message)s")
 
 
-def build_and_run_simulation(sim_id, model_id):
+def build_and_run_simulation(sim_id: str, model_id: str):
     # Load sim_builder
     try:
         sim_builder = importlib.import_module("sim_builder")

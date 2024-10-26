@@ -3,11 +3,9 @@ certifi == 2024.7.4
 cvxpy == 1.4.2
 datetime==5.5.0
 fastapi == 0.110.2
-# h5py == 3.10.0
-# matplotlib == 3.8.3
 motor == 3.4.0
 numpy == 1.26.4
 pandas == 2.2.1
 pre-commit == 3.7.0
-python-dotenv==1.0.1
+python-dotenv == 1.0.1
 uvicorn == 0.29.0
