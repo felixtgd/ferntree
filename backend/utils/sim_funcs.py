@@ -482,13 +482,19 @@ async def calc_fin_results(
 
     # Levelised cost of electricity
     lcoe: float = (
-        (total_investment + df["operation_costs"].sum())
-        / df["pv_generation"].sum()
-        * 100
+        (
+            (total_investment + df["operation_costs"].sum())
+            / df["pv_generation"].sum()
+            * 100
+        )
+        if df["pv_generation"].sum() > 0
+        else -1
     )  # [cents/kWh]
 
     # Solar interest rate: average annual return on investment
-    df["solar_interest_rate"] = df["profit"] / total_investment * 100
+    df["solar_interest_rate"] = (
+        (df["profit"] / total_investment * 100) if total_investment > 0 else -1
+    )
     solar_interest_rate: float = df["solar_interest_rate"].mean()
 
     fin_kpis: FinKPIs = FinKPIs(
