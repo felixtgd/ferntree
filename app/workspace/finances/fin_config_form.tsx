@@ -150,6 +150,7 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
                         key={index}
                         id={field.id}
                         label={field.label}
+                        tooltip={field.tooltip}
                         step={field.step}
                         value={field.value}
                         icon={field.icon}
@@ -174,6 +175,7 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
                                         key={index}
                                         id={field.id}
                                         label={field.label}
+                                        tooltip={field.tooltip}
                                         step={field.step}
                                         value={field.value}
                                         icon={field.icon}
