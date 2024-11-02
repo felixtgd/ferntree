@@ -414,3 +414,42 @@ async def fetch_fin_results(user_id: str, model_id: str) -> FinResults:
     )
 
     return fin_results
+
+
+@app.get("/workspace/finances/fetch-fin-form-data", response_model=list[FinFormData])
+@check_user_exists(db_client)
+async def fetch_fin_form_data(user_id: str) -> list[FinFormData]:
+    """Fetch financial form data for all models of a user.
+
+    Args:
+        user_id (str): The ID of the user requesting the data.
+
+    Returns:
+        list[FinFormData]: A list of financial form data for all models of the user.
+
+    """
+    logger.info(
+        f"GET:\t/workspace/finances/fetch-fin-form-data --> "
+        f"Received request: user_id={user_id}"
+    )
+
+    # Fetch all models of the user
+    models: list[ModelDataOut] = await db_client.fetch_models(user_id)
+
+    # Fetch fin form data for all models (if available) from database
+    fin_form_data_all: list[FinFormData] = []
+    for model in models:
+        model_id = model.model_id
+        doc: Optional[dict[str, Any]] = await db_client.fetch_document(
+            "finances", model_id
+        )
+        if doc:
+            fin_form_data: FinFormData = FinFormData(**doc)
+            fin_form_data_all.append(fin_form_data)
+
+    logger.info(
+        f"GET:\t/workspace/finances/fetch-fin-form-data --> "
+        f"Return fin form data for {len(fin_form_data_all)} models"
+    )
+
+    return fin_form_data_all

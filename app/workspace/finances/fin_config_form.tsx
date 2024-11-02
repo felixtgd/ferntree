@@ -15,29 +15,47 @@ import {
 import Link from "next/link";
 
 
-// Default financial data for the form
-const default_fin_data: FinData = {
-    // Source: https://www.ise.fraunhofer.de/de/veroeffentlichungen/studien/aktuelle-fakten-zur-photovoltaik-in-deutschland.html
-    model_id: "",
-    electr_price: 45,
-    feed_in_tariff: 8,
-    pv_price: 1500,
-    battery_price: 650,
-    useful_life: 20,
-    module_deg: 0.5,
-    inflation: 2,
-    op_cost: 1,
-    down_payment: 20,
-    pay_off_rate: 5,
-    interest_rate: 4,
+function getFinFormDataForModel(model_id: string, fin_form_data_all: FinData[]): FinData {
+
+    // Default financial data for the form
+    const default_fin_form_data: FinData = {
+        // Source: https://www.ise.fraunhofer.de/de/veroeffentlichungen/studien/aktuelle-fakten-zur-photovoltaik-in-deutschland.html
+        model_id: "",
+        electr_price: 45,
+        feed_in_tariff: 8,
+        pv_price: 1500,
+        battery_price: 650,
+        useful_life: 20,
+        module_deg: 0.5,
+        inflation: 2,
+        op_cost: 1,
+        down_payment: 20,
+        pay_off_rate: 5,
+        interest_rate: 4,
+    }
+
+    // Get form data where model_id matches the selected model, or use default data
+    const fin_form_data_model: FinData | undefined = fin_form_data_all.find((data) => data.model_id === model_id) as FinData;
+    let fin_form_data: FinData;
+    if (fin_form_data_model) {
+        fin_form_data = fin_form_data_model
+    }
+    else {
+        fin_form_data = default_fin_form_data
+    }
+
+    return fin_form_data;
 }
 
-export function FinanceConfigForm({models}: {models: ModelData[]}) {
+
+export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelData[], fin_form_data_all: FinData[]}) {
 
     const router = useRouter();
 
     const [modelData, setModelData] = useState(models[0]);
-    const [formData, setFormData] = useState(default_fin_data);
+
+    const fin_form_data: FinData = getFinFormDataForModel(modelData.model_id as string, fin_form_data_all);
+    const [formData, setFormData] = useState(fin_form_data);
     const [showAdvanced, setShowAdvanced] = useState(false);
 
     // Action to submit form data and handle validation errors
@@ -99,6 +117,9 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                             (value: string) => {
                                 const selectedModel = models.find((model) => model.model_id === value) as ModelData;
                                 setModelData(selectedModel);
+
+                                const fin_form_data: FinData = getFinFormDataForModel(selectedModel.model_id as string, fin_form_data_all);
+                                setFormData(fin_form_data);
                             }
                         }
                         value = {modelData.model_id as string}
