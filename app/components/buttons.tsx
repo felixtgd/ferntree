@@ -1,8 +1,8 @@
 'use client'
 
-import { RemixiconComponentType, RiDeleteBin6Line, RiEyeLine, RiPencilLine, RiPlayCircleLine } from "@remixicon/react";
+import { RemixiconComponentType, RiDeleteBin6Line, RiExchangeDollarLine, RiEyeLine, RiPencilLine, RiPlayCircleLine } from "@remixicon/react";
 import { Button, ButtonProps } from "@tremor/react";
-import { deleteModel, editModel, runSimulation, viewResults } from "@/app/components/button-actions";
+import { deleteModel, editModel, goToFin, runSimulation, viewResults } from "@/app/components/button-actions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import LoadingScreen from "./loading-screen";
@@ -117,6 +117,22 @@ export function ViewButton({type, model_id}: {type: string, model_id: string}) {
             tooltip={tooltip}
             model_id={model_id}
             buttonAction={viewResults}
+        />
+    );
+}
+
+
+export function FinButton({model_id}: {model_id: string}) {
+
+    const tooltip = "Go to finances"
+
+    return (
+        <BaseButton
+            icon={RiExchangeDollarLine}
+            color="orange"
+            tooltip={tooltip}
+            model_id={model_id}
+            buttonAction={goToFin}
         />
     );
 }

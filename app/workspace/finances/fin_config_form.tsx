@@ -4,7 +4,7 @@ import { Select, SelectItem, Flex, Button } from "@tremor/react";
 import { FinData, FormState, ModelData } from "@/app/utils/definitions";
 import { useState, useEffect } from "react";
 import { useFormState } from 'react-dom'
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { submitFinFormData } from "./actions";
 import { get_advanced_input_fields, get_standard_input_fields, NumberInputField, SubmitButton } from "./fin_form_components";
 import {
@@ -52,7 +52,18 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
 
     const router = useRouter();
 
-    const [modelData, setModelData] = useState(models[0]);
+    // Get model data from URL if model_id is provided
+    const params = useParams<{ model_id?: string }>();
+    let model_data: ModelData
+    if (params.model_id && models.length > 0) {
+        console.log(`FinanceConfigForm: Setting model data from URL: ${params.model_id}`);
+        model_data = models.find((model) => model.model_id === params.model_id) as ModelData;
+    }
+    else {
+        model_data = models[0];
+    }
+
+    const [modelData, setModelData] = useState(model_data);
 
     const fin_form_data: FinData = getFinFormDataForModel(modelData.model_id as string, fin_form_data_all);
     const [formData, setFormData] = useState(fin_form_data);

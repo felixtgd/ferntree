@@ -1,6 +1,6 @@
 'use client';
 
-import { RunButton, ViewButton } from "@/app/components/buttons";
+import { FinButton, RunButton, ViewButton } from "@/app/components/buttons";
 import { Select, SelectItem, List, ListItem } from "@tremor/react";
 import { RiShapesLine } from "@remixicon/react";
 import { ModelData } from "@/app/utils/definitions";
@@ -138,7 +138,11 @@ export function ModelSelectForm({models}: {models: ModelData[]}) {
             <div className="flex flex-col justify-center m-2">
                 {modelData.model_id && (
                     modelData.sim_id
-                        ? <ViewButton type="model" model_id={modelData.model_id} />
+                        ?
+                            <div className="flex flex-row">
+                                <ViewButton type="model" model_id={modelData.model_id} />
+                                <FinButton model_id={modelData.model_id} />
+                            </div>
                         : <RunButton type="model" model_id={modelData.model_id} />
                     )
                 }

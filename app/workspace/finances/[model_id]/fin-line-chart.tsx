@@ -1,7 +1,7 @@
 import { Card } from '@tremor/react';
 import { fetchFinResults } from './actions';
 import { FinChartData, FinResults, FinYearlyData } from '@/app/utils/definitions';
-import { BaseFinLineChart } from '@/app/components/base-comps';
+import { BaseCard, BaseFinLineChart } from '@/app/components/base-comps';
 
 
 function formatChartData(fin_results: FinResults) {
@@ -25,7 +25,15 @@ export async function FinLineChart({model_id}: {model_id: string}) {
 
     const fin_results : FinResults | undefined = await fetchFinResults(model_id);
     if (!fin_results) {
-      return <div>Finance results not found</div>;
+      return (
+        <div className="w-1/3">
+          <BaseCard title="">
+            <div>
+              No results found. Calculate finances to get results.
+            </div>
+          </BaseCard>
+        </div>
+      )
     }
     // const fin_yearly_data: FinYearlyData[] = fin_results.yearly_data;
     const formattedData = formatChartData(fin_results);
