@@ -27,11 +27,11 @@ function getFinFormDataForModel(model_id: string, fin_form_data_all: FinData[]):
         battery_price: 650,
         useful_life: 20,
         module_deg: 0.5,
-        inflation: 2,
+        inflation: 3,
         op_cost: 1,
-        down_payment: 20,
-        pay_off_rate: 5,
-        interest_rate: 4,
+        down_payment: 25,
+        pay_off_rate: 10,
+        interest_rate: 5,
     }
 
     // Get form data where model_id matches the selected model, or use default data
