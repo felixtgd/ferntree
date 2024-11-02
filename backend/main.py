@@ -30,7 +30,11 @@ from backend.utils.sim_funcs import (
 
 # Set up logger
 LOGGERNAME: str = "fastapi_logger"
-logging.basicConfig(level=logging.INFO, format="%(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(filename)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 logger: Logger = logging.getLogger(LOGGERNAME)
 
 # Create a FastAPI instance
