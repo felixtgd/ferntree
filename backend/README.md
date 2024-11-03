@@ -29,7 +29,7 @@ The API endpoints for interacting with the backend are defined in the [`main`](.
 - All simulation operations for interacting with the [`ferntree simulation engine`](../sim/ferntree/) as well as financial analysis operations are handled by the [`sim_funcs`](./utils/sim_funcs.py/) module.
 - User authentication is managed in [`auth_funcs`](./utils/auth_funcs.py).
 
-### 2. Database Operations (`MongoClient` class)
+### 2. Database Operations
 
 The [`MongoClient`](./database/mongodb.py) class handles all interactions with the MongoDB database, including:
 - User authentication

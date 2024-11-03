@@ -49,22 +49,16 @@ The [frontend](./frontend/) is built using NextJS and provides the user interfac
 
 ### Installation
 
-1. Clone the repository: git clone https://github.com/felixtgd/ferntree.git
-2. Set up a virtual environment (optional but recommended):
-    `python -m venv venv`
-    `source venv/bin/activate`
-3. Install the backend dependencies:
-    `pip install -r requirements.txt`
-4. Install the frontend dependencies:
-    `npm install`
+1. Clone the repository: `git clone https://github.com/felixtgd/ferntree.git`
+2. Set up a virtual environment (optional but recommended): `python -m venv venv` & `source venv/bin/activate`
+3. Install the backend dependencies: `pip install -r requirements.txt`
+4. Install the frontend dependencies: `npm install`
 5. Set up environment variables (see Configuration section below)
 
 ### Running the Application
 
-1. Start the backend server:
-    `uvicorn backend.main:app --reload`
-2. In a new terminal, start the frontend server:
-    `npm run dev`
+1. Start the backend server: `uvicorn backend.main:app --reload`
+2. In a new terminal, start the frontend server: `npm run dev`
 3. Open your browser and navigate to `http://localhost:3000`
 
 ## Configuration
@@ -87,10 +81,10 @@ The application uses environment variables for configuration. Ensure the followi
 - `EMAIL_RECEIVER`: Email address for receiving emails from contact form
 
 
-## Contributing
+## Contributions
 
-Contributions to improve the simulation engine, add new features, or enhance the API are welcome. Please open an issue, submit a pull request, or send an email to contact@ferntree.dev.
+Contributions to improve the application and add more features are welcome. Please open an issue, submit a pull request, or send an email to contact@ferntree.dev.
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](../LICENSE) for details.
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
