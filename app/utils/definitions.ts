@@ -117,47 +117,47 @@ export const FinDataSchema = z.object({
   model_id: z.string(),
   electr_price: z.coerce
       .number()
-      .gt(0, { message: 'Must be greater than 0 ct/kWh' })
+      .gte(0, { message: 'Must be greater than or equal to 0 ct/kWh' })
       .lte(1000, { message: 'Must be at most 1000 ct/kWh' }),
   feed_in_tariff: z.coerce
       .number()
-      .gt(0, { message: 'Must be greater than 0 ct/kWh' })
+      .gte(0, { message: 'Must be greater than or equal to 0 ct/kWh' })
       .lte(1000, { message: 'Must be at most 1000 ct/kWh' }),
   pv_price: z.coerce
       .number()
-      .gt(0, { message: 'Must be greater than 0 €/kWp' })
+      .gte(0, { message: 'Must be greater than or equal to 0 €/kWp' })
       .lte(10000, { message: 'Must be at most 10,000 €/kWp' }),
   battery_price: z.coerce
       .number()
-      .gt(0, { message: 'Must be greater than 0 €/kWh' })
+      .gte(0, { message: 'Must be greater than or equal to 0 €/kWh' })
       .lte(10000, { message: 'Must be at most 10,000 €/kWh' }),
   useful_life: z.coerce
       .number()
-      .gt(0, { message: 'Must be greater than 0 years' })
+      .gte(0, { message: 'Must be greater than or equal to 0 years' })
       .lte(50, { message: 'Must be at most 50 years' }),
   module_deg: z.coerce
       .number()
-      .gt(0, { message: 'Must be greater than 0%' })
+      .gte(0, { message: 'Must be greater than or equal to 0%' })
       .lt(100, { message: 'Must be less than 100%' }),
   inflation: z.coerce
       .number()
-      .gt(0, { message: 'Must be greater than 0%' })
+      .gte(0, { message: 'Must be greater than or equal to 0%' })
       .lte(100, { message: 'Must be at most 100%' }),
   op_cost: z.coerce
       .number()
-      .gt(0, { message: 'Must be greater than 0%' })
+      .gte(0, { message: 'Must be greater than or equal to 0%' })
       .lte(100, { message: 'Must be at most 100%' }),
   down_payment: z.coerce
       .number()
-      .gt(0, { message: 'Must be greater than 0%' })
+      .gte(0, { message: 'Must be greater than or equal to 0%' })
       .lte(100, { message: 'Must be at most 100%' }),
   pay_off_rate: z.coerce
       .number()
-      .gt(0, { message: 'Must be greater than 0%' })
+      .gte(0, { message: 'Must be greater than or equal to 0%' })
       .lte(100, { message: 'Must be at most 100%' }),
   interest_rate: z.coerce
       .number()
-      .gt(0, { message: 'Must be greater than 0%' })
+      .gte(0, { message: 'Must be greater than or equal to 0%' })
       .lte(100, { message: 'Must be at most 100%' }),
 });
 
@@ -190,10 +190,10 @@ export type FinYearlyData = {
 
 export type FinChartData = {
   "Year": number;
-  "Cum. Profit": number;
-  "Investment": number;
-  "Cum. Cash Flow": number;
-  "Loan": number;
+  "Cum. Profit"?: number;
+  "Investment"?: number;
+  "Cum. Cash Flow"?: number;
+  "Loan"?: number;
 };
 
 export type FinResults = {

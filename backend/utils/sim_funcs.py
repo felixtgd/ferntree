@@ -1,36 +1,50 @@
-from datetime import datetime
-
 import subprocess
+from datetime import datetime
 from subprocess import CompletedProcess
+from typing import Any, Hashable, Optional, Union
+
 import pandas as pd
-from pandas import DataFrame, Series
-from typing import Hashable, Any, Union, Optional
-
 from fastapi import HTTPException, status
-
-from backend.database.models import (
-    ModelDataOut,
-    SimDataIn,
-    Baseload,
-    PV,
-    Battery,
-    BatteryCtrl,
-    SystemSettings,
-    EnergyKPIs,
-    SimResultsEval,
-    PVMonthlyGen,
-    FinFormData,
-    FinResults,
-    FinInvestment,
-    FinYearlyData,
-    FinKPIs,
-)
+from pandas import DataFrame, Series
 
 from backend.database import mongodb
-from backend.solar_data import pvgis_api, geolocator
+from backend.database.models import (
+    PV,
+    Baseload,
+    Battery,
+    BatteryCtrl,
+    EnergyKPIs,
+    FinFormData,
+    FinInvestment,
+    FinKPIs,
+    FinResults,
+    FinYearlyData,
+    ModelDataOut,
+    PVMonthlyGen,
+    SimDataIn,
+    SimResultsEval,
+    SystemSettings,
+)
+from backend.solar_data import geolocator, pvgis_api
 
 
 async def get_sim_input_data(model_data: ModelDataOut) -> SimDataIn:
+    """Fetch and prepare simulation input data based on the provided model data.
+
+    This function retrieves solar data for the given location, determines the timezone,
+    and defines the energy system settings based on the model data.
+
+    Args:
+        model_data (ModelDataOut): The model data containing location and
+                                    system specifications.
+
+    Returns:
+        SimDataIn: The prepared simulation input data.
+
+    Raises:
+        ValueError: If there's an error fetching solar data.
+
+    """
     # Pass parameters to pvgis_api to query solar data for sim input
     try:
         T_amb: list[float]
@@ -69,6 +83,18 @@ async def get_sim_input_data(model_data: ModelDataOut) -> SimDataIn:
 
 
 async def def_system_settings(model_data: ModelDataOut) -> SystemSettings:
+    """Define system settings based on the provided model data.
+
+    This function creates instances of Baseload, PV, BatteryCtrl, and Battery
+    using the specifications from the model data.
+
+    Args:
+        model_data (ModelDataOut): The model data containing system specifications.
+
+    Returns:
+        SystemSettings: The defined system settings.
+
+    """
     baseload: Baseload = Baseload(
         annual_consumption=model_data.electr_cons,
         profile_id=1,  # TODO: Find better way to set profile_id
@@ -107,7 +133,10 @@ async def run_ferntree_simulation(
     model_id: str,
     sim_id: str,
 ) -> bool:
-    """Starts the Ferntree simulation with the given sim_id and model_id.
+    """Start the Ferntree simulation with the given simulation ID and model ID.
+
+    This function runs the Ferntree simulation as a subprocess and checks if it
+    completed successfully.
 
     Args:
         model_id (str): The model ID.
@@ -115,6 +144,9 @@ async def run_ferntree_simulation(
 
     Returns:
         bool: True if the simulation was successful.
+
+    Raises:
+        RuntimeError: If the simulation fails.
 
     """
     command: list[str] = [
@@ -139,6 +171,22 @@ async def run_ferntree_simulation(
 async def eval_sim_results(
     db_client: mongodb.MongoClient, model_id: str
 ) -> SimResultsEval:
+    """Evaluate simulation results for a given model.
+
+    This function fetches simulation results from the database, calculates energy KPIs,
+    and computes monthly PV generation data.
+
+    Args:
+        db_client (mongodb.MongoClient): The MongoDB client.
+        model_id (str): The ID of the model to evaluate.
+
+    Returns:
+        SimResultsEval: The evaluated simulation results.
+
+    Raises:
+        RuntimeError: If fetching simulation results fails.
+
+    """
     # Fetch sim results timeseries data
     doc: Optional[dict[str, Any]] = await db_client.fetch_document(
         "sim_results_ts", model_id
@@ -162,16 +210,16 @@ async def eval_sim_results(
 
 
 async def calc_energy_kpis(sim_results: list[dict[str, float]]) -> EnergyKPIs:
-    """Calculates the energy KPIs of the simulation results.
-    - Reads the simulation results from the database
-    - Calculates various energy KPIs, e.g. annual pv generation, self-consumption, self-sufficiency
+    """Calculate energy Key Performance Indicators (KPIs) from simulation results.
+
+    This function processes the simulation results to compute various energy KPIs
+    such as annual PV generation, self-consumption, and self-sufficiency.
 
     Args:
-        db_client (MongoClient): The MongoDB client.
-        sim_id (str): The simulation ID.
+        sim_results (list[dict[str, float]]): The simulation results data.
 
     Returns:
-        SimEnergyKPIs: The energy KPIs of the simulation results.
+        EnergyKPIs: The calculated energy KPIs.
 
     """
     # Read sim results into dataframe
@@ -226,13 +274,19 @@ async def calc_energy_kpis(sim_results: list[dict[str, float]]) -> EnergyKPIs:
 
 
 async def calc_pv_monthly_gen(sim_results: list[dict[str, Any]]) -> list[PVMonthlyGen]:
-    """Calculates the monthly PV generation data from the timeseries data.
+    """Calculate monthly PV generation data from simulation results.
+
+    This function processes the simulation results to compute the total PV generation
+    for each month of the year.
 
     Args:
-        timeseries_data (list[dict]): The timeseries data.
+        sim_results (list[dict[str, Any]]): The simulation results data.
 
     Returns:
-        list[dict]: The monthly PV generation data.
+        list[PVMonthlyGen]: A list of monthly PV generation data.
+
+    Raises:
+        ValueError: If the time index in the data is not a datetime index.
 
     """
     # Convert timeseries data to dataframe
@@ -279,6 +333,22 @@ async def calc_fin_results(
     db_client: mongodb.MongoClient,
     fin_data: FinFormData,
 ) -> FinResults:
+    """Calculate financial results based on simulation results and financial input data.
+
+    This function fetches model data and simulation results, then performs financial
+    calculations including investment costs, profits, and various financial KPIs.
+
+    Args:
+        db_client (mongodb.MongoClient): The MongoDB client.
+        fin_data (FinFormData): The financial input data.
+
+    Returns:
+        FinResults: The calculated financial results.
+
+    Raises:
+        HTTPException: If simulation results are not found.
+
+    """
     # Fetch model data from database
     model_data: ModelDataOut = await db_client.fetch_model_by_id(fin_data.model_id)
 
@@ -340,7 +410,7 @@ async def calc_fin_results(
         df["pv_generation"] * energy_kpis.self_consumption_rate
     )  # [kWh]
 
-    # Cost savings due to self-consumed PV generation (as compared to scenario without PV)
+    # Cost savings due to self-consumed PV generation (as compared to scenario w/o PV)
     df["electr_cost_savings"] = df["self_consumption"] * df["electr_price"]  # [€]
 
     # Revenue from grid feed-in of remaining/unused PV generation
@@ -412,13 +482,19 @@ async def calc_fin_results(
 
     # Levelised cost of electricity
     lcoe: float = (
-        (total_investment + df["operation_costs"].sum())
-        / df["pv_generation"].sum()
-        * 100
+        (
+            (total_investment + df["operation_costs"].sum())
+            / df["pv_generation"].sum()
+            * 100
+        )
+        if df["pv_generation"].sum() > 0
+        else -1
     )  # [cents/kWh]
 
     # Solar interest rate: average annual return on investment
-    df["solar_interest_rate"] = df["profit"] / total_investment * 100
+    df["solar_interest_rate"] = (
+        (df["profit"] / total_investment * 100) if total_investment > 0 else -1
+    )
     solar_interest_rate: float = df["solar_interest_rate"].mean()
 
     fin_kpis: FinKPIs = FinKPIs(

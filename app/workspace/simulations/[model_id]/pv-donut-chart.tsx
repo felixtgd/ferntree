@@ -88,7 +88,15 @@ export async function PvDonutChart({chart_type, model_id}: {chart_type: string, 
     const sim_results_eval: SimResultsEval | undefined = await fetchSimResults(model_id);
 
     if (!sim_results_eval) {
-        return <div>An error occurred while fetching the simulation results. Try reloading the page.</div>;
+        return (
+            <div>
+                <BaseCard title="">
+                    <div>
+                        No results found. Run a simulation to get results.
+                    </div>
+                </BaseCard>
+            </div>
+        )
       }
 
     const {data, labels, title} = getChartData(chart_type, sim_results_eval);

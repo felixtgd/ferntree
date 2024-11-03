@@ -4,7 +4,7 @@ import { Select, SelectItem, Flex, Button } from "@tremor/react";
 import { FinData, FormState, ModelData } from "@/app/utils/definitions";
 import { useState, useEffect } from "react";
 import { useFormState } from 'react-dom'
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { submitFinFormData } from "./actions";
 import { get_advanced_input_fields, get_standard_input_fields, NumberInputField, SubmitButton } from "./fin_form_components";
 import {
@@ -13,31 +13,61 @@ import {
     RiShapesLine,
 } from "@remixicon/react";
 import Link from "next/link";
+import { ViewSimButton } from "@/app/components/buttons";
 
 
-// Default financial data for the form
-const default_fin_data: FinData = {
-    // Source: https://www.ise.fraunhofer.de/de/veroeffentlichungen/studien/aktuelle-fakten-zur-photovoltaik-in-deutschland.html
-    model_id: "",
-    electr_price: 45,
-    feed_in_tariff: 8,
-    pv_price: 1500,
-    battery_price: 650,
-    useful_life: 20,
-    module_deg: 0.5,
-    inflation: 2,
-    op_cost: 1,
-    down_payment: 20,
-    pay_off_rate: 5,
-    interest_rate: 4,
+function getFinFormDataForModel(model_id: string, fin_form_data_all: FinData[]): FinData {
+
+    // Default financial data for the form
+    const default_fin_form_data: FinData = {
+        // Source: https://www.ise.fraunhofer.de/de/veroeffentlichungen/studien/aktuelle-fakten-zur-photovoltaik-in-deutschland.html
+        model_id: "",
+        electr_price: 45,
+        feed_in_tariff: 8,
+        pv_price: 1500,
+        battery_price: 650,
+        useful_life: 20,
+        module_deg: 0.5,
+        inflation: 3,
+        op_cost: 1,
+        down_payment: 25,
+        pay_off_rate: 10,
+        interest_rate: 5,
+    }
+
+    // Get form data where model_id matches the selected model, or use default data
+    const fin_form_data_model: FinData | undefined = fin_form_data_all.find((data) => data.model_id === model_id) as FinData;
+    let fin_form_data: FinData;
+    if (fin_form_data_model) {
+        fin_form_data = fin_form_data_model
+    }
+    else {
+        fin_form_data = default_fin_form_data
+    }
+
+    return fin_form_data;
 }
 
-export function FinanceConfigForm({models}: {models: ModelData[]}) {
+
+export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelData[], fin_form_data_all: FinData[]}) {
 
     const router = useRouter();
 
-    const [modelData, setModelData] = useState(models[0]);
-    const [formData, setFormData] = useState(default_fin_data);
+    // Get model data from URL if model_id is provided
+    const params = useParams<{ model_id?: string }>();
+    let model_data: ModelData
+    if (params.model_id && models.length > 0) {
+        console.log(`FinanceConfigForm: Setting model data from URL: ${params.model_id}`);
+        model_data = models.find((model) => model.model_id === params.model_id) as ModelData;
+    }
+    else {
+        model_data = models[0];
+    }
+
+    const [modelData, setModelData] = useState(model_data);
+
+    const fin_form_data: FinData = getFinFormDataForModel(modelData.model_id as string, fin_form_data_all);
+    const [formData, setFormData] = useState(fin_form_data);
     const [showAdvanced, setShowAdvanced] = useState(false);
 
     // Action to submit form data and handle validation errors
@@ -99,6 +129,9 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                             (value: string) => {
                                 const selectedModel = models.find((model) => model.model_id === value) as ModelData;
                                 setModelData(selectedModel);
+
+                                const fin_form_data: FinData = getFinFormDataForModel(selectedModel.model_id as string, fin_form_data_all);
+                                setFormData(fin_form_data);
                             }
                         }
                         value = {modelData.model_id as string}
@@ -118,6 +151,7 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                         key={index}
                         id={field.id}
                         label={field.label}
+                        tooltip={field.tooltip}
                         step={field.step}
                         value={field.value}
                         icon={field.icon}
@@ -142,6 +176,7 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                                         key={index}
                                         id={field.id}
                                         label={field.label}
+                                        tooltip={field.tooltip}
                                         step={field.step}
                                         value={field.value}
                                         icon={field.icon}
@@ -165,7 +200,7 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
 
                 {(modelData.sim_id == null) && (
                     <p className="mt-4 text-red-500 text-center">
-                        Please run a simulation before calculating finances.
+                        Please <Link href={`/workspace/simulations/${modelData.model_id}`} className="font-bold underline">run a simulation</Link> before calculating finances.
                     </p>
                 )}
 
@@ -174,6 +209,13 @@ export function FinanceConfigForm({models}: {models: ModelData[]}) {
                 </div>
 
             </form>
+
+            {(modelData.sim_id) && (
+                <div className="mt-4 flex justify-center">
+                    <ViewSimButton model_id={modelData.model_id as string} />
+                </div>
+            )}
+
         </div>
     );
 }

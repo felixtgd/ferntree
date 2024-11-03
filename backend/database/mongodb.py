@@ -1,27 +1,25 @@
 import os
-import certifi
+from typing import Any, Optional, Union
 
-from dotenv import load_dotenv
+import certifi
 from bson import ObjectId
+from dotenv import load_dotenv
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
     AsyncIOMotorCollection,
-    AsyncIOMotorDatabase,
     AsyncIOMotorCursor,
+    AsyncIOMotorDatabase,
 )
+from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 from pymongo.server_api import ServerApi
-from pymongo.results import InsertOneResult, UpdateResult, DeleteResult
-
-from typing import Any, Optional, Union
 
 from backend.database.models import (
+    FinFormData,
+    FinResults,
     ModelDataOut,
     SimDataIn,
     SimResultsEval,
-    FinFormData,
-    FinResults,
 )
-
 
 # Use certifi to get the path of the CA file
 ca: str = certifi.where()
@@ -33,40 +31,66 @@ MONGODB_DATABASE: str = os.environ["MONGODB_DATABASE"]
 
 
 class MongoClient:
+    """A client for interacting with MongoDB using Motor for asynchronous operations.
+
+    This class provides methods for various database operations including checking
+    user existence, inserting and fetching models, updating simulation IDs, deleting
+    models, and handling documents in different collections.
+    """
+
     def __init__(self) -> None:
+        """Initialize the MongoClient with the MongoDB connection.
+
+        Uses environment variables for the MongoDB URI and database name.
+        """
         self.client: AsyncIOMotorClient = AsyncIOMotorClient(
             MONGODB_URI, server_api=ServerApi("1"), tlsCAFile=ca
         )
         self.db: AsyncIOMotorDatabase = self.client[MONGODB_DATABASE]
 
     async def check_user_exists(self, user_id: str) -> bool:
+        """Check if a user with the given ID exists in the database.
+
+        Args:
+            user_id (str): The ID of the user to check.
+
+        Returns:
+            bool: True if the user exists, False otherwise.
+
+        """
         query: dict[str, ObjectId] = {"_id": ObjectId(user_id)}
         db_collection: AsyncIOMotorCollection = self.db["users"]
         user: Optional[dict[str, Any]] = await db_collection.find_one(query)
 
-        if user is None:
-            return False
-        else:
-            return True
+        return user is not None
 
-    async def insert_model(
-        self,
-        model: dict[str, Any],
-    ) -> str:
-        # Each model has a unique user_id, a user can have multiple models
+    async def insert_model(self, model: dict[str, Any]) -> str:
+        """Insert a new model into the database.
 
-        # Create an index on the user_id field
+        Args:
+            model (dict[str, Any]): The model data to insert.
+
+        Returns:
+            str: The ID of the inserted model.
+
+        """
         db_collection: AsyncIOMotorCollection = self.db["models"]
         await db_collection.create_index("user_id", unique=False)
 
-        # Insert model in database
         result: InsertOneResult = await db_collection.insert_one(model)
-        model_id: str = str(result.inserted_id)
-
-        return model_id
+        return str(result.inserted_id)
 
     async def fetch_models(self, user_id: str) -> list[ModelDataOut]:
-        # Fetch all models of the user
+        """Fetch all models associated with a given user ID.
+
+        Args:
+            user_id (str): The ID of the user whose models to fetch.
+
+        Returns:
+            list[ModelDataOut]: A list of ModelDataOut objects representing
+                                the user's models.
+
+        """
         query: dict[str, str] = {"user_id": user_id}
         db_collection: AsyncIOMotorCollection = self.db["models"]
         cursor: AsyncIOMotorCursor = db_collection.find(query)
@@ -78,23 +102,41 @@ class MongoClient:
         return models
 
     async def update_sim_id_of_model(self, model_id: str, sim_id: str) -> bool:
+        """Update the simulation ID of a specific model.
+
+        Args:
+            model_id (str): The ID of the model to update.
+            sim_id (str): The new simulation ID.
+
+        Returns:
+            bool: True if the update was acknowledged, False otherwise.
+
+        """
         query: dict[str, ObjectId] = {"_id": ObjectId(model_id)}
         db_collection: AsyncIOMotorCollection = self.db["models"]
         doc_updated: UpdateResult = await db_collection.update_one(
             query, {"$set": {"sim_id": sim_id}}
         )
         acknowledged: bool = doc_updated.acknowledged
+
         return acknowledged
 
     async def delete_model(self, model_id: str) -> bool:
-        # Delete the the model from collection "models"
+        """Delete a model and all associated documents from various collections.
+
+        Args:
+            model_id (str): The ID of the model to delete.
+
+        Returns:
+            bool: True if the deletion was acknowledged, False otherwise.
+
+        """
         query_model_id: dict[str, ObjectId] = {"_id": ObjectId(model_id)}
         db_collection_models: AsyncIOMotorCollection = self.db["models"]
         delete_result: DeleteResult = await db_collection_models.delete_one(
             query_model_id
         )
 
-        # Delete all other docs associated with the model
         collections: list[str] = [
             "simulations",
             "sim_results_ts",
@@ -108,10 +150,22 @@ class MongoClient:
             await db_collection.delete_many(query)
 
         acknowledged: bool = delete_result.acknowledged
+
         return acknowledged
 
     async def fetch_model_by_id(self, model_id: str) -> ModelDataOut:
-        # Find one document in the collection that matches the query
+        """Fetch a specific model by its ID.
+
+        Args:
+            model_id (str): The ID of the model to fetch.
+
+        Returns:
+            ModelDataOut: The model data.
+
+        Raises:
+            RuntimeError: If the model with the given ID is not found.
+
+        """
         query: dict[str, ObjectId] = {"_id": ObjectId(model_id)}
         db_collection: AsyncIOMotorCollection = self.db["models"]
         model: Optional[dict[str, Any]] = await db_collection.find_one(query)
@@ -119,23 +173,21 @@ class MongoClient:
         if model is None:
             raise RuntimeError(f"Failed to fetch model with ID {model_id}")
         else:
-            model_data: ModelDataOut = ModelDataOut(**model, model_id=str(model["_id"]))
-            return model_data
+            return ModelDataOut(**model, model_id=str(model["_id"]))
 
     async def fetch_document(
         self, collection: str, model_id: str
     ) -> Optional[dict[str, Any]]:
-        """Fetch document from the specified collection for the given model_id.
+        """Fetch a document from a specified collection for a given model ID.
 
         Args:
-            collection (str): Name of the collection to fetch data from
-            model_id (str): ID of the model
+            collection (str): Name of the collection to fetch data from.
+            model_id (str): ID of the model.
 
         Returns:
-            dict: Data fetched from the collection
-        """
+            Optional[dict[str, Any]]: The fetched document, or None if not found.
 
-        # Find one document in the collection that matches the query
+        """
         query: dict[str, str] = {"model_id": model_id}
         db_collection: AsyncIOMotorCollection = self.db[collection]
         doc: Optional[dict[str, Any]] = await db_collection.find_one(query)
@@ -147,25 +199,36 @@ class MongoClient:
         collection: str,
         document: Union[SimDataIn, SimResultsEval, FinFormData, FinResults],
     ) -> str:
+        """Insert or replace a document in a specified collection.
+
+        Args:
+            collection (str): Name of the collection to insert the document into.
+            document (Union[SimDataIn, SimResultsEval, FinFormData, FinResults]):
+                The document to insert.
+
+        Returns:
+            str: The ID of the inserted or updated document.
+
+        Raises:
+            RuntimeError: If the document doesn't have a model_id attribute or
+                            if the insertion fails.
+
+        """
         try:
             model_id: str = document.model_id
         except AttributeError:
             raise RuntimeError("Document must have a model_id attribute.")
 
-        # Insert document in database or replace if already exists
         query: dict[str, str] = {"model_id": model_id}
         db_collection: AsyncIOMotorCollection = self.db[collection]
 
-        # Create index on model_id field
         await db_collection.create_index("model_id", unique=True)
 
-        # Insert or replace document in database
         result: UpdateResult = await db_collection.replace_one(
             query, document.model_dump(), upsert=True
         )
-        acknowledged: bool = result.acknowledged
 
-        if not acknowledged:
+        if not result.acknowledged:
             raise RuntimeError(
                 "Failed to insert or update the document in the database."
             )
@@ -173,6 +236,11 @@ class MongoClient:
         return str(result.upserted_id)
 
     async def clean_collection(self, collection: str) -> None:
-        # Delete all documents in the collection
+        """Delete all documents in a specified collection.
+
+        Args:
+            collection (str): Name of the collection to clean.
+
+        """
         db_collection: AsyncIOMotorCollection = self.db[collection]
         await db_collection.delete_many({})

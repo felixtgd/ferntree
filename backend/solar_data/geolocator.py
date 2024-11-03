@@ -1,7 +1,8 @@
-import aiohttp
 import asyncio
 import logging
 from typing import Any, Optional
+
+import aiohttp
 
 # Set up logger
 LOGGERNAME = "fastapi_logger"
@@ -9,19 +10,18 @@ logger = logging.getLogger(LOGGERNAME)
 
 
 async def get_location_coordinates(location: str) -> Optional[dict[str, str]]:
-    """
-    Convert address from user input to lat/lon coordinates using aiohttp library
+    """Convert address from user input to lat/lon coordinates using aiohttp library
     with Nominatim geocoder. The coordinates are required to obtain the solar
     data from PVGIS for the specified address.
 
     Args:
-        location: str, address provided by the user
+        location (str): The location provided by the user.
 
     Returns:
-        dict: dictionary with lat and lon coordinates
+        Optional[dict[str, str]]: A dictionary with lat & lon coordinates
+                                    and the display name.
 
     """
-
     # Create a rate limiter
     rate_limit: asyncio.Semaphore = asyncio.Semaphore(1)  # Allow 1 request at a time
     last_request_time: float = 0.0
@@ -44,7 +44,7 @@ async def get_location_coordinates(location: str) -> Optional[dict[str, str]]:
                     logger.info(f"Geolocator: Response code: {response.status}")
                     if response.status != 200:
                         logger.error(
-                            f"Geolocator: Failed to get coordinates for address: {location}"
+                            f"Geolocator: Failed to get coordinates for loc. {location}"
                         )
                         return None
                     data: list[dict[str, Any]] = await response.json()
@@ -64,18 +64,17 @@ async def get_location_coordinates(location: str) -> Optional[dict[str, str]]:
 
 
 async def get_timezone(coordinates: dict[str, str]) -> str:
-    """
-    Get the timezone for the specified coordinates using the GeoNames API.
+    """Get the timezone for the specified coordinates using the GeoNames API.
     Important limits for the free GeoNames API:
-    - 30,000 credits per day
-    - 1 credit per request
-    - 1 request per second
+    - 30,000 credits per day.
+    - 1 credit per request.
+    - 1 request per second.
 
     Args:
-        coordinates: dict, dictionary with lat and lon coordinates
+        coordinates (dict[str, str]): A dictionary with lat and lon coordinates
 
     Returns:
-        str: timezone string
+        str: A string representing the timezone for the coordinates.
 
     """
     logger.info(f"\nGeoNames API: Requesting timezone for coordinates: {coordinates}")
@@ -94,7 +93,7 @@ async def get_timezone(coordinates: dict[str, str]) -> str:
                 logger.info(f"GeoNames API: Response code: {response.status}")
                 if response.status != 200:
                     logger.error(
-                        f"GeoNames API: An error occurred: {response.status} {response.reason}"
+                        f"GeoNames API Error: {response.status} {response.reason}"
                     )
                     raise RuntimeError("Failed to get timezone")
                 data: dict[str, Any] = await response.json()

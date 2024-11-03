@@ -2,7 +2,7 @@
 
 'use server';
 
-import { FormState, FinDataSchema } from '@/app/utils/definitions';
+import { FormState, FinDataSchema, FinData } from '@/app/utils/definitions';
 import { loadBackendBaseUri, getUserID } from '@/app/utils/helpers';
 
 export async function submitFinFormData(prev_state: FormState, form_data: FormData) {
@@ -43,7 +43,7 @@ export async function submitFinFormData(prev_state: FormState, form_data: FormDa
         });
         model_id = await response_submit_fin_data.json();
 
-        console.log(`POST workspace/finances/submit-fin-data: Model form submitted (${response_submit_fin_data.status}). Model ID: ${model_id}`);
+        console.log(`POST workspace/finances/submit-fin-data: Fin form submitted (${response_submit_fin_data.status}). Model ID: ${model_id}`);
         state = {
             errors: {},
             message: 'success',
@@ -62,3 +62,19 @@ export async function submitFinFormData(prev_state: FormState, form_data: FormDa
     }
 
 };
+
+
+export async function fetchFinFormData() {
+
+    // Get the user ID
+    const user_id = await getUserID();
+
+    // Fetch models of user
+    const BACKEND_BASE_URI = await loadBackendBaseUri();
+    const response_load_models = await fetch(`${BACKEND_BASE_URI}/workspace/finances/fetch-fin-form-data?user_id=${user_id}`);
+    const fin_form_data_all: FinData[] = await response_load_models.json();
+
+    console.log(`GET workspace/finances/fetch-fin-form-data: Fin form data fetched (${response_load_models.status}).`);
+
+    return fin_form_data_all;
+}

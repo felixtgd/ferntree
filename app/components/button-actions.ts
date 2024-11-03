@@ -56,6 +56,8 @@ export async function runSimulation(model_id: string) {
         run_successful = false;
     }
 
+    revalidatePath('/workspace/simulations');
+
     return { success: run_successful, model_id };
 
 }
@@ -64,6 +66,11 @@ export async function runSimulation(model_id: string) {
 export async function viewResults(model_id: string) {
     console.info(`View results for model: ${model_id}`);
     redirect(`/workspace/simulations/${model_id}`);
+}
+
+export async function goToFin(model_id: string) {
+    console.info(`Go to finances of model: ${model_id}`);
+    redirect(`/workspace/finances/${model_id}`);
 }
 
 // not used right now, maybe in the future

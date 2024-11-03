@@ -1,24 +1,29 @@
-import os
-import sys
 import argparse
 import importlib
-import logging
 import json
+import logging
+import os
+import sys
 import time
 
-
-# Global variable to control logging
-ENABLE_LOGGING = True
-
-# Set up logging
-logger = logging.getLogger("ferntree")
-if ENABLE_LOGGING:
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
-else:
-    logging.basicConfig(level=logging.CRITICAL, format="%(message)s")
+# Set up logger
+LOGGERNAME: str = "ferntree"
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(filename)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger: logging.Logger = logging.getLogger(LOGGERNAME)
 
 
-def build_and_run_simulation(sim_id: str, model_id: str):
+def build_and_run_simulation(sim_id: str, model_id: str) -> None:
+    """Build and run the simulation.
+
+    Args:
+        sim_id (str): id of simulation doc in db
+        model_id (str): id of model specs doc in db
+
+    """
     # Load sim_builder
     try:
         sim_builder = importlib.import_module("sim_builder")

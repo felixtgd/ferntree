@@ -26,6 +26,19 @@ export default async function Page() {
                     </div>
                 )}
             </div>
+            <div className="bg-blue-50 rounded-lg shadow-md p-6 mb-8 mt-8 max-w-2xl mx-auto">
+                    <div className="flex items-center space-x-4">
+                        <div>
+                            <h2 className="text-xl font-bold text-blue-600">Note:</h2>
+                            <p className="text-blue-400 mt-1">
+                                At the moment, this application is hosted on a free server that shuts down when idle.
+                                It therefore takes a minute to start. If you receive the error message
+                                &apos;Application error: a client-side exception has occurred&apos;,
+                                please wait one minute and refresh the page.
+                            </p>
+                        </div>
+                    </div>
+            </div>
             <div className="mt-24 w-3/4 items-center justify-between mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-center">
                     <Link href="/workspace/models">

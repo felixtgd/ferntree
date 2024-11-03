@@ -23,7 +23,15 @@ export async function FinBarChart({model_id}: {model_id: string}) {
 
   const fin_results : FinResults | undefined = await fetchFinResults(model_id);
   if (!fin_results) {
-    return <div>Finance results not found</div>;
+    return (
+      <div>
+        <BaseCard title="">
+          <div>
+            No results found. Calculate finances to get results.
+          </div>
+        </BaseCard>
+      </div>
+    )
   }
   const kpis : FinKPIs = fin_results.fin_kpis;
   const chartData : FinBarChartItem[] = getChartData(kpis);
