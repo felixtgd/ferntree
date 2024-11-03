@@ -13,6 +13,7 @@ import {
     RiShapesLine,
 } from "@remixicon/react";
 import Link from "next/link";
+import { ViewSimButton } from "@/app/components/buttons";
 
 
 function getFinFormDataForModel(model_id: string, fin_form_data_all: FinData[]): FinData {
@@ -199,7 +200,7 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
 
                 {(modelData.sim_id == null) && (
                     <p className="mt-4 text-red-500 text-center">
-                        Please run a simulation before calculating finances.
+                        Please <Link href={`/workspace/simulations/${modelData.model_id}`} className="font-bold underline">run a simulation</Link> before calculating finances.
                     </p>
                 )}
 
@@ -208,6 +209,13 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
                 </div>
 
             </form>
+
+            {(modelData.sim_id) && (
+                <div className="mt-4 flex justify-center">
+                    <ViewSimButton model_id={modelData.model_id as string} />
+                </div>
+            )}
+
         </div>
     );
 }

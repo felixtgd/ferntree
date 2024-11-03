@@ -2,7 +2,7 @@ import { Card, DateRangePickerValue } from '@tremor/react';
 import { fetchPowerData } from './actions';
 import { z } from "zod";
 import { redirect } from 'next/navigation';
-import { BaseDateRangePicker, BasePowerLineChart } from '@/app/components/base-comps';
+import { BaseCard, BaseDateRangePicker, BasePowerLineChart } from '@/app/components/base-comps';
 import { SimTimestep } from '@/app/utils/definitions';
 
 export async function PvPowerChart({ model_id, search_params }:
@@ -38,7 +38,15 @@ export async function PvPowerChart({ model_id, search_params }:
   const chart_data : SimTimestep[] | undefined = await fetchPowerData(model_id, date_range.data);
 
   if (!chart_data) {
-    return <div>An error occurred while fetching the simulation results. Try reloading the page.</div>;
+    return (
+      <div className="w-1/3">
+        <BaseCard title="">
+          <div>
+            No results found. Run a simulation to get results.
+          </div>
+        </BaseCard>
+      </div>
+    )
   }
 
   return (

@@ -42,9 +42,9 @@ function BaseButton(
     );
 }
 
-export function DeleteButton({type, model_id}: {type: string, model_id: string}) {
+export function DeleteModelButton({ model_id}: {model_id: string}) {
 
-    const tooltip=`Delete ${type}`
+    const tooltip = "Delete model"
 
     return (
         <BaseButton
@@ -57,7 +57,7 @@ export function DeleteButton({type, model_id}: {type: string, model_id: string})
     );
 }
 
-export function RunButton({type, model_id}: {type: string, model_id: string}) {
+export function RunSimButton({model_id}: {model_id: string}) {
 
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -74,15 +74,7 @@ export function RunButton({type, model_id}: {type: string, model_id: string}) {
         }
       };
 
-    let tooltip;
-    if (type === "model") {
-        tooltip = "Run simulation";
-    } else if (type === "scenario") {
-        tooltip = "Run scenario";
-    }
-    else {
-        tooltip = "Type unknown";
-    }
+    const tooltip = "Run simulation";
 
     return (
         <>
@@ -98,17 +90,9 @@ export function RunButton({type, model_id}: {type: string, model_id: string}) {
     );
 }
 
-export function ViewButton({type, model_id}: {type: string, model_id: string}) {
+export function ViewSimButton({model_id}: {model_id: string}) {
 
-    let tooltip;
-    if (type === "model") {
-        tooltip = "View simulation results";
-    } else if (type === "scenario") {
-        tooltip = "View scenario results";
-    }
-    else {
-        tooltip = "Type unknown";
-    }
+    const tooltip = "View simulation results"
 
     return (
         <BaseButton
@@ -122,7 +106,7 @@ export function ViewButton({type, model_id}: {type: string, model_id: string}) {
 }
 
 
-export function FinButton({model_id}: {model_id: string}) {
+export function GoToFinButton({model_id}: {model_id: string}) {
 
     const tooltip = "Go to finances"
 
