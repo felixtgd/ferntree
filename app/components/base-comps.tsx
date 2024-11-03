@@ -164,17 +164,67 @@ export function BaseDateRangePicker({ date_range } : { date_range: DateRangePick
 }
 
 export function BasePowerLineChart({ data } : { data: SimTimestep[]; }) {
+
+    const allCategories = ['Load', 'PV', 'Battery', 'Total'];
+    const allColors = ['rose', 'amber', 'teal', 'indigo'];
+
+    const [visibleCategories, setVisibleCategories] = useState(allCategories);
+
+    const handleCategoryToggle = (category: string) => {
+        setVisibleCategories(prev => {
+            if (prev.includes(category)) {
+                // Remove the category
+                return allCategories.filter(c => c !== category && prev.includes(c));
+            } else {
+                // Add the category while preserving order
+                return allCategories.filter(c => c === category || prev.includes(c));
+            }
+        });
+    };
+
+    // Derive visibleColors from visibleCategories
+    const visibleColors = visibleCategories.map(category =>
+        allColors[allCategories.indexOf(category)]
+    );
+
     return (
         <>
-            <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium m-4">
-                Power Profiles
-            </h3>
+            <div className="flex flex-row items-center justify-between w-full m-4">
+                <div className="flex flex-grow justify-start w-64"></div>
+                <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mx-4">
+                    Power Profiles
+                </h3>
+                <div className="flex flex-grow items-center justify-end w-64">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="secondary"
+                            icon={RiLineChartLine}
+                        >
+                            Select Profiles
+                        </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                        {allCategories.map((category, index) => (
+                                    <DropdownMenuCheckboxItem
+                                        checked={visibleCategories.includes(category)}
+                                        onCheckedChange={() => handleCategoryToggle(category)}
+                                        key={category}
+                                    >
+                                        <span className={`font-medium text-${allColors[index]}`}>{category}</span>
+                                    </DropdownMenuCheckboxItem>
+                                ))}
+
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
             <LineChart
                 className="h-[50%] w-full"
                 data={data}
                 index="time"
-                categories={['Load', 'PV', 'Battery', 'Total']}
-                colors={['rose', 'amber', 'teal', 'indigo']}
+                categories={visibleCategories}
+                colors={visibleColors}
                 valueFormatter={kWFormatter2d}
                 yAxisWidth={80}
                 showAnimation={true}
@@ -210,7 +260,6 @@ export function BaseFinLineChart({ data }: { data: FinChartData[] }) {
     const allColors = ['green-600', 'red-500', 'blue-500', 'orange-500'];
 
     const [visibleCategories, setVisibleCategories] = useState(allCategories);
-    // const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const handleCategoryToggle = (category: string) => {
         setVisibleCategories(prev => {
