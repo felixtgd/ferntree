@@ -37,7 +37,7 @@ The [backend](./backend/) is built using FastAPI and provides the API endpoints 
 
 ### 3. NextJS frontend
 
-The [frontend](./frontend/) is built using NextJS and provides the user interface of the web app. See the [frontend README](./frontend/README.md) for more details.
+The [frontend](./app/) is built using NextJS and provides the user interface of the web app. See the [frontend README](./app/README.md) for more details.
 
 ## Getting Started
 
