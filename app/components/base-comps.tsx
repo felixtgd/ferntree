@@ -205,15 +205,16 @@ export function BasePowerLineChart({ data } : { data: SimTimestep[]; }) {
                         </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
+
                         {allCategories.map((category, index) => (
-                                    <DropdownMenuCheckboxItem
-                                        checked={visibleCategories.includes(category)}
-                                        onCheckedChange={() => handleCategoryToggle(category)}
-                                        key={category}
-                                    >
-                                        <span className={`font-medium text-${allColors[index]}`}>{category}</span>
-                                    </DropdownMenuCheckboxItem>
-                                ))}
+                            <DropdownMenuCheckboxItem
+                                checked={visibleCategories.includes(category)}
+                                onCheckedChange={() => handleCategoryToggle(category)}
+                                key={category}
+                            >
+                                <span className={`font-medium text-${allColors[index]}`}>{category}</span>
+                            </DropdownMenuCheckboxItem>
+                        ))}
 
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -296,15 +297,16 @@ export function BaseFinLineChart({ data }: { data: FinChartData[] }) {
                         </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
+
                         {allCategories.map((category, index) => (
-                                    <DropdownMenuCheckboxItem
-                                        checked={visibleCategories.includes(category)}
-                                        onCheckedChange={() => handleCategoryToggle(category)}
-                                        key={category}
-                                    >
-                                        <span className={`font-medium text-${allColors[index]}`}>{category}</span>
-                                    </DropdownMenuCheckboxItem>
-                                ))}
+                            <DropdownMenuCheckboxItem
+                                checked={visibleCategories.includes(category)}
+                                onCheckedChange={() => handleCategoryToggle(category)}
+                                key={category}
+                            >
+                                <span className={`font-medium text-${allColors[index]}`}>{category}</span>
+                            </DropdownMenuCheckboxItem>
+                        ))}
 
                         </DropdownMenuContent>
                     </DropdownMenu>
