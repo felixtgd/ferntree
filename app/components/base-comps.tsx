@@ -13,8 +13,15 @@ import {
     DateRangePickerItem,
     LineChart,
     Card,
+    Button,
 } from '@tremor/react';
-import { Checkbox } from '@/app/components/components';
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuTrigger
+} from '@/app/components/components';
+import { RiLineChartLine } from '@remixicon/react';
 
 
 const kWhFormatter: ValueFormatter = (number: number) =>
@@ -224,22 +231,34 @@ export function BaseFinLineChart({ data }: { data: FinChartData[] }) {
 
     return (
         <>
-            <div className="flex flex-row items-center justify-between w-full">
+            <div className="flex flex-row items-center justify-between w-full mb-4">
                 <div className="flex flex-grow justify-start w-64"></div>
                 <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mx-4">
                     Financial Performance
                 </h3>
                 <div className="flex flex-grow items-center justify-end w-64">
-                    {allCategories.map((category, index) => (
-                        <label key={category} className="inline-flex items-center mr-4 mb-2">
-                        <Checkbox
-                            checked={visibleCategories.includes(category)}
-                            onCheckedChange={() => handleCategoryToggle(category)}
-                            className="form-checkbox h-4 w-4"
-                        />
-                        <span className={`ml-2 text-xs font-medium text-${allColors[index]}`}>{category}</span>
-                        </label>
-                    ))}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="secondary"
+                            icon={RiLineChartLine}
+                        >
+                            Select Categories
+                        </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                        {allCategories.map((category, index) => (
+                                    <DropdownMenuCheckboxItem
+                                        checked={visibleCategories.includes(category)}
+                                        onCheckedChange={() => handleCategoryToggle(category)}
+                                        key={category}
+                                    >
+                                        <span className={`font-medium text-${allColors[index]}`}>{category}</span>
+                                    </DropdownMenuCheckboxItem>
+                                ))}
+
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
             <LineChart
