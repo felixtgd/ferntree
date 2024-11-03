@@ -190,10 +190,10 @@ export type FinYearlyData = {
 
 export type FinChartData = {
   "Year": number;
-  "Cum. Profit": number;
-  "Investment": number;
-  "Cum. Cash Flow": number;
-  "Loan": number;
+  "Cum. Profit"?: number;
+  "Investment"?: number;
+  "Cum. Cash Flow"?: number;
+  "Loan"?: number;
 };
 
 export type FinResults = {
