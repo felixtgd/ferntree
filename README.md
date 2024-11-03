@@ -2,22 +2,29 @@
 
 ## Overview
 
-Ferntree is an open-source tool to help you make informed decisions when you're ciónsidering a solar system for your home. Our solar calculator allows you to:
+Ferntree is an open-source tool designed to help homeowners make informed decisions about solar energy systems. Our independent, free-to-use calculator allows you to:
 
 - Design and simulate various energy systems
 - Compare different setups
 - Customize financial parameters
 - Assess investment potential
 
-Ferntree aims to help you in your decision-making process by allowing to experiment freely with system designs, financial scenarios, and energy options.
+With Ferntree, you can experiment freely with system designs, financial scenarios, and energy options.
+
+## Features
+
+- User-friendly web interface for system design
+- Detailed simulation of solar energy systems
+- Financial analysis and investment assessment
+- Integration with real-world solar irradiance data
+- Open-source and transparent calculations
 
 ## Technology Stack
 
-- **FastAPI**: A fast, asynchronous web framework for building APIs with Python.
-- **MongoDB**: A document-based NoSQL database for storing user data, models, simulation data and financial results.
-- **NextJS**: A React framework for building web applications.
-- **Ferntree**: A custom simulation tool for detailed energy system modeling and simulation.
-
+- **Frontend**: NextJS (React framework)
+- **Backend**: FastAPI (Python web framework)
+- **Database**: MongoDB
+- **Energy System Simulation**: Custom Python simulation tool
 ## Key Components
 
 ### 1. Ferntree simulation engine
@@ -34,13 +41,31 @@ The [frontend](./frontend/) is built using NextJS and provides the user interfac
 
 ## Getting Started
 
-- Clone the repository
-- Set up a MongoDB instance and create a database
-- Install the required backend dependencies by running `pip install -r requirements.txt`
-- Install the required frontend dependencies by running `npm install`
-- Start the backend server by running `uvicorn backend.main:app --reload`
-- Start the frontend server by running `npm run dev`
+### Prerequisites
 
+- Python 3.12+
+- Node.js 14+
+- MongoDB
+
+### Installation
+
+1. Clone the repository: git clone https://github.com/felixtgd/ferntree.git
+2. Set up a virtual environment (optional but recommended):
+    `python -m venv venv`
+    `source venv/bin/activate`
+3. Install the backend dependencies:
+    `pip install -r requirements.txt`
+4. Install the frontend dependencies:
+    `npm install`
+5. Set up environment variables (see Configuration section below)
+
+### Running the Application
+
+1. Start the backend server:
+    `uvicorn backend.main:app --reload`
+2. In a new terminal, start the frontend server:
+    `npm run dev`
+3. Open your browser and navigate to `http://localhost:3000`
 
 ## Configuration
 
@@ -64,8 +89,8 @@ The application uses environment variables for configuration. Ensure the followi
 
 ## Contributing
 
-Contributions to improve the simulation engine, add new features, or enhance the API are welcome. Please follow the standard GitHub pull request process to submit your changes.
+Contributions to improve the simulation engine, add new features, or enhance the API are welcome. Please open an issue, submit a pull request, or send an email to contact@ferntree.dev.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](../LICENSE) file for details.
+This project is licensed under the MIT License. See [LICENSE](../LICENSE) for details.
