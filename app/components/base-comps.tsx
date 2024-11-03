@@ -14,7 +14,6 @@ import {
     LineChart,
     Card,
 } from '@tremor/react';
-// import { RiLineChartLine } from '@remixicon/react';
 import { Checkbox } from '@/app/components/components';
 
 
@@ -200,80 +199,45 @@ export function BasePowerLineChart({ data } : { data: SimTimestep[]; }) {
 
 export function BaseFinLineChart({ data }: { data: FinChartData[] }) {
 
-    // const [filteredData, setFilteredData] = useState(data);
-
-    // const allCategories = ['Cum. Profit', 'Investment', 'Cum. Cash Flow', 'Loan'];
-    // const allColors = ['green-600', 'red-500', 'blue-500', 'amber'];
-    // const [visibleCategories, setVisibleCategories] = useState(allCategories);
-    // const [visibleColors, setVisibleColors] = useState(allColors);
-
-    // const handleChartSelect = (category: string) => {
-    //     // Filter data to only show selected category
-    //     const filteredData = data.map(item => {
-    //         return {
-    //             Year: item.Year,
-    //             [category]: item[category as keyof FinChartData]
-    //         };
-    //     });
-    //     setFilteredData(filteredData);
-    //     setVisibleCategories([category]);
-    //     setVisibleColors([allColors[allCategories.indexOf(category)]]);
-    // };
-
     const allCategories = ['Cum. Profit', 'Investment', 'Cum. Cash Flow', 'Loan'];
     const allColors = ['green-600', 'red-500', 'blue-500', 'orange-500'];
 
     const [visibleCategories, setVisibleCategories] = useState(allCategories);
-    const [visibleColors, setVisibleColors] = useState(allColors);
+    // const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const handleCategoryToggle = (category: string) => {
         setVisibleCategories(prev => {
             if (prev.includes(category)) {
-                return prev.filter(c => c !== category);
+                // Remove the category
+                return allCategories.filter(c => c !== category && prev.includes(c));
             } else {
-                return [...prev, category];
-            }
-        });
-
-        setVisibleColors(prev => {
-            const index = allCategories.indexOf(category);
-            if (prev.includes(allColors[index])) {
-                return prev.filter(c => c !== allColors[index]);
-            } else {
-                return [...prev, allColors[index]];
+                // Add the category while preserving order
+                return allCategories.filter(c => c === category || prev.includes(c));
             }
         });
     };
 
+    // Derive visibleColors from visibleCategories
+    const visibleColors = visibleCategories.map(category =>
+        allColors[allCategories.indexOf(category)]
+    );
+
     return (
         <>
             <div className="flex flex-row items-center justify-between w-full">
-                <div className="flex flex-grow justify-start w-48"></div>
+                <div className="flex flex-grow justify-start w-64"></div>
                 <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mx-4">
                     Financial Performance
                 </h3>
-                <div className="flex flex-grow justify-end">
-                    {/* <Select
-                        id="chart_filter"
-                        name="chart_filter"
-                        icon={RiLineChartLine}
-                        onValueChange={handleChartSelect}
-                        required
-                        className="w-48"
-                    >
-                        <SelectItem value="Cum. Profit">Cum. Profit</SelectItem>
-                        <SelectItem value="Investment">Investment</SelectItem>
-                        <SelectItem value="Cum. Cash Flow">Cum. Cash Flow</SelectItem>
-                        <SelectItem value="Loan">Loan</SelectItem>
-                    </Select> */}
+                <div className="flex flex-grow items-center justify-end w-64">
                     {allCategories.map((category, index) => (
                         <label key={category} className="inline-flex items-center mr-4 mb-2">
-                            <Checkbox
-                                checked={visibleCategories.includes(category)}
-                                onCheckedChange={() => handleCategoryToggle(category)}
-                                className="form-checkbox h-5 w-5"
-                            />
-                            <span className={`ml-2 text-xs font-small text-${allColors[index]}`}>{category}</span>
+                        <Checkbox
+                            checked={visibleCategories.includes(category)}
+                            onCheckedChange={() => handleCategoryToggle(category)}
+                            className="form-checkbox h-4 w-4"
+                        />
+                        <span className={`ml-2 text-xs font-medium text-${allColors[index]}`}>{category}</span>
                         </label>
                     ))}
                 </div>
