@@ -2,7 +2,7 @@
 
 ## Overview
 
-Ferntree is an open-source tool designed to help homeowners make informed decisions about solar energy systems. Our independent, free-to-use calculator allows you to:
+Ferntree is an open-source tool for designing, simulating and analysing solar energy systems. Our independent, free-to-use calculator allows you to:
 
 - Design and simulate various energy systems
 - Compare different setups
@@ -21,10 +21,10 @@ With Ferntree, you can experiment freely with system designs, financial scenario
 
 ## Technology Stack
 
-- **Frontend**: NextJS (React framework)
-- **Backend**: FastAPI (Python web framework)
-- **Database**: MongoDB
-- **Energy System Simulation**: Custom Python simulation tool
+- **Frontend**: [NextJS](https://nextjs.org/docs) (React framework)
+- **Backend**: [FastAPI](https://fastapi.tiangolo.com) (Python web framework)
+- **Database**: [MongoDB](https://www.mongodb.com)
+- **Energy System Simulation**: Custom Python [simulation tool](./sim/ferntree/)
 ## Key Components
 
 ### 1. Ferntree simulation engine

@@ -13,11 +13,11 @@ Ferntree uses a FastAPI-based backend for simulating and analyzing solar energy 
 
 ## Technology Stack
 
-- **FastAPI**: A fast, asynchronous web framework for building APIs with Python.
-- **MongoDB**: A document-based NoSQL database for storing user data, models, simulation data and financial results.
-- **Motor**: An asynchronous Python driver for MongoDB.
-- **Pydantic**: Data validation and settings management using Python type annotations.
-- **Ferntree**: A custom simulation tool for detailed energy system modeling and simulation.
+- **Backend framework**: [FastAPI](https://fastapi.tiangolo.com), a fast, asynchronous web framework for building APIs with Python.
+- **Database**: [MongoDB](https://www.mongodb.com), a document-based NoSQL database for storing user data, models, simulation data and financial results.
+- **Database Driver**: [Motor](https://motor.readthedocs.io/en/stable/#), an asynchronous Python driver for MongoDB.
+- **Data Validation**: [Pydantic](https://docs.pydantic.dev/latest/), data validation and settings management using Python type annotations.
+- **Energy System Simulation**: [ferntree](./sim/ferntree/), a custom simulation tool for detailed energy system modeling and simulation.
 
 ## Key Components
 
