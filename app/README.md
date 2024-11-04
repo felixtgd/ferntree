@@ -1,12 +1,12 @@
 # Frontend
 
-This directory contains the NextJS frontend for the Ferntree web application. The frontend provides the user interface for designing, simulating and analysing solar energy systems. It´s written in Typescript and uses Tailwind CSS for styling.
+This directory contains the NextJS frontend for the Ferntree web application. The frontend provides the user interface for designing, simulating and analysing solar energy systems. It's written in Typescript and uses Tailwind CSS for styling.
 
 ## Features
 
 - User signup and login with magic link authentication via email or OAuth providers (GitHub and Google)
 - Static landing page with contact form for user feedback
-- Energy systems modelling, with five allowed models per user
+- Energy system modelling, with five allowed models per user
 - Simulation of energy systems with detailed timeseries results and key performance indicators
 - Financial analysis with system performance over useful life and economic viability metrics
 
@@ -33,7 +33,7 @@ Basic components, that are reused throughout the application, are defined in the
 
 ### 3. Utils
 
-The MongoDb client required for user authentication, the data models used throughout the application, as well as general server actions are defined in the [utils](./utils/) directory.
+The MongoDB client required for user authentication, the data models used throughout the application, as well as general server actions are defined in the [utils](./utils/) directory.
 
 ### 4. Workspace
 
