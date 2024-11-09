@@ -1,12 +1,20 @@
 import { Card, List, ListItem } from "@tremor/react";
 import { ModelData } from "@/app/utils/definitions";
-import { RiArrowUpWideLine, RiBattery2ChargeLine, RiCompassLine, RiHome4Line, RiLightbulbFlashLine, RiSunLine } from "@remixicon/react";
+import { RiArrowUpWideLine, RiBattery2ChargeLine, RiCompassLine, RiHome4Line, RiInformationLine, RiLightbulbFlashLine, RiSunLine } from "@remixicon/react";
 import { DeleteModelButton, GoToFinButton, RunSimButton, ViewSimButton } from "@/app/components/buttons";
+import { Tooltip } from "@/app/components/components";
 
 export async function ModelCard({modelData}: {modelData: ModelData}) {
 
     if (!modelData.model_id) {
         throw new Error('Model ID is not defined.');
+    }
+
+    let location_field: string;
+    if (modelData.coordinates) {
+        location_field = modelData.coordinates.display_name;
+    } else {
+        location_field = modelData.location;
     }
 
     return (
@@ -16,13 +24,20 @@ export async function ModelCard({modelData}: {modelData: ModelData}) {
             >
                 <div className="flex flex-col w-full items-center">
                     <h2 className="w-full text-center mb-1">{modelData.model_name}</h2>
-                    <div className="flex flex-col md:flex-row w-full">
-                        <List className="p-2 w-full mx-4">
-                            <ListItem key="location">
+                    <div className="flex flex-col md:flex-row w-full justify-between items-center">
+                        <List className="p-2 w-[45%] mx-4">
+                            <ListItem key="location" className="flex justify-between items-center">
                                 <span className="flex items-center">
                                     <RiHome4Line className="mr-2" /> Location
                                 </span>
-                                <span>{modelData.location}</span>
+                                <div className="flex items-center justify-end space-x-1 max-w-[50%]">
+                                    <span className="truncate">
+                                        {location_field}
+                                    </span>
+                                    <Tooltip content={location_field}>
+                                        <RiInformationLine className="flex-shrink-0" />
+                                    </Tooltip>
+                                </div>
                             </ListItem>
                             <ListItem key="roof_incl">
                                 <span className="flex items-center">
@@ -37,7 +52,7 @@ export async function ModelCard({modelData}: {modelData: ModelData}) {
                                 <span>{modelData.roof_azimuth}°</span>
                             </ListItem>
                         </List>
-                        <List className="p-2 w-full mx-4">
+                        <List className="p-2 w-[45%] mx-4">
                             <ListItem key="electr_cons">
                                 <span className="flex items-center">
                                     <RiLightbulbFlashLine className="mr-2" /> Consumption
@@ -59,7 +74,7 @@ export async function ModelCard({modelData}: {modelData: ModelData}) {
                         </List>
                     </div>
                 </div>
-                <div className="flex flex-col justify-center m-2">
+                <div className="flex flex-col justify-center mx-4 my-2">
                     {
                         modelData.sim_id
                             ?
