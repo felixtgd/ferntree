@@ -461,9 +461,13 @@ async def calc_fin_results(
         break_even_year: int = df[df["cumulative_profit"] > total_investment][
             "year"
         ].iloc[0]
-        break_even_year_exact: float = (break_even_year - 1) + (
-            total_investment - df.iloc[break_even_year - 1]["cumulative_profit"]
-        ) / df.iloc[break_even_year]["profit"]
+        break_even_year_exact: float = (
+            (break_even_year - 1)
+            + (total_investment - df.iloc[break_even_year - 1]["cumulative_profit"])
+            / df.iloc[break_even_year]["profit"]
+            if break_even_year > 0
+            else 0.0
+        )
     except IndexError:
         break_even_year = -1
         break_even_year_exact = -1.0
