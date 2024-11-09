@@ -25,6 +25,7 @@ With Ferntree, you can experiment freely with system designs, financial scenario
 - **Backend**: [FastAPI](https://fastapi.tiangolo.com) (Python web framework)
 - **Database**: [MongoDB](https://www.mongodb.com)
 - **Energy System Simulation**: Custom Python [simulation tool](./sim/ferntree/)
+
 ## Key Components
 
 ### 1. Ferntree simulation engine
