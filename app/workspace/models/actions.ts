@@ -52,7 +52,9 @@ export async function submitModel(prev_state: FormState, form_data: FormData) {
     if (coordinates === null) {
         console.error(`Failed to retrieve location coordinates for ${location}`);
         state = {
-            errors: {},
+            errors: {
+                location: ['Location could not be validated. Please check if the address is correct.']
+            },
             message: 'Failed to retrieve location coordinates.',
         };
         return state;
