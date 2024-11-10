@@ -2,21 +2,20 @@ import logging
 from typing import Optional, Union
 
 from components.dev.device import Device
-from components.dev.sf_house import SfHouse
 from components.host.sim_host import SimHost
 
 logger: logging.Logger = logging.getLogger("ferntree")
 
 
-class SmartMeter(Device):
+class SmartMeter(Device):  # type: ignore[misc]
     """Class for a house smart meter."""
 
-    def __init__(self, host: SimHost, house: SfHouse) -> None:
+    def __init__(self, host: SimHost, house: Device) -> None:
         """Initializes a new instance of the SmartMeter class."""
         super().__init__(host)
 
         # House object being monitored
-        self.house: SfHouse = house
+        self.house: Device = house
 
         self.measurements: dict[str, Optional[Union[float, int]]] = {
             "time": 0.0,  # Time of the simulation

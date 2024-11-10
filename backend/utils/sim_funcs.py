@@ -1,3 +1,4 @@
+import logging
 import subprocess
 from datetime import datetime
 from subprocess import CompletedProcess
@@ -26,6 +27,8 @@ from backend.database.models import (
     SystemSettings,
 )
 from backend.solar_data import geolocator, pvgis_api
+
+logger: logging.Logger = logging.getLogger("ferntree")
 
 
 async def get_sim_input_data(model_data: ModelDataOut) -> SimDataIn:
@@ -157,6 +160,8 @@ async def run_ferntree_simulation(
         "--model_id",
         model_id,
     ]
+
+    logger.info(f"Running Ferntree simulation with command: {command}")
     completed_process: CompletedProcess[Any] = subprocess.run(command)
 
     # Check if the simulation has finished successfully

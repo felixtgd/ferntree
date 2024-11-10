@@ -1,13 +1,13 @@
 import argparse
+import importlib
 import json
 import logging
 import os
 import sys
 import time
 
-# import importlib
-from components.host.sim_host import SimHost
-from sim_builder import SimBuilder
+# from components.host.sim_host import SimHost
+# from sim_builder import SimBuilder
 
 # Set up logger
 LOGGERNAME: str = "ferntree"
@@ -28,16 +28,16 @@ def build_and_run_simulation(sim_id: str, model_id: str) -> None:
         model_id (str): id of model specs doc in db
 
     """
-    # # Load sim_builder
-    # try:
-    #     sim_builder = importlib.import_module("sim_builder")
-    # except ImportError as e:
-    #     logger.error(f"Failed to import model: {e}")
-    #     sys.exit(1)
+    # Load sim_builder
+    try:
+        sim_builder = importlib.import_module("sim_builder")
+    except ImportError as e:
+        logger.error(f"Failed to import module: {e}")
+        sys.exit(1)
 
     # Build simulation
-    builder: SimBuilder = SimBuilder(sim_id, model_id)
-    sim: SimHost = builder.build_simulation()
+    builder = sim_builder.SimBuilder(sim_id, model_id)
+    sim = builder.build_simulation()
 
     # Start simulation
     sim.run_simulation()

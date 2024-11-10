@@ -3,19 +3,17 @@ from typing import Any
 
 import cvxpy as cp
 import numpy as np
-
 from components.dev.device import Device
-from components.dev.smart_meter import SmartMeter
 from components.host.sim_host import SimHost
 
 logger = logging.getLogger("ferntree")
 
 
-class BatteryCtrl(Device):
+class BatteryCtrl:
     """Control class for battery device."""
 
     def __init__(
-        self, host: SimHost, ctrl_specs: dict[str, Any], smart_meter: SmartMeter
+        self, host: SimHost, ctrl_specs: dict[str, Any], smart_meter: Device
     ) -> None:
         """Initializes a new instance of the BatteryCtrl class.
 
@@ -25,10 +23,11 @@ class BatteryCtrl(Device):
             smart_meter (SmartMeter): The smart meter object.
 
         """
-        super().__init__(host)
+        # super().__init__(host)
+        self.host: SimHost = host
 
         # Planning horizon for battery operation [days]
-        self.planning_horizon = int(
+        self.planning_horizon: int = int(
             ctrl_specs.get("planning_horizon", 1) * 24 * 60 * 60 / self.host.timebase
         )
         # Useable capacity [0 ... 1]: safety margins for battery operation
@@ -39,7 +38,7 @@ class BatteryCtrl(Device):
         self.opt_fill: bool = ctrl_specs.get("opt_fill", False)
 
         # Smart meter object to get net load of house
-        self.smart_meter: SmartMeter = smart_meter
+        self.smart_meter: Device = smart_meter
 
         # Predcition of net load power profile P_net_load of house
         self.prediction_window: int = self.planning_horizon

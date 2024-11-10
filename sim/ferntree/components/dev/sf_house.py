@@ -1,17 +1,14 @@
 import logging
-from typing import Any, Union
+from typing import Any
 
-from components.dev.baseload import BaseLoad
-from components.dev.battery_dev import BatteryDev
 from components.dev.device import Device
-from components.dev.pv_sys import PVSys
 from components.dev.smart_meter import SmartMeter
 from components.host.sim_host import SimHost
 
 logger = logging.getLogger("ferntree")
 
 
-class SfHouse(Device):
+class SfHouse(Device):  # type: ignore[misc]
     """Class for a single-family house.
     Each house has a baseload, a heating system, and optionally a PV system and battery.
     """
@@ -24,9 +21,7 @@ class SfHouse(Device):
         super().__init__(host)
 
         self.host.add_house(self)
-        self.components: dict[
-            str, Union[Device, BaseLoad, PVSys, BatteryDev, SmartMeter]
-        ]
+        self.components: dict[str, Device] = {}
 
     def add_component(self, comp: Device, name: str) -> None:
         """Adds a components to the house."""
@@ -65,7 +60,7 @@ class SfHouse(Device):
         as a dictionary.
         These results are then converted to a ORM object and written to the database.
         """
-        smart_meter = self.components.get("smart_meter")
+        smart_meter: SmartMeter = self.components.get("smart_meter")
         if not isinstance(smart_meter, SmartMeter):
             raise TypeError("Expected 'smart_meter' to be of type 'SmartMeter'")
         results: dict[str, Any] = smart_meter.get_measurements()

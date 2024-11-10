@@ -2,10 +2,9 @@ import logging
 from datetime import datetime
 from typing import Any, Optional, Union
 
-from pytz import timezone
-
+from components.core.entity import Entity
 from components.database.mongodb import pyMongoClient
-from components.dev.sf_house import SfHouse
+from pytz import timezone
 
 logger = logging.getLogger("ferntree")
 
@@ -40,7 +39,7 @@ class SimHost:
         self.current_time: int  # Current time in seconds since epoch
         self.current_timestep: int  # Current timestep
 
-        self.house: SfHouse  # House object being simulated
+        self.house: Entity  # House object being simulated
 
         # Current state of simulation environment
         self.env_state: dict[str, Optional[Union[float, int]]] = {
@@ -69,9 +68,9 @@ class SimHost:
         self.db_client.shutdown()
         self.house.shutdown()
 
-    def add_house(self, house: SfHouse) -> None:
+    def add_house(self, house: Entity) -> None:
         """Adds a house to the simulation host."""
-        if isinstance(house, SfHouse):
+        if isinstance(house, Entity):
             self.house = house
         else:
             raise TypeError("Can only add objects of class 'House' to simHost.")

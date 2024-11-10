@@ -4,13 +4,13 @@ from components.core.entity import Entity
 from components.host.sim_host import SimHost
 
 
-class Device(Entity):
+class Device(Entity):  # type: ignore[misc]
     """Base class for all devices."""
 
     def __init__(self, host: SimHost) -> None:
         """Initializes a new instance of the Device class."""
-        super().__init__(host)
-
+        super().__init__()
+        self.host: SimHost = host
         self.current_state: dict[str, float]
 
     def startup(self) -> None:
