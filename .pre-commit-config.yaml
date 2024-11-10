@@ -39,6 +39,8 @@ repos:
         additional_dependencies:
           - "pydantic>=2.7.0"
           - "fastapi>=0.110.2"
+          - "pytz>=2024.1"
+          - "types-pytz>=2024.1"
 
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.18.4

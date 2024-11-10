@@ -33,7 +33,7 @@ export default async function Page() {
                             <p className="text-blue-400 mt-1">
                                 At the moment, this application is hosted on a free server that shuts down when idle.
                                 It therefore takes a minute to start. If you receive the error message
-                                &apos;Application error: a client-side exception has occurred&apos;,
+                                &apos;Application error: a client-side exception has occurred&apos; after clicking a button,
                                 please wait one minute and refresh the page.
                             </p>
                         </div>

@@ -1,3 +1,6 @@
 class Entity:
-    def __init__(self, host) -> None:
-        self.host = host
+    """Base entity class."""
+
+    def __init__(self) -> None:
+        """Initializes a new instance of the Entity class."""
+        pass

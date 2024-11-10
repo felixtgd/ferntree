@@ -99,17 +99,6 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
         }
     }, [state, router]);
 
-    // If models is empty list, return div with link to models page
-    if (models.length === 0) {
-        return (
-            <div className="flex flex-col w-full items-center">
-                <h2 className="w-full text-center mb-4">
-                    Please <Link href="/workspace/models" className="text-blue-500">create a model</Link> first.
-                </h2>
-            </div>
-        );
-    }
-
     return (
         <div className="flex flex-col w-full items-center">
             <form
