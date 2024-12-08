@@ -21,6 +21,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["frontend/next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**frontend/next.config.mjsonfig.mjs"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.mjs"],
   "exclude": ["node_modules"]
 }
