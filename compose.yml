@@ -1,0 +1,23 @@
+services:
+
+  frontend:
+    build:
+      context: ./
+      target: frontend-dev
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    develop:
+      watch:
+        - path: ./frontend
+          action: sync
+          target: /usr/local/app
+        - path: ./frontend/package.json
+          action: rebuild
+    secrets:
+      - ferntree_secrets
+
+secrets:
+  ferntree_secrets:
+    file: ferntree_secrets.txt
