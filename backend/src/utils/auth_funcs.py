@@ -3,7 +3,7 @@ from typing import Any, Awaitable, Callable, Optional, TypeVar
 
 from fastapi import HTTPException, status
 
-from backend.database.mongodb import MongoClient
+from src.database.mongodb import MongoClient
 
 # Define a type variable for the function
 F = TypeVar("F", bound=Callable[..., Awaitable[Any]])

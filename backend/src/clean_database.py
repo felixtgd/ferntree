@@ -1,6 +1,6 @@
 import asyncio
 
-from backend.database.mongodb import MongoClient
+from src.database.mongodb import MongoClient
 
 # Create a MongoDB client
 db_client: MongoClient = MongoClient()

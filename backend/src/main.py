@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.database.models import (
+from src.database.models import (
     FinFormData,
     FinResults,
     ModelDataIn,
@@ -19,9 +19,9 @@ from backend.database.models import (
     SimTimestepOut,
     StartEndTimes,
 )
-from backend.database.mongodb import MongoClient
-from backend.utils.auth_funcs import check_user_exists
-from backend.utils.sim_funcs import (
+from src.database.mongodb import MongoClient
+from src.utils.auth_funcs import check_user_exists
+from src.utils.sim_funcs import (
     calc_fin_results,
     eval_sim_results,
     get_sim_input_data,

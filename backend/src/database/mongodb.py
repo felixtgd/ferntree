@@ -13,7 +13,7 @@ from motor.motor_asyncio import (
 from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 from pymongo.server_api import ServerApi
 
-from backend.database.models import (
+from src.database.models import (
     FinFormData,
     FinResults,
     ModelDataOut,

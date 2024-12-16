@@ -18,6 +18,22 @@ services:
     secrets:
       - ferntree_secrets
 
+  backend:
+    build:
+      context: ./
+      target: backend-dev
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+    develop:
+      watch:
+      - path: ./backend
+        action: sync
+        target: /usr/local/app
+      - path: ./backend/requirements.txt
+        action: rebuild
+
 secrets:
   ferntree_secrets:
     file: ferntree_secrets.txt

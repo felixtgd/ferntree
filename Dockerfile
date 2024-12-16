@@ -1,13 +1,21 @@
+# Frontend image to run NextJS app
 FROM node:20 AS frontend-base
 WORKDIR /usr/local/app
-
-# Install dependencies
 COPY ./frontend/package*.json ./
 RUN npm install
-
-# Copy frontend files
 COPY ./frontend ./
+EXPOSE 3000
 
 FROM frontend-base AS frontend-dev
-EXPOSE 3000
 CMD ["npm", "run", "dev"]
+
+# Backend image to run FastAPI app with simulation tool
+FROM python:3.12 AS backend-base
+WORKDIR /usr/src/app
+COPY ./backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+COPY ./backend ./
+EXPOSE 8000
+
+FROM backend-base AS backend-dev
+CMD [ "uvicorn", "src.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]

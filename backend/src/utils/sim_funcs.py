@@ -8,8 +8,8 @@ import pandas as pd
 from fastapi import HTTPException, status
 from pandas import DataFrame, Series
 
-from backend.database import mongodb
-from backend.database.models import (
+from src.database import mongodb
+from src.database.models import (
     PV,
     Baseload,
     Battery,
@@ -26,7 +26,7 @@ from backend.database.models import (
     SimResultsEval,
     SystemSettings,
 )
-from backend.solar_data import geolocator, pvgis_api
+from src.solar_data import geolocator, pvgis_api
 
 logger: logging.Logger = logging.getLogger("ferntree")
 
@@ -154,7 +154,7 @@ async def run_ferntree_simulation(
     """
     command: list[str] = [
         "python",
-        "sim/ferntree/ferntree.py",
+        "src/sim/ferntree/ferntree.py",
         "--sim_id",
         sim_id,
         "--model_id",
