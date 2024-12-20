@@ -9,7 +9,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # dependencies
-/node_modules
+*/node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
@@ -58,8 +58,8 @@ venv.bak/
 dmypy.json
 
 # next.js
-/.next/
-/out/
+*/.next/
+*/out/
 
 # pdm
 .pdm.toml
