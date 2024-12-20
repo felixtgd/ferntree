@@ -15,8 +15,6 @@ services:
           target: /usr/local/app
         - path: ./frontend/package.json
           action: rebuild
-    secrets:
-      - ferntree_secrets
 
   backend:
     build:
@@ -33,7 +31,3 @@ services:
         target: /usr/local/app
       - path: ./backend/requirements.txt
         action: rebuild
-
-secrets:
-  ferntree_secrets:
-    file: ferntree_secrets.txt
