@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "vercel-build": "cd frontend && npm install && next build"
+    "lint": "next lint"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.4.2",
