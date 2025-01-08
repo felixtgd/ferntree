@@ -1,0 +1,30 @@
+{
+    "sarif-viewer.connectToGithubCodeScanning": "off",
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.envFile": "${workspaceRoot}/.env",
+    "notebook.output.textLineLimit": 60,
+    // render dotted lines to indicate whitespaces
+    "editor.renderWhitespace": "trailing",
+    // identifiers to identify cells in Jupyter Notebooks on execution (added by latest Databricks extension version)
+    "githubPullRequests.ignoredPullRequestBranches": [
+        "develop"
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true
+    },
+    "terminal.integrated.env.osx": {
+        "PYTHONPATH": "${workspaceFolder}",
+    },
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "${workspaceFolder}",
+    },
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "${workspaceFolder}",
+    },
+    "python.formatting.provider": "none"
+}
