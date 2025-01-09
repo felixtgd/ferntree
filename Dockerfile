@@ -1,5 +1,5 @@
 # Frontend image to run NextJS app
-FROM node:20 AS frontend-base
+FROM node:20-alpine AS frontend-base
 WORKDIR /usr/local/app
 COPY ./frontend/package*.json ./
 RUN npm install
@@ -14,7 +14,7 @@ RUN npm run build
 CMD ["npm", "run", "start"]
 
 # Backend image to run FastAPI app with simulation tool
-FROM python:3.12 AS backend-base
+FROM python:3.12-alpine AS backend-base
 WORKDIR /usr/src/app
 COPY ./backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
