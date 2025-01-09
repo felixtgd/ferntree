@@ -22,7 +22,7 @@
     "clsx": "^2.1.0",
     "dompurify": "^3.1.7",
     "mongodb": "^6.8.0",
-    "next": "^14.2.15",
+    "next": "^14.2.23",
     "next-auth": "^5.0.0-beta.20",
     "nodemailer": "^6.9.15",
     "react": "^18",
