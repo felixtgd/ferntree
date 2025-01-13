@@ -1,0 +1,33 @@
+services:
+
+  frontend:
+    build:
+      context: ./
+      target: frontend-dev
+    ports:
+      - 3000:3000
+    env_file:
+      - ./frontend/.env
+    develop:
+      watch:
+        - path: ./frontend
+          action: sync
+          target: /usr/local/app
+        - path: ./frontend/package.json
+          action: rebuild
+
+  backend:
+    build:
+      context: ./
+      target: backend-dev
+    ports:
+      - 8000:8000
+    env_file:
+      - ./backend/.env
+    develop:
+      watch:
+      - path: ./backend
+        action: sync
+        target: /usr/local/app
+      - path: ./backend/requirements.txt
+        action: rebuild
