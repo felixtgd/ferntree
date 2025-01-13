@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-import cvxpy as cp
+# import cvxpy as cp
 import numpy as np
 from components.dev.device import Device
 from components.host.sim_host import SimHost
@@ -193,63 +193,63 @@ class BatteryCtrl:
         return Z_charge, Z_discharge
 
     ### Not used currently, but might be useful later
-    def get_optimal_profile(
-        self, P_load: list[float], max_pwr: float, bat_cap: float, bat_soc: float
-    ) -> np.ndarray:
-        """QP optimisation with cvxpy
-        Calculates the optimal battery profile that minimizes the 2-norm
-        of the total (predicted) power profile of a house.
-        Optimal profile used to approximate fill levels Z_charge and Z_discharge.
+    # def get_optimal_profile(
+    #     self, P_load: list[float], max_pwr: float, bat_cap: float, bat_soc: float
+    # ) -> np.ndarray:
+    #     """QP optimisation with cvxpy
+    #     Calculates the optimal battery profile that minimizes the 2-norm
+    #     of the total (predicted) power profile of a house.
+    #     Optimal profile used to approximate fill levels Z_charge and Z_discharge.
 
-        Args:
-            P_load (list): The net load profile of the house. [kW]
-            max_pwr (float): The maximum power of the battery. [kW]
-            bat_cap (float): The capacity of the battery. [kWh]
-            bat_soc (float): The current state of charge (SoC) of the battery. [kWh]
+    #     Args:
+    #         P_load (list): The net load profile of the house. [kW]
+    #         max_pwr (float): The maximum power of the battery. [kW]
+    #         bat_cap (float): The capacity of the battery. [kWh]
+    #         bat_soc (float): The current state of charge (SoC) of the battery. [kWh]
 
-        Returns:
-            numpy.ndarray: The optimal power profile for the battery.
+    #     Returns:
+    #         numpy.ndarray: The optimal power profile for the battery.
 
-        """
-        # GOAL: Find optimal battery profile that minimises 2-norm of
-        # total power profile of house
-        # Planning horizon: number of timesteps to consider in optimisation
-        n: int = len(P_load)
-        # Decision variable x for QP optimisation --> power profile of battery
-        x: cp.Variable = cp.Variable(n)
+    #     """
+    #     # GOAL: Find optimal battery profile that minimises 2-norm of
+    #     # total power profile of house
+    #     # Planning horizon: number of timesteps to consider in optimisation
+    #     n: int = len(P_load)
+    #     # Decision variable x for QP optimisation --> power profile of battery
+    #     x: cp.Variable = cp.Variable(n)
 
-        # Parameter: net load profile
-        p: cp.Parameter = cp.Parameter(n)
-        p.value = np.array(P_load)
+    #     # Parameter: net load profile
+    #     p: cp.Parameter = cp.Parameter(n)
+    #     p.value = np.array(P_load)
 
-        # Elementwise constraint on x: max battery power
-        x_max: float = max_pwr
+    #     # Elementwise constraint on x: max battery power
+    #     x_max: float = max_pwr
 
-        # Lower bound on sum of x_i: -soc_init with safety margin of 10% of capacity
-        # Idea: Battery cannot discharge more than soc_init over total planning horizon
-        lb: float = -bat_soc + 0.1 * bat_cap
+    #     # Lower bound on sum of x_i: -soc_init with safety margin of 10% of capacity
+    #     # Idea: Battery cannot discharge more than soc_init over total planninghorizon
+    #     lb: float = -bat_soc + 0.1 * bat_cap
 
-        # Upper bound on sum of x_i: c_bat-soc_init with safety margin of 10% of cap.
-        # Idea: Battery cannot charge more than delta between capacity and soc_init
-        # over total planning horizon
-        ub: float = bat_cap - bat_soc - 0.1 * bat_cap
+    #     # Upper bound on sum of x_i: c_bat-soc_init with safety margin of 10% of cap.
+    #     # Idea: Battery cannot charge more than delta between capacity and soc_init
+    #     # over total planning horizon
+    #     ub: float = bat_cap - bat_soc - 0.1 * bat_cap
 
-        # Objective: Minimize the 2-norm of the total power profile of the house
-        # PEAK SHAVING: We want a total power profile that is as flat as possible
-        objective: cp.Minimize = cp.Minimize(cp.norm(p + x, 2))
+    #     # Objective: Minimize the 2-norm of the total power profile of the house
+    #     # PEAK SHAVING: We want a total power profile that is as flat as possible
+    #     objective: cp.Minimize = cp.Minimize(cp.norm(p + x, 2))
 
-        # Constraints
-        constraints: list[Any] = [
-            x >= -x_max,
-            x <= x_max,
-            cp.cumsum(x) >= lb,
-            cp.cumsum(x) <= ub,
-        ]
+    #     # Constraints
+    #     constraints: list[Any] = [
+    #         x >= -x_max,
+    #         x <= x_max,
+    #         cp.cumsum(x) >= lb,
+    #         cp.cumsum(x) <= ub,
+    #     ]
 
-        # Solve quadratic optimisation problem
-        problem: cp.Problem = cp.Problem(objective, constraints)
-        problem.solve(solver=cp.ECOS, ignore_dpp=True)
+    #     # Solve quadratic optimisation problem
+    #     problem: cp.Problem = cp.Problem(objective, constraints)
+    #     problem.solve(solver=cp.ECOS, ignore_dpp=True)
 
-        # Optimal power profile for battery
-        x_opt: np.ndarray = np.array(x.value)
-        return x_opt
+    #     # Optimal power profile for battery
+    #     x_opt: np.ndarray = np.array(x.value)
+    #     return x_opt

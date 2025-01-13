@@ -1,6 +1,6 @@
 aiohttp == 3.10.11
 certifi == 2024.7.4
-cvxpy == 1.4.2
+# cvxpy == 1.4.2
 datetime==5.5.0
 fastapi == 0.110.2
 motor >= 3.6.0

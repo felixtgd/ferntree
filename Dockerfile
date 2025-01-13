@@ -18,7 +18,7 @@ FROM python:3.12-alpine AS backend-base
 WORKDIR /usr/src/app
 COPY ./backend/requirements.txt ./
 # this is only necessary because of cvxpy, try to remove it in future
-RUN apk add --no-cache build-base rust cargo
+# RUN apk add --no-cache build-base rust cargo
 RUN pip install --no-cache-dir -r requirements.txt
 COPY ./backend ./
 EXPOSE 8000
