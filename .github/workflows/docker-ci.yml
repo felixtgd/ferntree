@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feat/setup-docker
+      - dev
   pull_request:
 
 jobs:

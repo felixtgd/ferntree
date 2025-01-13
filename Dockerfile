@@ -17,6 +17,7 @@ CMD ["npm", "run", "start"]
 FROM python:3.12-alpine AS backend-base
 WORKDIR /usr/src/app
 COPY ./backend/requirements.txt ./
+RUN apt-get update && apt-get install -y build-essential
 RUN pip install --no-cache-dir -r requirements.txt
 COPY ./backend ./
 EXPOSE 8000
