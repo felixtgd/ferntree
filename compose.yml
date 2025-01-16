@@ -8,6 +8,8 @@ services:
       - 3000:3000
     env_file:
       - ./frontend/.env
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/ferntree_db
     develop:
       watch:
         - path: ./frontend
@@ -15,6 +17,8 @@ services:
           target: /usr/local/app
         - path: ./frontend/package.json
           action: rebuild
+    depends_on:
+      - backend
 
   backend:
     build:
@@ -24,6 +28,8 @@ services:
       - 8000:8000
     env_file:
       - ./backend/.env
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/ferntree_db
     develop:
       watch:
       - path: ./backend
@@ -31,3 +37,21 @@ services:
         target: /usr/local/app
       - path: ./backend/requirements.txt
         action: rebuild
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongodb/mongodb-community-server
+    command: mongod --tlsMode requireTLS --tlsCertificateKeyFile /etc/ssl/mongodb-cert.pem
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data:/data/db
+      - /Users/felixtangerding/opt/anaconda3/lib/python3.8/site-packages/certifi/cacert.pem:/etc/ssl/mongodb-cert.pem:ro
+
+volumes:
+  mongodb_data:
+
+networks:
+  default:
+    name: ferntree_network
