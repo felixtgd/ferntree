@@ -42,12 +42,10 @@ services:
 
   mongodb:
     image: mongodb/mongodb-community-server
-    command: mongod --tlsMode requireTLS --tlsCertificateKeyFile /etc/ssl/mongodb-cert.pem
     ports:
       - 27017:27017
     volumes:
       - mongodb_data:/data/db
-      - /Users/felixtangerding/opt/anaconda3/lib/python3.8/site-packages/certifi/cacert.pem:/etc/ssl/mongodb-cert.pem:ro
 
 volumes:
   mongodb_data:
