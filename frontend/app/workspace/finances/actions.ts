@@ -3,7 +3,7 @@
 'use server';
 
 import { FormState, FinDataSchema, FinData } from '@/app/utils/definitions';
-import { loadBackendBaseUri, getUserID } from '@/app/utils/helpers';
+import { loadBackendBaseUri, getAnonymousUserId } from '@/app/utils/helpers';
 
 export async function submitFinFormData(prev_state: FormState, form_data: FormData) {
     // When invoked in a form, the action automatically receives the FormData object.
@@ -24,7 +24,7 @@ export async function submitFinFormData(prev_state: FormState, form_data: FormDa
     }
 
     // Get the user ID
-    const user_id = await getUserID();
+    const user_id = getAnonymousUserId();
 
     // Set payload with user_id
     const payload = {
@@ -67,7 +67,7 @@ export async function submitFinFormData(prev_state: FormState, form_data: FormDa
 export async function fetchFinFormData() {
 
     // Get the user ID
-    const user_id = await getUserID();
+    const user_id = getAnonymousUserId();
 
     // Fetch models of user
     const BACKEND_BASE_URI = await loadBackendBaseUri();

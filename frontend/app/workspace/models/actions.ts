@@ -3,7 +3,7 @@
 'use server';
 
 import { ModelDataSchema, FormState, CoordinateData } from '@/app/utils/definitions';
-import { loadBackendBaseUri, getUserID } from '@/app/utils/helpers';
+import { loadBackendBaseUri, getAnonymousUserId } from '@/app/utils/helpers';
 import { revalidatePath } from 'next/cache';
 
 
@@ -61,7 +61,7 @@ export async function submitModel(prev_state: FormState, form_data: FormData) {
     }
 
     // Get the user ID
-    const user_id = await getUserID();
+    const user_id = getAnonymousUserId();
 
     // Set time_created timestamp
     const timestamp: string = new Date().toISOString();

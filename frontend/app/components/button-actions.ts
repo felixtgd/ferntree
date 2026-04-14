@@ -1,6 +1,6 @@
 "use server";
 
-import { loadBackendBaseUri, getUserID } from '@/app/utils/helpers';
+import { loadBackendBaseUri, getAnonymousUserId } from '@/app/utils/helpers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation'
 
@@ -8,7 +8,7 @@ import { redirect } from 'next/navigation'
 export async function deleteModel(model_id: string) {
 
     // Get the user ID
-    const user_id = await getUserID();
+    const user_id = getAnonymousUserId();
 
     try {
         // Delete model
@@ -35,7 +35,7 @@ export async function deleteModel(model_id: string) {
 export async function runSimulation(model_id: string) {
 
     // Get the user ID
-    const user_id = await getUserID();
+    const user_id = getAnonymousUserId();
 
     let run_successful: boolean;
     try {

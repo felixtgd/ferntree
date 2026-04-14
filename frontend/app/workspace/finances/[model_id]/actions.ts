@@ -1,13 +1,13 @@
 'use server';
 
 import { FinResults } from "@/app/utils/definitions";
-import { getUserID, loadBackendBaseUri } from '@/app/utils/helpers';
+import { getAnonymousUserId, loadBackendBaseUri } from '@/app/utils/helpers';
 
 
 export async function fetchFinResults(model_id: string) {
 
     // Get the user ID
-    const user_id = await getUserID();
+    const user_id = getAnonymousUserId();
 
     try {
         const BACKEND_BASE_URI = await loadBackendBaseUri();
