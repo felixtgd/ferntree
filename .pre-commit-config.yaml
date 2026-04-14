@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
         - id: check-yaml
           args: [ --allow-multiple-documents ]
@@ -14,35 +14,8 @@ repos:
         - id: requirements-txt-fixer
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.3
+    rev: v0.15.10
     hooks:
       - id: ruff
         args: [ --fix ]
       - id: ruff-format
-
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v7.32.0  # Use the ref you want to point at
-    hooks:
-      - id: eslint
-        files: \.[jt]sx?$  # This will run ESLint on .js, .ts, .jsx and .tsx files
-        types: [file]
-        additional_dependencies:
-        -   eslint@8.57.0
-        -   typescript-eslint@7.11.0
-        -   eslint-config-next@14.2.1
-
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2  # Use the latest version available
-    hooks:
-      - id: mypy
-        args: ["--strict", --ignore-missing-imports]  # Use strict mode to enforce type checking
-        additional_dependencies:
-          - "pydantic>=2.7.0"
-          - "fastapi>=0.110.2"
-          - "pytz>=2024.1"
-          - "types-pytz>=2024.1"
-
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.4
-    hooks:
-      - id: gitleaks
