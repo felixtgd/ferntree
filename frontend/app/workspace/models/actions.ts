@@ -10,7 +10,12 @@ import { revalidatePath } from 'next/cache';
 async function getLocationCoordinates(location: string) {
 
     try {
-        const response_nominatim = await fetch(`https://nominatim.openstreetmap.org/search?q=${location}&format=json&limit=1`);
+        const response_nominatim = await fetch(`https://nominatim.openstreetmap.org/search?q=${location}&format=json&limit=1`, {
+            headers: { 'User-Agent': 'ferntree/1.0 (https://ferntree.dev)' },
+        });
+        if (!response_nominatim.ok) {
+            throw new Error(`HTTP ${response_nominatim.status}`);
+        }
         const data = await response_nominatim.json();
 
         const coordinates: CoordinateData = {
@@ -66,10 +71,9 @@ export async function submitModel(prev_state: FormState, form_data: FormData) {
     // Set time_created timestamp
     const timestamp: string = new Date().toISOString();
 
-    // Set payload with user_id
+    // Set payload without user_id in body; user_id is already in the query param
     const payload = {
         ...validated_fields.data,
-        user_id: user_id,
         coordinates: coordinates,
         time_created: timestamp,
     };
@@ -82,6 +86,9 @@ export async function submitModel(prev_state: FormState, form_data: FormData) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
+        if (!response_submit_model.ok) {
+            throw new Error(`HTTP ${response_submit_model.status}`);
+        }
         const model_id: string = await response_submit_model.json();
 
         console.log(`POST workspace/models/submit-model: Model form submitted (${response_submit_model.status}). Model ID: ${model_id}`);

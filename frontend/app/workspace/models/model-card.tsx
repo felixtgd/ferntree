@@ -1,8 +1,7 @@
 import { Card, List, ListItem } from "@tremor/react";
 import { ModelData } from "@/app/utils/definitions";
-import { RiArrowUpWideLine, RiBattery2ChargeLine, RiCompassLine, RiHome4Line, RiInformationLine, RiLightbulbFlashLine, RiSunLine } from "@remixicon/react";
+import { RiArrowUpWideLine, RiBattery2ChargeLine, RiCompassLine, RiHome4Line, RiLightbulbFlashLine, RiSunLine } from "@remixicon/react";
 import { DeleteModelButton, GoToFinButton, RunSimButton, ViewSimButton } from "@/app/components/buttons";
-import { Tooltip } from "@/app/components/components";
 
 export async function ModelCard({modelData}: {modelData: ModelData}) {
 
@@ -30,14 +29,9 @@ export async function ModelCard({modelData}: {modelData: ModelData}) {
                                 <span className="flex items-center">
                                     <RiHome4Line className="mr-2" /> Location
                                 </span>
-                                <div className="flex items-center justify-end space-x-1 max-w-[50%]">
-                                    <span className="truncate">
-                                        {location_field}
-                                    </span>
-                                    <Tooltip content={location_field}>
-                                        <RiInformationLine className="flex-shrink-0" />
-                                    </Tooltip>
-                                </div>
+                                <span className="truncate max-w-[50%]" title={location_field}>
+                                    {location_field}
+                                </span>
                             </ListItem>
                             <ListItem key="roof_incl">
                                 <span className="flex items-center">
@@ -65,7 +59,7 @@ export async function ModelCard({modelData}: {modelData: ModelData}) {
                                 </span>
                                 <span>{modelData.peak_power} kWp</span>
                             </ListItem>
-                            <ListItem key="roof_azimuth">
+                            <ListItem key="battery_cap">
                                 <span className="flex items-center">
                                     <RiBattery2ChargeLine className="mr-2" /> Battery capacity
                                 </span>

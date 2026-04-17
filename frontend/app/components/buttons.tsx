@@ -1,8 +1,8 @@
 'use client'
 
-import { RemixiconComponentType, RiDeleteBin6Line, RiExchangeDollarLine, RiEyeLine, RiPencilLine, RiPlayCircleLine } from "@remixicon/react";
+import { RemixiconComponentType, RiDeleteBin6Line, RiExchangeDollarLine, RiEyeLine, RiPlayCircleLine } from "@remixicon/react";
 import { Button, ButtonProps } from "@tremor/react";
-import { deleteModel, editModel, goToFin, runSimulation, viewResults } from "@/app/components/button-actions";
+import { deleteModel, runSimulation } from "@/app/components/button-actions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import LoadingScreen from "./loading-screen";
@@ -92,6 +92,7 @@ export function RunSimButton({model_id}: {model_id: string}) {
 
 export function ViewSimButton({model_id}: {model_id: string}) {
 
+    const router = useRouter();
     const tooltip = "View simulation results"
 
     return (
@@ -100,7 +101,7 @@ export function ViewSimButton({model_id}: {model_id: string}) {
             color="green"
             tooltip={tooltip}
             model_id={model_id}
-            buttonAction={viewResults}
+            buttonAction={async (id) => router.push(`/workspace/simulations/${id}`)}
         />
     );
 }
@@ -108,6 +109,7 @@ export function ViewSimButton({model_id}: {model_id: string}) {
 
 export function GoToFinButton({model_id}: {model_id: string}) {
 
+    const router = useRouter();
     const tooltip = "Go to finances"
 
     return (
@@ -116,23 +118,7 @@ export function GoToFinButton({model_id}: {model_id: string}) {
             color="orange"
             tooltip={tooltip}
             model_id={model_id}
-            buttonAction={goToFin}
-        />
-    );
-}
-
-// not used right now, maybe in the future
-export function EditButton({type, model_id}: {type: string, model_id: string}) {
-
-    const tooltip=`Edit ${type}`
-
-    return (
-        <BaseButton
-            icon={RiPencilLine}
-            color="orange"
-            tooltip={tooltip}
-            model_id={model_id}
-            buttonAction={editModel}
+            buttonAction={async (id) => router.push(`/workspace/finances/${id}`)}
         />
     );
 }

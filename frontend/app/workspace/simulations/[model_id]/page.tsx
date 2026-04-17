@@ -2,44 +2,37 @@
 import { PvDonutChart } from './pv-donut-chart';
 import { PvPowerChart } from './pv-power-chart';
 import { PvGenBarChart } from './pv-gen-bar-chart';
-import { Suspense } from 'react';
-import { BarSkeleton, DonutSkeleton, LineChartSkeleton } from '@/app/components/skeletons';
+import { fetchPowerData } from './actions';
 
 
-export default async function Page({ params, searchParams }:
+export default async function Page({ params }:
     {
         params: { model_id: string },
-        searchParams: Record<string, string | string[] | undefined>
     }) {
+
+    // Default date range: a representative summer week in June 2023 (matches simulation data year).
+    const initial_power_data = await fetchPowerData(params.model_id, '2023-06-19', '2023-06-24');
 
     return (
         <div className="grid gap-4 grid-cols-3 grid-rows-3 h-full">
 
             {/* Donut chart for consumption */}
             <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full h-full">
-                <Suspense key={params.model_id}  fallback={<DonutSkeleton/>}>
-                    <PvDonutChart chart_type='consumption' model_id={params.model_id}/>
-                </Suspense>
+                <PvDonutChart chart_type='consumption' model_id={params.model_id}/>
             </div>
 
             {/* Donut chart for pv generation */}
             <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full h-full">
-                <Suspense key={params.model_id}  fallback={<DonutSkeleton/>}>
-                    <PvDonutChart chart_type='generation' model_id={params.model_id}/>
-                </Suspense>
+                <PvDonutChart chart_type='generation' model_id={params.model_id}/>
             </div>
 
             {/* Bar chart for pv generation */}
             <div className="col-span-1 row-span-1 flex flex-col flex-grow w-full h-full">
-                <Suspense key={params.model_id}  fallback={<BarSkeleton/>}>
-                    <PvGenBarChart model_id={params.model_id}/>
-                </Suspense>
+                <PvGenBarChart model_id={params.model_id}/>
             </div>
 
             <div className="col-span-3 row-span-2 flex flex-col flex-grow w-full h-full">
-                <Suspense key={params.model_id}  fallback={<LineChartSkeleton/>}>
-                    <PvPowerChart model_id={params.model_id} search_params={searchParams}/>
-                </Suspense>
+                <PvPowerChart model_id={params.model_id} initial_data={initial_power_data} />
             </div>
 
         </div>

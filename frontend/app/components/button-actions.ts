@@ -2,7 +2,6 @@
 
 import { loadBackendBaseUri, getAnonymousUserId } from '@/app/utils/helpers';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation'
 
 
 export async function deleteModel(model_id: string) {
@@ -44,7 +43,11 @@ export async function runSimulation(model_id: string) {
 
         // Fetch models of user
         const BACKEND_BASE_URI = await loadBackendBaseUri();
-        const response_sim_run = await fetch(`${BACKEND_BASE_URI}/workspace/simulations/run-sim?user_id=${user_id}&model_id=${model_id}`).then((res) => res.json());
+        const res = await fetch(`${BACKEND_BASE_URI}/workspace/simulations/run-sim?user_id=${user_id}&model_id=${model_id}`);
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+        const response_sim_run = await res.json();
 
         run_successful = response_sim_run.run_successful;
 
@@ -60,22 +63,4 @@ export async function runSimulation(model_id: string) {
 
     return { success: run_successful, model_id };
 
-}
-
-
-export async function viewResults(model_id: string) {
-    console.info(`View results for model: ${model_id}`);
-    redirect(`/workspace/simulations/${model_id}`);
-}
-
-export async function goToFin(model_id: string) {
-    console.info(`Go to finances of model: ${model_id}`);
-    redirect(`/workspace/finances/${model_id}`);
-}
-
-// not used right now, maybe in the future
-export async function editModel(model_id: string) {
-    // Placeholder for editing model
-    console.log(`Edit model: ${model_id}`);
-    revalidatePath('/workspace/models');
 }

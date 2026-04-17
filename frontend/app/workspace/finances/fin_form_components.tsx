@@ -2,7 +2,6 @@ import { NumberInput, Button } from "@tremor/react";
 import { useFormStatus } from 'react-dom'
 import LoadingScreen from "@/app/components/loading-screen";
 import { FinData, FormState } from "@/app/utils/definitions";
-import { Tooltip } from '@/app/components/components';
 import {
     RemixiconComponentType,
     RiPlayLargeLine,
@@ -18,7 +17,6 @@ import {
     RiSwap2Line,
     RiToolsLine,
 } from "@remixicon/react";
-
 
 
 
@@ -44,7 +42,6 @@ export function NumberInputField(
     {
         id,
         label,
-        tooltip,
         step,
         value,
         icon,
@@ -53,7 +50,6 @@ export function NumberInputField(
     }: {
         id: string,
         label: string,
-        tooltip: string,
         step: string,
         value: number,
         icon: RemixiconComponentType,
@@ -63,10 +59,8 @@ export function NumberInputField(
 )   {
         return (
             <div className="mb-4">
-                <label htmlFor="feed_in_tariff" className="mb-2 block text-sm font-medium">
-                    <Tooltip content={tooltip}>
-                    <span>{label}</span>
-                    </Tooltip>
+                <label htmlFor={id} className="mb-2 block text-sm font-medium">
+                    {label}
                 </label>
                 <div className="relative">
                     <NumberInput
@@ -81,8 +75,8 @@ export function NumberInputField(
                 </div>
                 {errors && (
                     <div id={`${id}_error`} aria-live="polite" aria-atomic="true">
-                        {errors.map((error, index) => (
-                            <p className="mt-2 text-sm text-red-500" key={index}>
+                        {errors.map((error) => (
+                            <p className="mt-2 text-sm text-red-500" key={error}>
                                 {error}
                             </p>
                         ))}
@@ -93,14 +87,13 @@ export function NumberInputField(
     }
 
 
-// Input fields for the form
-export function get_standard_input_fields({formData, state}: {formData: FinData, state: FormState}) {
+// All input fields combined (standard + advanced)
+export function get_all_input_fields({formData, state}: {formData: FinData, state: FormState}) {
 
     return [
         {
             id: "electr_price",
             label: "Electricity price [ct/kWh]",
-            tooltip: "Price of electricity in cents per kilowatt-hour",
             step: "0.1",
             value: formData.electr_price,
             icon: RiCoinsLine,
@@ -109,7 +102,6 @@ export function get_standard_input_fields({formData, state}: {formData: FinData,
         {
             id: "feed_in_tariff",
             label: "Feed-in tariff [ct/kWh]",
-            tooltip: "Remuneration for electricity fed into the grid in cents per kilowatt-hour",
             step: "0.1",
             value: formData.feed_in_tariff,
             icon: RiSwap2Line,
@@ -118,7 +110,6 @@ export function get_standard_input_fields({formData, state}: {formData: FinData,
         {
             id: "pv_price",
             label: "PV price [€/kWp]",
-            tooltip: "Price of installed PV peak generation capacity in euros per kilowatt-peak",
             step: "1",
             value: formData.pv_price,
             icon: RiSunLine,
@@ -127,7 +118,6 @@ export function get_standard_input_fields({formData, state}: {formData: FinData,
         {
             id: "battery_price",
             label: "Battery price [€/kWh]",
-            tooltip: "Price of installed battery storage capacity in euros per kilowatt-hour",
             step: "1",
             value: formData.battery_price,
             icon: RiBattery2ChargeLine,
@@ -136,24 +126,14 @@ export function get_standard_input_fields({formData, state}: {formData: FinData,
         {
             id: "useful_life",
             label: "Useful life [years]",
-            tooltip: "Lifetime of the system in years",
             step: "1",
             value: formData.useful_life,
             icon: RiHourglassLine,
             errors: state.errors?.useful_life
-        }
-    ]
-}
-
-
-// Advanced input fields for the form
-export function get_advanced_input_fields({formData, state}: {formData: FinData, state: FormState}) {
-
-    return [
+        },
         {
             id: "module_deg",
             label: "Module degradation [%]",
-            tooltip: "Annual degradation of the PV generation in percent",
             step: "0.1",
             value: formData.module_deg,
             icon: RiArrowRightDownLine,
@@ -162,7 +142,6 @@ export function get_advanced_input_fields({formData, state}: {formData: FinData,
         {
             id: "inflation",
             label: "Inflation [%]",
-            tooltip: "Annual inflation rate in percent",
             step: "0.1",
             value: formData.inflation,
             icon: RiFundsLine,
@@ -171,7 +150,6 @@ export function get_advanced_input_fields({formData, state}: {formData: FinData,
         {
             id: "op_cost",
             label: "Operation cost [%]",
-            tooltip: "Annual operation cost in percent of the total investment. Includes maintenance, insurance, etc.",
             step: "0.1",
             value: formData.op_cost,
             icon: RiToolsLine,
@@ -180,7 +158,6 @@ export function get_advanced_input_fields({formData, state}: {formData: FinData,
         {
             id: "down_payment",
             label: "Down payment [%]",
-            tooltip: "Initial payment in percent of the total investment",
             step: "0.1",
             value: formData.down_payment,
             icon: RiCurrencyLine,
@@ -189,7 +166,6 @@ export function get_advanced_input_fields({formData, state}: {formData: FinData,
         {
             id: "pay_off_rate",
             label: "Pay off rate [%]",
-            tooltip: "Annual pay off rate of the loan in percent",
             step: "0.1",
             value: formData.pay_off_rate,
             icon: RiHandCoinLine,
@@ -198,7 +174,6 @@ export function get_advanced_input_fields({formData, state}: {formData: FinData,
         {
             id: "interest_rate",
             label: "Interest rate [%]",
-            tooltip: "Annual interest rate of the loan in percent",
             step: "0.1",
             value: formData.interest_rate,
             icon: RiBankLine,

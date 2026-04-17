@@ -12,9 +12,9 @@ import {
   RiSunLine
 } from '@remixicon/react';
 import { submitModel } from './actions';
-import { ModelData, FormState } from '@/app/utils/definitions';
+import { FormState } from '@/app/utils/definitions';
 import { useFormStatus, useFormState } from 'react-dom'
-import { useState } from 'react';
+import { useEffect } from 'react'
 
 
 function SubmitButton() {
@@ -33,31 +33,15 @@ function SubmitButton() {
 
 export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
 
-  const defaultModelData: ModelData = {
-    model_name: 'Aarau_10_10',
-    location: 'Aarau',
-    electr_cons: 3000,
-    roof_incl: 0,
-    roof_azimuth: 0,
-    peak_power: 10,
-    battery_cap: 10,
-  };
-
-  const [formData, setFormData] = useState(defaultModelData);
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
   const initialState : FormState = { message: null, errors: {} };
   const [state, formAction] = useFormState(submitModel, initialState);
 
   // Close form dialog after successful submission
-  const submit_success: boolean = state.message === 'success';
-  if (submit_success) {
-    setIsOpen(false);
-  }
+  useEffect(() => {
+    if (state.message === 'success') {
+      setIsOpen(false);
+    }
+  }, [state, setIsOpen]);
 
   return (
       <form action={formAction}>
@@ -72,8 +56,6 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               name="model_name"
               type="text"
               icon={RiPriceTag3Line}
-              onChange={handleChange}
-              // value = {formData.model_name}
               placeholder="Enter model name"
               required
             />
@@ -99,8 +81,6 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               name="location"
               type="text"
               icon={RiHome4Line}
-              onChange={handleChange}
-              // value = {formData.location}
               placeholder="Enter location"
               required
             />
@@ -125,12 +105,6 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               id="roof_incl"
               name="roof_incl"
               icon={RiArrowUpWideLine}
-              onValueChange={
-                (value: string) => {
-                  setFormData({ ...formData, roof_incl: parseInt(value) });
-                }
-              }
-              // value = {formData.roof_incl.toString()}
               required
             >
               <SelectItem value="0">0°</SelectItem>
@@ -158,12 +132,6 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               id="roof_azimuth"
               name="roof_azimuth"
               icon={RiCompassLine}
-              onValueChange={
-                (value: string) => {
-                  setFormData({ ...formData, roof_azimuth: parseInt(value) });
-                }
-              }
-              // value = {formData.roof_azimuth.toString()}
               required
             >
               <SelectItem value="0">South</SelectItem>
@@ -197,8 +165,6 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               name="electr_cons"
               step="1"
               icon={RiLightbulbFlashLine}
-              onChange = {handleChange}
-              // value = {formData.electr_cons}
               placeholder="Set annual consumption in kWh, e.g. 3,000"
               required
             />
@@ -225,8 +191,6 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               step="0.1"
               placeholder="Set peak power in kWp, e.g. 10"
               icon={RiSunLine}
-              onChange={handleChange}
-              // value = {formData.peak_power}
               required
             />
           </div>
@@ -252,8 +216,6 @@ export function ModelForm({setIsOpen}: {setIsOpen: (val: boolean) => void}) {
               step="0.1"
               placeholder="Set capacity in kWh, e.g. 10"
               icon={RiBattery2ChargeLine}
-              onChange={handleChange}
-              // value = {formData.battery_cap}
               required
             />
           </div>

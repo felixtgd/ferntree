@@ -56,8 +56,8 @@ export default async function Page() {
                 <EmptyStateMessage />
             ) : (
                 <div>
-                {models.map((modelData, index) => (
-                    <ModelCard key={index} modelData={modelData} />
+                {models.map((modelData) => (
+                    <ModelCard key={modelData.model_id} modelData={modelData} />
                 ))}
                 </div>
             )}

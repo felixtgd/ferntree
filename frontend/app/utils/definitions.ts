@@ -97,7 +97,7 @@ export type SimTimestep = {
 };
 
 // FINANCES
-// MODEL DATA for /workspace/models
+// FIN DATA for /workspace/finances
 export type FinData = {
   model_id: string;
   electr_price: number;

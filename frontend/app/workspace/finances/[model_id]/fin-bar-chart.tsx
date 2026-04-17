@@ -37,7 +37,7 @@ export async function FinBarChart({model_id}: {model_id: string}) {
   const chartData : FinBarChartItem[] = getChartData(kpis);
 
   return (
-    <BaseCard title="Perfomance over Lifetime">
+    <BaseCard title="Performance over Lifetime">
       <BaseFinBarChart data={chartData} />
     </BaseCard>
   );

@@ -1,62 +1,52 @@
-import { Card, DateRangePickerValue } from '@tremor/react';
+'use client';
+
+import { useState } from 'react';
+import { Card } from '@tremor/react';
 import { fetchPowerData } from './actions';
-import { z } from "zod";
-import { redirect } from 'next/navigation';
 import { BaseCard, BaseDateRangePicker, BasePowerLineChart } from '@/app/components/base-comps';
 import { SimTimestep } from '@/app/utils/definitions';
 
-export async function PvPowerChart({ model_id, search_params }:
-  {
-    model_id: string;
-    search_params: Record<string, string | string[] | undefined>;
-  }
+const DEFAULT_FROM = '2023-06-19';
+const DEFAULT_TO = '2023-06-24';
+
+export function PvPowerChart({ model_id, initial_data }:
+    { model_id: string; initial_data: SimTimestep[] | undefined }
 ) {
+    const [dateFrom, setDateFrom] = useState(DEFAULT_FROM);
+    const [dateTo, setDateTo] = useState(DEFAULT_TO);
+    const [chartData, setChartData] = useState<SimTimestep[] | undefined>(initial_data);
 
-  const selected_date_range: DateRangePickerValue = {
-    from: search_params.dateFrom ? new Date(search_params.dateFrom as string) : new Date(2023, 5, 19),
-    to: search_params.dateTo ? new Date(search_params.dateTo as string) : new Date(2023, 5, 24)
-  };
+    const handleDateRangeChange = async (from: string, to: string) => {
+        setDateFrom(from);
+        setDateTo(to);
+        const data = await fetchPowerData(model_id, from, to);
+        setChartData(data);
+    };
 
-  // Validate that dateRange values are valid dates
-  const date_range_schema = z.object({
-    from: z.date(),
-    to: z.date()
-  });
-
-  const date_range = date_range_schema.safeParse(
-    {
-      from: selected_date_range.from,
-      to: selected_date_range.to
+    if (!chartData) {
+        return (
+            <div className="w-1/3">
+                <BaseCard title="">
+                    <div>
+                        No results found. Run a simulation to get results.
+                    </div>
+                </BaseCard>
+            </div>
+        );
     }
-  );
 
-  if (!date_range.success) {
-    console.error(`Invalid date range: ${date_range.error}`);
-    redirect(`/workspace/simulations/${model_id}`);
-  }
-
-  const chart_data : SimTimestep[] | undefined = await fetchPowerData(model_id, date_range.data);
-
-  if (!chart_data) {
     return (
-      <div className="w-1/3">
-        <BaseCard title="">
-          <div>
-            No results found. Run a simulation to get results.
-          </div>
-        </BaseCard>
-      </div>
-    )
-  }
-
-  return (
-    <Card
-      className="flex flex-grow flex-col items-center justify-center w-full max-h-90"
-      decoration="top"
-      decorationColor="blue-300"
-    >
-      <BaseDateRangePicker date_range={date_range.data} />
-      <BasePowerLineChart data={chart_data} />
-    </Card>
-  );
+        <Card
+            className="flex flex-grow flex-col items-center justify-center w-full max-h-90"
+            decoration="top"
+            decorationColor="blue-300"
+        >
+            <BaseDateRangePicker
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+                onDateRangeChange={handleDateRangeChange}
+            />
+            <BasePowerLineChart data={chartData} />
+        </Card>
+    );
 }

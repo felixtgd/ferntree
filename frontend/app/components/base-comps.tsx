@@ -1,33 +1,19 @@
 'use client';
 
 import { FinBarChartItem, FinChartData, PVMonthlyGen, SimTimestep } from '@/app/utils/definitions';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react'
-import { enGB } from 'date-fns/locale';
 import {
     ValueFormatter,
     DonutChart,
     BarChart,
-    DateRangePicker,
-    DateRangePickerValue,
-    DateRangePickerItem,
     LineChart,
     Card,
-    Button,
 } from '@tremor/react';
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuTrigger
-} from '@/app/components/components';
-import { RiLineChartLine } from '@remixicon/react';
 
 
 const kWhFormatter: ValueFormatter = (number: number) =>
     `${Math.round(number).toLocaleString()} kWh`;
 
-const moneyFormatter = (number: number) =>
+export const moneyFormatter = (number: number) =>
     `€ ${Math.round(number).toLocaleString()}`;
 
 const kWFormatter2d: ValueFormatter = (number: number) =>
@@ -40,7 +26,7 @@ const percentFormatter: ValueFormatter = (number: number) =>
 export function BaseCard({ title, children } : { title: string, children: React.ReactNode }) {
     return (
         <Card
-            className="flex flex-grow flex-col items-center justify-center w-full h-full max-h-90"
+            className="flex flex-grow flex-col items-center justify-center w-full h-full max-h-96"
             decoration="top"
             decorationColor="blue-300"
         >
@@ -103,129 +89,50 @@ export function BaseFinBarChart( { data }: { data: FinBarChartItem[]; } ) {
     );
 }
 
-export function BaseDateRangePicker({ date_range } : { date_range: DateRangePickerValue }) {
-
-    const [selectedDateRange, setSelectedDateRange] = useState<DateRangePickerValue>(date_range);
-
-    const router = useRouter();
-
-    function updateSearchParams(selectedDateRange: DateRangePickerValue ) {
-        setSelectedDateRange(selectedDateRange)
-        const urlSearchParams = new URLSearchParams({
-            dateFrom: selectedDateRange.from?.toISOString() ?? '',
-            dateTo: selectedDateRange.to?.toISOString() ?? '',
-        });
-        router.replace(`?${urlSearchParams.toString()}`, { scroll: false });
+export function BaseDateRangePicker(
+    { dateFrom, dateTo, onDateRangeChange }:
+    {
+        dateFrom: string;
+        dateTo: string;
+        onDateRangeChange: (from: string, to: string) => void;
     }
-
+) {
     return (
-        <>
-        <DateRangePicker
-            className="mx-auto max-w-md"
-            value={selectedDateRange}
-            onValueChange={updateSearchParams}
-            locale={enGB}
-        >
-            <DateRangePickerItem
-            key="spring"
-            value="spring"
-            from={new Date(2023, 2, 19)}
-            to={new Date(2023, 2, 24)}
-            >
-            Spring
-            </DateRangePickerItem>
-            <DateRangePickerItem
-            key="summer"
-            value="summer"
-            from={new Date(2023, 5, 19)}
-            to={new Date(2023, 5, 24)}
-            >
-            Summer
-            </DateRangePickerItem>
-            <DateRangePickerItem
-            key="autumn"
-            value="autumn"
-            from={new Date(2023, 8, 19)}
-            to={new Date(2023, 8, 24)}
-            >
-            Autumn
-            </DateRangePickerItem>
-            <DateRangePickerItem
-            key="winter"
-            value="winter"
-            from={new Date(2023, 11, 19)}
-            to={new Date(2023, 11, 24)}
-            >
-            Winter
-            </DateRangePickerItem>
-        </DateRangePicker>
-        </>
+        <div className="flex items-center gap-2 mx-auto mb-2">
+            <label className="text-sm font-medium">From</label>
+            <input
+                type="date"
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
+                value={dateFrom}
+                onChange={(e) => onDateRangeChange(e.target.value, dateTo)}
+            />
+            <label className="text-sm font-medium">To</label>
+            <input
+                type="date"
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
+                value={dateTo}
+                onChange={(e) => onDateRangeChange(dateFrom, e.target.value)}
+            />
+        </div>
     );
 }
 
 export function BasePowerLineChart({ data } : { data: SimTimestep[]; }) {
 
-    const allCategories = ['Load', 'PV', 'Battery', 'Total'];
-    const allColors = ['rose', 'amber', 'teal', 'indigo'];
-
-    const [visibleCategories, setVisibleCategories] = useState(allCategories);
-
-    const handleCategoryToggle = (category: string) => {
-        setVisibleCategories(prev => {
-            if (prev.includes(category)) {
-                // Remove the category
-                return allCategories.filter(c => c !== category && prev.includes(c));
-            } else {
-                // Add the category while preserving order
-                return allCategories.filter(c => c === category || prev.includes(c));
-            }
-        });
-    };
-
-    // Derive visibleColors from visibleCategories
-    const visibleColors = visibleCategories.map(category =>
-        allColors[allCategories.indexOf(category)]
-    );
+    const categories = ['Load', 'PV', 'Battery', 'Total'];
+    const colors = ['rose', 'amber', 'teal', 'indigo'];
 
     return (
         <>
-            <div className="flex flex-row items-center justify-between w-full m-4">
-                <div className="flex flex-grow justify-start w-64"></div>
-                <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mx-4">
-                    Power Profiles
-                </h3>
-                <div className="flex flex-grow items-center justify-end w-64">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="secondary"
-                            icon={RiLineChartLine}
-                        >
-                            Select Profiles
-                        </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-
-                        {allCategories.map((category, index) => (
-                            <DropdownMenuCheckboxItem
-                                checked={visibleCategories.includes(category)}
-                                onCheckedChange={() => handleCategoryToggle(category)}
-                                key={category}
-                            >
-                                <span className={`font-medium text-${allColors[index]}`}>{category}</span>
-                            </DropdownMenuCheckboxItem>
-                        ))}
-
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
+            <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium m-4">
+                Power Profiles
+            </h3>
             <LineChart
                 className="h-[50%] w-full"
                 data={data}
                 index="time"
-                categories={visibleCategories}
-                colors={visibleColors}
+                categories={categories}
+                colors={colors}
                 valueFormatter={kWFormatter2d}
                 yAxisWidth={80}
                 showAnimation={true}
@@ -257,67 +164,20 @@ export function BasePowerLineChart({ data } : { data: SimTimestep[]; }) {
 
 export function BaseFinLineChart({ data }: { data: FinChartData[] }) {
 
-    const allCategories = ['Cum. Profit', 'Investment', 'Cum. Cash Flow', 'Loan'];
-    const allColors = ['green-600', 'red-500', 'blue-500', 'orange-500'];
-
-    const [visibleCategories, setVisibleCategories] = useState(allCategories);
-
-    const handleCategoryToggle = (category: string) => {
-        setVisibleCategories(prev => {
-            if (prev.includes(category)) {
-                // Remove the category
-                return allCategories.filter(c => c !== category && prev.includes(c));
-            } else {
-                // Add the category while preserving order
-                return allCategories.filter(c => c === category || prev.includes(c));
-            }
-        });
-    };
-
-    // Derive visibleColors from visibleCategories
-    const visibleColors = visibleCategories.map(category =>
-        allColors[allCategories.indexOf(category)]
-    );
+    const categories = ['Cum. Profit', 'Investment', 'Cum. Cash Flow', 'Loan'];
+    const colors = ['green-600', 'red-500', 'blue-500', 'orange-500'];
 
     return (
         <>
-            <div className="flex flex-row items-center justify-between w-full mb-4">
-                <div className="flex flex-grow justify-start w-64"></div>
-                <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mx-4">
-                    Financial Performance
-                </h3>
-                <div className="flex flex-grow items-center justify-end w-64">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="secondary"
-                            icon={RiLineChartLine}
-                        >
-                            Select Categories
-                        </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-
-                        {allCategories.map((category, index) => (
-                            <DropdownMenuCheckboxItem
-                                checked={visibleCategories.includes(category)}
-                                onCheckedChange={() => handleCategoryToggle(category)}
-                                key={category}
-                            >
-                                <span className={`font-medium text-${allColors[index]}`}>{category}</span>
-                            </DropdownMenuCheckboxItem>
-                        ))}
-
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
+            <h3 className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-4">
+                Financial Performance
+            </h3>
             <LineChart
                 className="w-full h-[90%]"
                 data={data}
                 index="Year"
-                categories={visibleCategories}
-                colors={visibleColors}
+                categories={categories}
+                colors={colors}
                 valueFormatter={moneyFormatter}
                 yAxisWidth={80}
                 showAnimation={true}

@@ -1,17 +1,13 @@
 'use client';
 
-import { Select, SelectItem, Flex, Button } from "@tremor/react";
+import { Select, SelectItem } from "@tremor/react";
 import { FinData, FormState, ModelData } from "@/app/utils/definitions";
 import { useState, useEffect } from "react";
 import { useFormState } from 'react-dom'
 import { useParams, useRouter } from "next/navigation";
 import { submitFinFormData } from "./actions";
-import { get_advanced_input_fields, get_standard_input_fields, NumberInputField, SubmitButton } from "./fin_form_components";
-import {
-    RiArrowDownWideLine,
-    RiArrowUpWideLine,
-    RiShapesLine,
-} from "@remixicon/react";
+import { get_all_input_fields, NumberInputField, SubmitButton } from "./fin_form_components";
+import { RiShapesLine } from "@remixicon/react";
 import Link from "next/link";
 import { ViewSimButton } from "@/app/components/buttons";
 
@@ -37,15 +33,10 @@ function getFinFormDataForModel(model_id: string, fin_form_data_all: FinData[]):
 
     // Get form data where model_id matches the selected model, or use default data
     const fin_form_data_model: FinData | undefined = fin_form_data_all.find((data) => data.model_id === model_id) as FinData;
-    let fin_form_data: FinData;
     if (fin_form_data_model) {
-        fin_form_data = fin_form_data_model
+        return fin_form_data_model;
     }
-    else {
-        fin_form_data = default_fin_form_data
-    }
-
-    return fin_form_data;
+    return default_fin_form_data;
 }
 
 
@@ -55,12 +46,10 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
 
     // Get model data from URL if model_id is provided
     const params = useParams<{ model_id?: string }>();
-    let model_data: ModelData
+    let model_data: ModelData;
     if (params.model_id && models.length > 0) {
-        console.log(`FinanceConfigForm: Setting model data from URL: ${params.model_id}`);
-        model_data = models.find((model) => model.model_id === params.model_id) as ModelData;
-    }
-    else {
+        model_data = models.find((model) => model.model_id === params.model_id) ?? models[0];
+    } else {
         model_data = models[0];
     }
 
@@ -68,21 +57,13 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
 
     const fin_form_data: FinData = getFinFormDataForModel(modelData.model_id as string, fin_form_data_all);
     const [formData, setFormData] = useState(fin_form_data);
-    const [showAdvanced, setShowAdvanced] = useState(false);
 
     // Action to submit form data and handle validation errors
     const initialState : FormState = { message: null, errors: {}, model_id: null, timestamp: null };
     const [state, formAction] = useFormState(submitFinFormData, initialState);
 
-    // Form input fields
-    const input_fields = get_standard_input_fields({formData, state});
-    const advanced_input_fields = get_advanced_input_fields({formData, state});
-
-    // Collapsible for advanced settings
-    const toggleAdvanced = (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
-        setShowAdvanced(!showAdvanced);
-    };
+    // All input fields (standard + advanced combined)
+    const input_fields = get_all_input_fields({formData, state});
 
     // Handle change in form data
     const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -91,11 +72,9 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
     };
 
     // Redirect to model results page on successful form submission
-    // Refresh the page to display the new fin results after re-submitting the form
-    useEffect(() => {
+        useEffect(() => {
         if (state.message === 'success') {
             router.push(`/workspace/finances/${state.model_id}`);
-            router.refresh();
         }
     }, [state, router]);
 
@@ -116,20 +95,19 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
                         icon={RiShapesLine}
                         onValueChange={
                             (value: string) => {
-                                const selectedModel = models.find((model) => model.model_id === value) as ModelData;
+                                    const selectedModel = models.find((model) => model.model_id === value) ?? models[0];
                                 setModelData(selectedModel);
-
-                                const fin_form_data: FinData = getFinFormDataForModel(selectedModel.model_id as string, fin_form_data_all);
-                                setFormData(fin_form_data);
+                                const updated_fin_form_data: FinData = getFinFormDataForModel(selectedModel.model_id as string, fin_form_data_all);
+                                setFormData(updated_fin_form_data);
                             }
                         }
-                        value = {modelData.model_id as string}
+                        value={modelData.model_id as string}
                     >
-                        {models.map((modelData, index) => (
+                        {models.map((m) => (
                             <SelectItem
-                                key={index}
-                                value={modelData.model_id as string}>
-                                    {modelData.model_name}
+                                key={m.model_id as string}
+                                value={m.model_id as string}>
+                                    {m.model_name}
                             </SelectItem>
                         ))}
                     </Select>
@@ -140,7 +118,6 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
                         key={index}
                         id={field.id}
                         label={field.label}
-                        tooltip={field.tooltip}
                         step={field.step}
                         value={field.value}
                         icon={field.icon}
@@ -149,44 +126,6 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
                     />
                 ))}
 
-                <Flex>
-                    <Flex flexDirection="col" className="flex items-center">
-                        <Button
-                            className="mb-4"
-                            variant="secondary"
-                            onClick={toggleAdvanced}
-                            icon={showAdvanced ? RiArrowUpWideLine : RiArrowDownWideLine}>
-                            Advanced
-                        </Button>
-                        {showAdvanced && (
-                            <>
-                                {advanced_input_fields.map((field, index) => (
-                                    <NumberInputField
-                                        key={index}
-                                        id={field.id}
-                                        label={field.label}
-                                        tooltip={field.tooltip}
-                                        step={field.step}
-                                        value={field.value}
-                                        icon={field.icon}
-                                        handleChange={handleChange}
-                                        errors={field.errors}
-                                    />
-                                ))}
-                            </>
-                        )}
-                    </Flex>
-                </Flex>
-
-                {/* Hidden inputs to ensure values are included in form data */}
-                {!showAdvanced && (
-                    <>
-                        {advanced_input_fields.map((field, index) => (
-                            <input type="hidden" name={field.id} value={field.value} key={index} />
-                        ))}
-                    </>
-                )}
-
                 {(modelData.sim_id == null) && (
                     <p className="mt-4 text-red-500 text-center">
                         Please <Link href={`/workspace/simulations/${modelData.model_id}`} className="font-bold underline">run a simulation</Link> before calculating finances.
@@ -194,7 +133,7 @@ export function FinanceConfigForm({models, fin_form_data_all}: {models: ModelDat
                 )}
 
                 <div className="mt-6 flex justify-center gap-4">
-                    <SubmitButton sim_exists={(modelData.sim_id !== null)} />
+                    <SubmitButton sim_exists={!!modelData.sim_id} />
                 </div>
 
             </form>

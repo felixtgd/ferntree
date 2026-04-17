@@ -46,6 +46,8 @@ export const metadata: Metadata = {
     canonical: '/',
   },
 
+  // robots.index is false to prevent generic crawlers from indexing the app,
+  // while googleBot.index is true to allow Google's structured-data crawler.
   robots: {
     index: false,
     follow: true,

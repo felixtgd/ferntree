@@ -8,8 +8,6 @@ export default async function Page() {
                 <div className="col-span-1">
                     <Card
                         className="flex flex-grow flex-col items-center justify-center w-full h-full max-h-80"
-                        // decoration="top"
-                        // decorationColor="blue-300"
                     >
                         <span className="text-center text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
                             Set up finances to view results

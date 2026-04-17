@@ -1,4 +1,3 @@
-import { Card } from '@tremor/react';
 import { fetchFinResults } from './actions';
 import { FinChartData, FinResults, FinYearlyData } from '@/app/utils/definitions';
 import { BaseCard, BaseFinLineChart } from '@/app/components/base-comps';
@@ -35,16 +34,11 @@ export async function FinLineChart({model_id}: {model_id: string}) {
         </div>
       )
     }
-    // const fin_yearly_data: FinYearlyData[] = fin_results.yearly_data;
     const formattedData = formatChartData(fin_results);
 
   return (
-    <Card
-      className="flex flex-grow flex-col items-center justify-center w-full h-full"
-      decoration="top"
-      decorationColor="blue-300"
-    >
+    <BaseCard title="">
         <BaseFinLineChart data={formattedData} />
-    </Card>
+    </BaseCard>
   );
 }

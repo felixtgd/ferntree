@@ -2,19 +2,17 @@ import { List, ListItem } from '@tremor/react';
 import { fetchFinResults } from './actions';
 import { BaseCard } from '@/app/components/base-comps';
 import { FinKPIs, FinResults } from '@/app/utils/definitions';
-import { Tooltip } from '@/app/components/components';
 
-const moneyFormatter = (number: number) =>
-    `€ ${Math.round(number).toLocaleString()}`;
+const moneyFormatter = (number: number) => `€ ${Math.round(number).toLocaleString()}`;
 
 const yearFormatter = (number: number) =>
-    `${number.toFixed(1).toLocaleString()} years`;
+    `${number.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})} years`;
 
 const interestFormatter = (number: number) =>
-  `${number.toFixed(1).toLocaleString()} %`;
+  `${number.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})} %`;
 
 const lcoeFormatter = (number: number) =>
-  `${number.toFixed(1).toLocaleString()} ct/kWh`;
+  `${number.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1})} ct/kWh`;
 
 
 export async function FinKpis({model_id}: {model_id: string}) {
@@ -37,46 +35,32 @@ export async function FinKpis({model_id}: {model_id: string}) {
     <div>
       <BaseCard title="Key Performance Indicators">
         <List className="mt-2">
-            <ListItem key={kpis.investment.total}>
-              <Tooltip content="Total investment of PV and battery">
-                <span>Total investment</span>
-              </Tooltip>
+            <ListItem key="investment">
+              <span title="Total investment of PV and battery">Total investment</span>
               <span><strong>{moneyFormatter(kpis.investment.total)}</strong></span>
             </ListItem>
-            <ListItem key={kpis.cum_profit}>
-              <Tooltip content="Cumulative profit over the lifetime of the system">
-                <span>Cum. profit</span>
-              </Tooltip>
+            <ListItem key="cum_profit">
+              <span title="Cumulative profit over the lifetime of the system">Cum. profit</span>
               <span><strong>{moneyFormatter(kpis.cum_profit)}</strong></span>
             </ListItem>
-            <ListItem key={kpis.break_even_year}>
-              <Tooltip content="Time at which the cumulative profit equals the total investment">
-                <span>Break-even</span>
-              </Tooltip>
+            <ListItem key="break_even_year">
+              <span title="Time at which the cumulative profit equals the total investment">Break-even</span>
               <span><strong>{yearFormatter(kpis.break_even_year)}</strong></span>
             </ListItem>
-            <ListItem key={kpis.loan}>
-              <Tooltip content="Total loan = total investment - down payment">
-                <span>Total loan</span>
-              </Tooltip>
+            <ListItem key="loan">
+              <span title="Total loan = total investment - down payment">Total loan</span>
               <span><strong>{moneyFormatter(kpis.loan)}</strong></span>
             </ListItem>
-            <ListItem key={kpis.loan_paid_off}>
-              <Tooltip content="Year when the loan is paid off">
-                <span>Loan paid off</span>
-              </Tooltip>
+            <ListItem key="loan_paid_off">
+              <span title="Year when the loan is paid off">Loan paid off</span>
               <span><strong>{yearFormatter(kpis.loan_paid_off)}</strong></span>
             </ListItem>
-            <ListItem key={kpis.lcoe}>
-              <Tooltip content="Levelized cost of electricity = total system cost over its lifetime / total electricity output">
-                <span>LCOE</span>
-              </Tooltip>
+            <ListItem key="lcoe">
+              <span title="Levelized cost of electricity = total system cost over its lifetime / total electricity output">LCOE</span>
               <span><strong>{lcoeFormatter(kpis.lcoe)}</strong></span>
             </ListItem>
-            <ListItem key={kpis.solar_interest_rate}>
-              <Tooltip content="Average annual return on investment">
-                <span>ROI</span>
-              </Tooltip>
+            <ListItem key="solar_interest_rate">
+              <span title="Average annual return on investment">ROI</span>
               <span><strong>{interestFormatter(kpis.solar_interest_rate)}</strong></span>
             </ListItem>
         </List>

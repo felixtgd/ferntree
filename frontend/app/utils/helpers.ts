@@ -1,5 +1,3 @@
-'use server'
-
 import { ModelData } from "@/app/utils/definitions"
 import { cache } from "react";
 
@@ -7,7 +5,7 @@ import { cache } from "react";
 // Replace with real session-based identity when authentication is re-introduced.
 const ANONYMOUS_USER_ID = 'mvp-user';
 
-export async function getAnonymousUserId(): Promise<string> {
+export function getAnonymousUserId(): string {
     return ANONYMOUS_USER_ID;
 }
 
@@ -21,13 +19,21 @@ export async function loadBackendBaseUri() {
 
 export const fetchModels = cache(async (): Promise<ModelData[]> => {
 
-    const user_id = await getAnonymousUserId();
+    const user_id = getAnonymousUserId();
 
-    const BACKEND_BASE_URI = await loadBackendBaseUri();
-    const response_load_models = await fetch(`${BACKEND_BASE_URI}/workspace/models/fetch-models?user_id=${user_id}`);
-    const models: ModelData[] = await response_load_models.json();
+    try {
+        const BACKEND_BASE_URI = await loadBackendBaseUri();
+        const response_load_models = await fetch(`${BACKEND_BASE_URI}/workspace/models/fetch-models?user_id=${user_id}`);
 
-    console.log(`GET workspace/models/fetch-models: Models loaded (${response_load_models.status}).`);
+        if (!response_load_models.ok) {
+            throw new Error(`HTTP ${response_load_models.status}`);
+        }
 
-    return models;
+        const models: ModelData[] = await response_load_models.json();
+        console.log(`GET workspace/models/fetch-models: Models loaded (${response_load_models.status}).`);
+        return models;
+    } catch (error) {
+        console.error(`Failed to fetch models: ${error}`);
+        return [];
+    }
 })

@@ -29,7 +29,6 @@ export async function submitFinFormData(prev_state: FormState, form_data: FormDa
     // Set payload with user_id
     const payload = {
         ...validated_fields.data,
-        user_id: user_id,
     };
 
     let model_id: string;
@@ -41,6 +40,9 @@ export async function submitFinFormData(prev_state: FormState, form_data: FormDa
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         });
+        if (!response_submit_fin_data.ok) {
+            throw new Error(`HTTP ${response_submit_fin_data.status}`);
+        }
         model_id = await response_submit_fin_data.json();
 
         console.log(`POST workspace/finances/submit-fin-data: Fin form submitted (${response_submit_fin_data.status}). Model ID: ${model_id}`);
@@ -69,12 +71,20 @@ export async function fetchFinFormData() {
     // Get the user ID
     const user_id = getAnonymousUserId();
 
-    // Fetch models of user
-    const BACKEND_BASE_URI = await loadBackendBaseUri();
-    const response_load_models = await fetch(`${BACKEND_BASE_URI}/workspace/finances/fetch-fin-form-data?user_id=${user_id}`);
-    const fin_form_data_all: FinData[] = await response_load_models.json();
+    try {
+        // Fetch fin form data for all models of user
+        const BACKEND_BASE_URI = await loadBackendBaseUri();
+        const response_load_models = await fetch(`${BACKEND_BASE_URI}/workspace/finances/fetch-fin-form-data?user_id=${user_id}`);
 
-    console.log(`GET workspace/finances/fetch-fin-form-data: Fin form data fetched (${response_load_models.status}).`);
+        if (!response_load_models.ok) {
+            throw new Error(`HTTP ${response_load_models.status}`);
+        }
 
-    return fin_form_data_all;
+        const fin_form_data_all: FinData[] = await response_load_models.json();
+        console.log(`GET workspace/finances/fetch-fin-form-data: Fin form data fetched (${response_load_models.status}).`);
+        return fin_form_data_all;
+    } catch (error) {
+        console.error(`Failed to fetch fin form data: ${error}`);
+        return [];
+    }
 }

@@ -6,7 +6,7 @@ import { Tooltip } from '@/app/components/components';
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ');
-  }
+}
 
 const valueFormatter = (number: number) =>
     `${Math.round(number).toLocaleString()} kWh`;
@@ -15,7 +15,7 @@ const shareFormatter = (number: number) =>
     `${Math.round(number * 100).toString()}%`;
 
 
-function getChartData(chart_type: string, sim_results_eval: SimResultsEval | null): DonutChartData {
+function getChartData(chart_type: 'consumption' | 'generation', sim_results_eval: SimResultsEval | null): DonutChartData {
     const chart_data: DonutChartData = {
         data: [ {name: '', value: 0, share: 0, tooltip: ''} ],
         labels: {center: 0, title: 0},
@@ -83,7 +83,7 @@ function getChartData(chart_type: string, sim_results_eval: SimResultsEval | nul
     return chart_data;
 }
 
-export async function PvDonutChart({chart_type, model_id}: {chart_type: string, model_id: string}) {
+export async function PvDonutChart({chart_type, model_id}: {chart_type: 'consumption' | 'generation', model_id: string}) {
 
     const sim_results_eval: SimResultsEval | undefined = await fetchSimResults(model_id);
 
