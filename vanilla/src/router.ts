@@ -42,6 +42,9 @@ export function setContentElement(el: HTMLElement): void {
 }
 
 export function navigate(path: string, pushState = true): void {
+  // Navigating to the current URL would re-render the page mid-flight and
+  // abort any in-progress async render. Skip silently.
+  if (pushState && path === window.location.pathname) return;
   if (pushState) {
     history.pushState({}, '', path);
   }

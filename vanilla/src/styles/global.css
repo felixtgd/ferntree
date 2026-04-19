@@ -595,3 +595,264 @@ dialog::backdrop {
     padding: var(--spacing-4);
   }
 }
+
+/* ============================================================
+   Simulations page
+   ============================================================ */
+
+.page-heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0 0 var(--spacing-5) 0;
+  text-align: center;
+}
+
+.sim-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.sim-layout {
+  display: flex;
+  gap: var(--spacing-5);
+  align-items: flex-start;
+}
+
+/* --- Sidebar --- */
+
+.sim-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.sidebar-loading,
+.sidebar-error,
+.sidebar-empty {
+  font-size: 0.875rem;
+  color: var(--gray-500);
+  padding: var(--spacing-2) 0;
+}
+
+.sidebar-empty a {
+  color: var(--blue-500);
+  text-decoration: underline;
+}
+
+.sidebar-select {
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  background: white;
+  color: var(--gray-900);
+  cursor: pointer;
+  appearance: auto;
+}
+
+.sidebar-select:focus {
+  outline: 2px solid var(--blue-500);
+  outline-offset: 1px;
+}
+
+.sidebar-params {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
+  background: var(--gray-50);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray-200);
+}
+
+.sidebar-param-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+}
+
+.sidebar-param-icon {
+  color: var(--gray-400);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-param-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.sidebar-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* --- Content area --- */
+
+.sim-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.centered-card-text {
+  text-align: center;
+  padding: var(--spacing-6);
+  color: var(--gray-500);
+  font-size: 0.9375rem;
+}
+
+/* --- Results grid --- */
+
+.sim-grid-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+.sim-grid-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* --- Date range row --- */
+
+.date-range-row {
+  display: flex;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-3);
+  align-items: center;
+}
+
+.date-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: 0.875rem;
+  color: var(--gray-700);
+}
+
+.date-label input[type="date"] {
+  padding: var(--spacing-1) var(--spacing-2);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  color: var(--gray-900);
+  background: white;
+  cursor: pointer;
+}
+
+.date-label input[type="date"]:focus {
+  outline: 2px solid var(--blue-500);
+  outline-offset: 1px;
+}
+
+/* --- Chart canvas wrapper --- */
+
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  max-height: 220px;
+}
+
+.chart-wrap--tall {
+  max-height: 280px;
+}
+
+.chart-wrap canvas {
+  max-width: 100%;
+}
+
+/* --- Donut legend --- */
+
+.donut-legend {
+  margin-top: var(--spacing-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.donut-legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: 0.8125rem;
+  color: var(--gray-700);
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.legend-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.legend-value {
+  color: var(--gray-600);
+}
+
+.legend-share {
+  color: var(--gray-500);
+  min-width: 3.5rem;
+  text-align: right;
+}
+
+.legend-info {
+  color: var(--gray-400);
+  display: flex;
+  align-items: center;
+  cursor: help;
+}
+
+.legend-info:hover {
+  color: var(--blue-500);
+}
+
+/* --- Card title helper --- */
+
+.card-title {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--gray-800);
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 767px) {
+  .sim-layout {
+    flex-direction: column;
+  }
+
+  .sim-sidebar {
+    width: 100%;
+  }
+
+  .sim-grid-top {
+    grid-template-columns: 1fr;
+  }
+
+  .date-range-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

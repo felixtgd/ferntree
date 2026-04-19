@@ -446,3 +446,185 @@ Removed `vite.config.ts` from `include` — it is now covered by `tsconfig.node.
   ```
   tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build
   ```
+
+---
+
+## Phase 6 — Simulations Page and Results
+
+**Status:** Complete
+**Goal:** Implement the full `/workspace/simulations` and `/workspace/simulations/:model_id` pages, replacing the Phase 3 stub with the sidebar model selector, all five Chart.js charts, date-range timeseries picking, and all associated CSS.
+
+### Files Deleted
+
+#### `vanilla/src/pages/sim-results.ts`
+Removed. This stub was never routed to — `main.ts` maps both `/workspace/simulations` and `/workspace/simulations/:model_id` to `simulations.ts`. Deleting it removes dead code and avoids confusion.
+
+### Files Modified
+
+#### `vanilla/src/pages/simulations.ts`
+Fully replaced the Phase 3 stub (4 lines) with a complete implementation (~400 lines). Key design decisions and implementation notes below.
+
+**Chart.js registration**
+
+Chart.js v4 is tree-shaken. Only the required controllers, elements, scales, and plugins are imported and registered:
+```
+ArcElement, DoughnutController,
+BarElement, BarController,
+LineElement, LineController, PointElement,
+CategoryScale, LinearScale,
+Tooltip, Legend, Title
+```
+`PointElement` must be registered explicitly for line charts even when `pointRadius: 0` — omitting it causes a runtime error.
+
+**Chart instance lifecycle**
+
+Five module-level variables (`consumptionChart`, `pvGenChart`, `monthlyChart`, `powerChart`, `socChart`) hold references to live Chart.js instances. A `destroyCharts()` helper destroys all five and resets them to `null`. This is called unconditionally at the top of `render()` before any DOM manipulation, preventing the "Canvas already in use" error that occurs when the user navigates away and back to the simulations page.
+
+**Donut centre-label plugin**
+
+Chart.js does not support centre labels natively. A `makeCentrePlugin(text)` factory function returns a named `Plugin<'doughnut'>` object with an `afterDraw` hook that draws bold text at the geometric centre of the chart area. The plugin is created fresh for each donut instance and passed in the chart's `plugins` array (not registered globally) — this prevents the label from one donut bleeding onto the other canvas when both are on screen simultaneously.
+
+The donut chart configs use `Chart<'doughnut'>` as the generic type parameter. This is required so TypeScript accepts the `cutout` option, which is doughnut-specific and absent from the generic `options` type.
+
+**HTML structure**
+
+`pageShellHTML()` injects the full page shell synchronously before any `await`, so the page is never blank during data fetching. The structure is:
+```
+.sim-page
+  h1.page-heading "Simulations"
+  .sim-layout
+    aside#sim-sidebar        ← replaced by renderSidebar()
+    section#sim-content      ← replaced by renderSimResults() or defaults
+```
+
+**Sidebar (3 states)**
+
+| State | Condition | Content |
+|---|---|---|
+| Empty models | `models.length === 0` | "Please [create a model] first." with `data-link` anchor |
+| Models present | always | `<select>` + 6 parameter rows + conditional action buttons |
+| Fetch error | `fetchModels()` throws | Error message; `render()` returns early |
+
+The `<select>` option matching the current `model_id` route param has `selected` set by attribute comparison (`option.value === selectedId`), not by `select.value = ...`, which is more reliable during the initial render before the element is fully attached.
+
+**Sidebar parameter rows** use the same inline SVG icon + label pattern established in `models.ts`. Six rows: Location (map-pin), Roof inclination (house), Roof orientation (compass), Consumption (bolt), PV peak power (sun), Battery capacity (battery). The location label has a `title` attribute showing `coordinates.display_name` for the full geocoded name tooltip.
+
+**Sidebar action buttons** follow the same `!!model.sim_id` conditional as the Models page:
+- `sim_id` falsy → **Run Simulation** (blue, `data-action="run-sim"`)
+- `sim_id` truthy → **View Simulation Results** (green, `data-action="view-sim"`) + **Go to Finances** (orange, `data-action="go-fin"`)
+
+**Event delegation**
+
+A single `change` listener and a single `click` listener are registered on `container` (not on individual elements), matching the pattern from `models.ts`. The `change` listener targets `#model-select` and calls `navigate('/workspace/simulations/' + value)`. The `click` listener targets `[data-action]` and dispatches on `run-sim` / `view-sim` / `go-fin`.
+
+The `run-sim` handler shows the loading overlay with the message `"Simulating your energy system ..."`, awaits `runSimulation()`, and on success navigates to the results URL. On failure it hides the overlay and re-fetches models to refresh the sidebar (in case the backend changed state).
+
+**Content area (3 states)**
+
+| State | Condition | Content |
+|---|---|---|
+| Default | no `model_id` param | "Run a simulation to view results" card |
+| No results | `fetchSimResults()` throws or returns null | "No results found. Run a simulation to get results." card |
+| Full results | `fetchSimResults()` returns data | 3-column grid + date pickers + two line charts |
+
+**Simulation results grid**
+
+```
+.sim-grid
+  .sim-grid-top (CSS grid, 3 columns)
+    #card-consumption   ← Consumption donut
+    #card-pvgen         ← PV Generation donut
+    #card-monthly       ← Monthly PV Generation bar
+  .sim-grid-bottom
+    .date-range-row     ← two <input type="date"> fields
+    .card               ← Power Profiles line chart
+    .card               ← Battery State of Charge line chart
+```
+
+**Consumption donut chart**
+- Type: `doughnut`, `cutout: '65%'`
+- Segments: PV (`self_consumption`, amber) and Grid (`grid_consumption`, blue-300)
+- Centre label: `(self_sufficiency * 100).toFixed(0) + '%'`
+- Card title: `"Consumption: {annual_consumption} kWh"` (locale-formatted, 0 decimal places)
+- HTML legend below canvas: coloured swatch + name + kWh value + share % + info icon with `title` tooltip
+
+**PV Generation donut chart**
+- Same structure as Consumption donut
+- Segments: Self-cons. (`self_consumption`, amber) and Grid feed-in (`grid_feed_in`, blue-300)
+- Centre label: `(self_consumption_rate * 100).toFixed(0) + '%'`
+- Card title: `"PV Generation: {pv_generation} kWh"`
+
+**Monthly PV Generation bar chart**
+- Type: `bar`; 12 labels from `pv_monthly_gen[].month`; single amber dataset
+- Y axis tick callback: `(v) => v + ' kWh'`
+- Chart.js built-in legend hidden; card title "Monthly PV Generation" in the card header
+
+**Power Profiles line chart**
+- Type: `line`; 4 datasets: Load (rose `#f43f5e`), PV (amber `#f59e0b`), Battery (teal `#14b8a6`), Total (indigo `#6366f1`)
+- `pointRadius: 0`, `tension: 0.3`, `animation: false`
+- X axis: `ticks.maxTicksLimit: 2` (only start and end tick labels shown)
+- Y axis tick callback: `(v) => v + ' kW'`
+
+**Battery State of Charge line chart**
+- Type: `line`; single teal dataset (`StateOfCharge` field)
+- Y axis: `min: 0, max: 100`; tick callback: `(v) => v + '%'`
+- Same performance settings as Power Profiles chart
+
+**Date range and timeseries update**
+
+Date inputs default to `value="2023-06-19"` (from) and `value="2023-06-24"` (to). A `change` event listener on each input calls `updateTimeseries(modelId)`, which:
+1. Reads current `#date-from` / `#date-to` values
+2. Destroys `powerChart` and `socChart` instances
+3. Calls `fetchSimTimeseries(modelId, dateFrom, dateTo)`
+4. If `timeseries.length === 0`: replaces the canvas containers with a "No data for selected date range." message
+5. Otherwise: calls `renderTimeseriesCharts()` to create new chart instances
+
+Destroying and re-creating the charts on date change is simpler than attempting in-place `.data.datasets[i].data = ...` + `.update()`, which would require careful axis range management.
+
+**Empty timeseries guard**
+
+If the initial `fetchSimTimeseries()` call returns an empty array (e.g. backend has no data yet), the Power Profiles and Battery SoC canvases are simply not rendered — no Chart.js instance is created for an empty dataset, avoiding a blank chart frame.
+
+### Files Modified
+
+#### `vanilla/src/styles/global.css`
+A new **"Simulations page"** section was appended (approximately 200 lines). No existing CSS was changed.
+
+New classes added:
+
+| Class | Purpose |
+|---|---|
+| `.page-heading` | Centred `h1`, 1.5rem bold, used by the Simulations page heading |
+| `.sim-page` | Column flex wrapper for the full page |
+| `.sim-layout` | Row flex container: sidebar + content area |
+| `.sim-sidebar` | Fixed 260px width, column flex, shrinks to 100% on mobile |
+| `.sidebar-loading/error/empty` | Muted-text helper states |
+| `.sidebar-select` | Full-width styled `<select>` |
+| `.sidebar-params` | Light grey box holding the 6 parameter rows |
+| `.sidebar-param-row` | Icon + label row (flex, gap, ellipsis overflow) |
+| `.sidebar-param-icon` | Muted colour, flex-aligned icon wrapper |
+| `.sidebar-actions` | Column button stack; buttons full-width |
+| `.sim-content` | `flex: 1; min-width: 0` — fills remaining width without overflow |
+| `.centered-card-text` | Centred grey placeholder text inside a card |
+| `.sim-grid-top` | 3-column CSS grid for the donut + bar chart row |
+| `.sim-grid-bottom` | Column flex for the timeseries section |
+| `.date-range-row` | Row flex with gap for the two date inputs |
+| `.date-label` | Inline label + date input pairing |
+| `.chart-wrap` | Relative container, `max-height: 220px` |
+| `.chart-wrap--tall` | Modifier, `max-height: 280px` for line charts |
+| `.donut-legend` | Column flex legend container |
+| `.donut-legend-row` | Single legend row: swatch + name + value + share + info icon |
+| `.legend-swatch` | 12×12px coloured square |
+| `.legend-name/value/share/info` | Individual cell styles in the legend row |
+| `.card-title` | Semi-bold 0.9375rem text for card header titles |
+
+Responsive rules at `@media (max-width: 767px)`:
+- `.sim-layout` becomes column flex (sidebar stacks above content)
+- `.sim-sidebar` expands to full width
+- `.sim-grid-top` collapses to single column
+- `.date-range-row` becomes column flex
+
+### Verification
+- `npm run build` — `tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build` passes with zero TypeScript errors; 25 modules transformed, bundle output to `dist/`.
+- One TypeScript fix was required during implementation: the `cutout` option on Chart.js donut charts requires typing the `new Chart` call as `Chart<'doughnut'>` (not the generic `Chart`) for the compiler to accept doughnut-specific options.
+- The unused `Plugin` and `ChartType` imports from `chart.js` were removed after the doughnut typing fix made the `as Plugin<ChartType>` cast unnecessary.
