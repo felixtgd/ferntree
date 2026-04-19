@@ -125,3 +125,62 @@ Points the vanilla dev server at the Next.js mock backend for isolated frontend 
 ### Verification
 - `npm run build` — `tsc && vite build` passes with zero TypeScript errors.
 - All 10 API function signatures are fully typed; no `any` types used.
+
+---
+
+## Phase 3 — Shell, Router, and Sidenav
+
+**Status:** Complete
+**Goal:** Implement the client-side router, the persistent application shell (sidenav + content area), the `[data-link]` click interceptor, the `popstate` back/forward listener, the loading overlay helpers, and stub renderers for every route.
+
+### Files Modified
+
+#### `vanilla/src/router.ts`
+Fully replaced the Phase 1 placeholder. Key design decisions:
+
+- **Route table** (`Route[]`): each entry holds a compiled `RegExp`, an array of named param keys extracted from the pattern string (e.g. `:model_id`), and a `PageRenderer` function. Pattern strings use `:param` syntax; the compiler converts them to `([^/]+)` capture groups.
+- **`addRoute(pattern, render)`**: called from `main.ts` at startup to register each route.
+- **`setContentElement(el)`**: stores a reference to `<main id="content">` so `dispatch()` knows where to render.
+- **`navigate(path, pushState?)`**: calls `history.pushState` (unless `pushState=false`, used on initial load to avoid a spurious history entry), then calls `dispatch()`.
+- **`dispatch(path)`**: matches the path against the route table, extracts params, calls `route.render(contentEl, params)`, and calls `updateActiveNav()`. Falls back to a 404 message if no route matches. Catches async render errors and displays them inline.
+- **Root redirect**: `dispatch('/')` calls `navigate('/workspace', true)` — no intermediate blank render.
+- **`updateActiveNav(path)`**: iterates all `#sidenav a.nav-link` elements and toggles the `active` class using `path.startsWith(link.dataset.href)`. This ensures sub-routes (e.g. `/workspace/simulations/abc`) keep the parent nav link highlighted.
+- **`popstate` listener**: registered at module load time on `window`; calls `dispatch(window.location.pathname)` so browser Back/Forward work correctly.
+
+#### `vanilla/src/main.ts`
+Fully replaced the Phase 1 placeholder. Responsibilities:
+
+1. **Imports and registers all routes** by calling `addRoute()` for each of the 6 URL patterns. Both `/workspace/simulations` and `/workspace/simulations/:model_id` point to the same `renderSimulations` function (same for finances).
+2. **Renders the persistent shell** by setting `app.innerHTML` to the sidenav + `<main id="content">` HTML. The sidenav contains:
+   - A logo link (`.nav-logo`) to `/workspace` with a pie-chart SVG icon and "Ferntree" text label.
+   - Three `.nav-link` anchors for Models, Simulations, Finances — each with an SVG icon, a `.nav-label` span (hidden on narrow viewports), `data-link` attribute (marks it for router interception), and `data-href` attribute (used for active highlighting via `startsWith`).
+3. **Registers the `[data-link]` click interceptor** on `document` (event delegation): any click on — or inside — an `a[data-link]` element calls `e.preventDefault()` and `navigate(href)` instead of triggering a browser navigation.
+4. **Boots the router** by calling `navigate(window.location.pathname, false)` to render the page matching the URL at load time without pushing a duplicate history entry.
+5. **Exports `showLoadingOverlay(message)` and `hideLoadingOverlay()`** for use by page modules during long-running operations. These read/write the `#loading-overlay` element defined in `index.html`.
+
+#### `vanilla/src/pages/workspace.ts`
+#### `vanilla/src/pages/models.ts`
+Stubs updated to use the correct `render(container, _params)` signature and write descriptive placeholder text.
+
+#### `vanilla/src/pages/simulations.ts`
+#### `vanilla/src/pages/finances.ts`
+Stubs updated to accept `params` and display the `model_id` route param when present (e.g. "Simulations — model: abc123"), making it straightforward to verify that route param extraction works during manual testing before Phases 6–7.
+
+#### `vanilla/src/styles/global.css`
+Two changes:
+
+1. **`.nav-logo` updated** — added `display: flex; align-items: center; gap: var(--spacing-3)` and a hover background, because the logo link now contains an SVG icon + text span rather than plain text.
+2. **Responsive media query simplified** — removed the `::before { content: 'F' }` workaround (no longer needed since the SVG icon is always visible). Added `justify-content: center` to both `.nav-logo` and `.nav-link` in collapsed mode so icons are centred in the narrow sidebar.
+
+### Architecture notes
+
+- `sim-results.ts` and `fin-results.ts` page stubs are intentionally left as minimal stubs. The router maps `/workspace/simulations/:model_id` directly to `simulations.ts` and `/workspace/finances/:model_id` to `finances.ts` — the single module handles both the index and the detail view by checking `params.model_id`.
+- Loading overlay HTML remains in `index.html` (outside `#app`) so it is never overwritten when the shell or page content is replaced.
+
+### Verification
+- `npm run build` — `tsc && vite build` passes, 9 modules transformed, zero errors.
+- Navigating to `/` redirects to `/workspace` with no blank render.
+- Clicking sidenav links updates the URL and content without a page reload.
+- Active link highlighting uses `startsWith` — visiting `/workspace/simulations/abc` highlights the Simulations link.
+- Browser Back/Forward navigate correctly via the `popstate` listener.
+- Hard refresh at `/workspace/models` loads the stub (Vite dev server SPA fallback active).

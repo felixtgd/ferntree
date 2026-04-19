@@ -96,12 +96,21 @@ input, select, textarea {
 }
 
 #sidenav .nav-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--brand-blue);
   padding: var(--spacing-2) var(--spacing-3);
   margin-bottom: var(--spacing-4);
   white-space: nowrap;
+  border-radius: var(--radius);
+  transition: background 0.15s;
+}
+
+#sidenav .nav-logo:hover {
+  background: var(--gray-100);
 }
 
 #sidenav a.nav-link {
@@ -359,13 +368,14 @@ dialog::backdrop {
   }
 
   #sidenav .nav-logo {
-    font-size: 0;
     padding: var(--spacing-2);
+    justify-content: center;
+    margin-bottom: var(--spacing-4);
   }
 
-  #sidenav .nav-logo::before {
-    content: 'F';
-    font-size: 1.1rem;
+  #sidenav a.nav-link {
+    justify-content: center;
+    padding: var(--spacing-2);
   }
 
   #content {
