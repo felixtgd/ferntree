@@ -311,6 +311,92 @@ input, select, textarea {
 }
 
 /* =========================================================
+   Workspace Home
+   ========================================================= */
+.workspace-home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: var(--spacing-8);
+}
+
+.workflow-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.workflow-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: var(--blue-100);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-6);
+  width: 220px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: var(--gray-900);
+  text-decoration: none;
+}
+
+.workflow-card:hover {
+  background: var(--blue-300);
+}
+
+.workflow-badge {
+  background: var(--blue-500);
+  color: white;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-bottom: var(--spacing-3);
+  flex-shrink: 0;
+}
+
+.workflow-title {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: var(--spacing-2);
+}
+
+.workflow-desc {
+  font-size: 0.85rem;
+  color: var(--gray-700);
+  line-height: 1.4;
+}
+
+.workflow-arrow {
+  color: var(--blue-500);
+  font-size: 2.5rem;
+  margin: 0 var(--spacing-4);
+  line-height: 1;
+  user-select: none;
+}
+
+/* Stack vertically and hide arrows on narrow screens */
+@media (max-width: 767px) {
+  .workflow-row {
+    flex-direction: column;
+    gap: var(--spacing-4);
+  }
+
+  .workflow-arrow {
+    display: none;
+  }
+}
+
+/* =========================================================
    Dialog / Modal
    ========================================================= */
 dialog {

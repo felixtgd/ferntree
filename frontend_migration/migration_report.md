@@ -184,3 +184,44 @@ Two changes:
 - Active link highlighting uses `startsWith` — visiting `/workspace/simulations/abc` highlights the Simulations link.
 - Browser Back/Forward navigate correctly via the `popstate` listener.
 - Hard refresh at `/workspace/models` loads the stub (Vite dev server SPA fallback active).
+
+---
+
+## Phase 4 — Workspace Home
+
+**Status:** Complete
+**Goal:** Implement the `/workspace` landing page with three workflow step cards (Models, Simulations, Finances), a blue `→` arrow between each pair on desktop, and correct hover styles and client-side navigation.
+
+### Files Modified
+
+#### `vanilla/src/pages/workspace.ts`
+Replaced the Phase 3 stub with a full implementation. Renders a `.workspace-home` wrapper containing a `.workflow-row` flex container with three `.workflow-card` anchor elements and two `.workflow-arrow` separators.
+
+Each card:
+- Is an `<a>` element with `data-link` (router interception) and `data-href` (active nav highlighting) attributes pointing to its respective route.
+- Contains a `.workflow-badge` (blue circle with the step number), a `.workflow-title` heading, and a `.workflow-desc` paragraph — text copied verbatim from the Next.js source (`frontend/app/workspace/page.tsx`) to match the checklist exactly.
+
+The two `.workflow-arrow` `<div>` elements contain `→` and are styled to be visible only on desktop.
+
+No data is fetched on this page; the render function is synchronous aside from the `async` signature required by the `PageRenderer` type.
+
+#### `vanilla/src/styles/global.css`
+Added a new **Workspace Home** section with the following classes:
+
+| Class | Purpose |
+|---|---|
+| `.workspace-home` | Centres the card row vertically and horizontally in the content area |
+| `.workflow-row` | `display: flex; flex-direction: row` with `flex-wrap: wrap` so it reflows gracefully |
+| `.workflow-card` | `background: var(--blue-100)`; `transition: background 0.2s`; fixed `width: 220px`; `border-radius` + `box-shadow` |
+| `.workflow-card:hover` | `background: var(--blue-300)` — matches the Tailwind `hover:bg-blue-300` from Next.js |
+| `.workflow-badge` | Blue circle (`background: var(--blue-500)`), `border-radius: 50%`, centred number |
+| `.workflow-arrow` | `color: var(--blue-500)`, `font-size: 2.5rem`, horizontal margin |
+| `@media (max-width: 767px)` | `flex-direction: column` on `.workflow-row`; `display: none` on `.workflow-arrow` — cards stack vertically, arrows hidden |
+
+### Verification
+- `npm run build` — `tsc && vite build` passes, zero errors.
+- Three cards render at `/workspace` with correct text and numbered badges.
+- Clicking each card navigates to its route via the client-side router (no page reload).
+- Arrow `→` symbols visible between cards on wide screens; hidden on narrow screens.
+- Card background transitions from `--blue-100` to `--blue-300` on hover.
+- No data is fetched; no console errors on load.
