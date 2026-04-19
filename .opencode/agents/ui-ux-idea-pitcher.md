@@ -75,7 +75,7 @@ description: >-
 
   </example>
 mode: all
-model: "github-copilot/gemini-3.1-pro"
+model: "github-copilot/gemini-3.1-pro-preview"
 temperature: 0.8
 hidden: false
 permission:
