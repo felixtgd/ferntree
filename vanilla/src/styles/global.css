@@ -1,0 +1,375 @@
+/* =========================================================
+   CSS Custom Properties — Brand Colours & Design Tokens
+   ========================================================= */
+:root {
+  --brand-blue: rgb(23, 69, 146);
+  --blue-100: #dbeafe;
+  --blue-300: #93c5fd;
+  --blue-500: #3b82f6;
+  --rose-500: #f43f5e;
+  --amber-500: #f59e0b;
+  --teal-500: #14b8a6;
+  --indigo-500: #6366f1;
+  --green-600: #16a34a;
+  --red-500: #ef4444;
+  --orange-500: #f97316;
+
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-700: #374151;
+  --gray-900: #111827;
+
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+
+  --radius: 0.5rem;
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
+  --sidenav-width: 220px;
+  --sidenav-collapsed-width: 56px;
+}
+
+/* =========================================================
+   Reset & Base
+   ========================================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: var(--gray-900);
+  background: var(--gray-50);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* =========================================================
+   Layout Shell
+   ========================================================= */
+#app {
+  display: flex;
+  min-height: 100vh;
+}
+
+#sidenav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: var(--sidenav-width);
+  background: white;
+  border-right: 1px solid var(--gray-200);
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-4) var(--spacing-2);
+  gap: var(--spacing-1);
+  z-index: 100;
+  overflow: hidden;
+}
+
+#sidenav .nav-logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--brand-blue);
+  padding: var(--spacing-2) var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+  white-space: nowrap;
+}
+
+#sidenav a.nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius);
+  color: var(--gray-700);
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+#sidenav a.nav-link:hover {
+  background: var(--gray-100);
+}
+
+#sidenav a.nav-link.active {
+  background: var(--blue-100);
+  color: var(--blue-500);
+  font-weight: 600;
+}
+
+#sidenav a.nav-link .nav-label {
+  overflow: hidden;
+}
+
+#content {
+  margin-left: var(--sidenav-width);
+  flex: 1;
+  padding: var(--spacing-8);
+  min-height: 100vh;
+  transition: margin-left 0.2s;
+}
+
+/* =========================================================
+   Loading Overlay
+   ========================================================= */
+#loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.loading-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: var(--spacing-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-6);
+  box-shadow: var(--shadow-md);
+  min-width: 240px;
+  text-align: center;
+}
+
+.loading-message {
+  color: var(--gray-700);
+  font-size: 1rem;
+}
+
+.spinner {
+  width: 64px;
+  height: 64px;
+  border: 6px solid var(--gray-200);
+  border-top-color: var(--blue-500);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =========================================================
+   Cards
+   ========================================================= */
+.card {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card-header {
+  height: 4px;
+  background: var(--brand-blue);
+}
+
+.card-body {
+  padding: var(--spacing-6);
+}
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius);
+  border: none;
+  font-weight: 500;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-blue {
+  background: var(--blue-500);
+  color: white;
+}
+
+.btn-blue:hover:not(:disabled) {
+  background: var(--brand-blue);
+}
+
+.btn-green {
+  background: var(--green-600);
+  color: white;
+}
+
+.btn-green:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-orange {
+  background: var(--orange-500);
+  color: white;
+}
+
+.btn-orange:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-red {
+  background: var(--red-500);
+  color: white;
+}
+
+.btn-red:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--gray-300);
+  color: var(--gray-700);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: var(--gray-100);
+}
+
+/* =========================================================
+   Form Elements
+   ========================================================= */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.form-label {
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+.form-input {
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-input:focus {
+  border-color: var(--blue-500);
+}
+
+.form-input.error {
+  border-color: var(--red-500);
+}
+
+.form-error {
+  color: var(--red-500);
+  font-size: 0.8rem;
+}
+
+/* =========================================================
+   Dialog / Modal
+   ========================================================= */
+dialog {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 0;
+  max-width: 480px;
+  width: 100%;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.4);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-4) var(--spacing-6);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.dialog-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.dialog-body {
+  padding: var(--spacing-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4) var(--spacing-6);
+  border-top: 1px solid var(--gray-200);
+}
+
+/* =========================================================
+   Responsive — narrow viewport (< 768px): icon-only sidenav
+   ========================================================= */
+@media (max-width: 767px) {
+  #sidenav {
+    width: var(--sidenav-collapsed-width);
+    padding: var(--spacing-4) var(--spacing-1);
+  }
+
+  #sidenav .nav-label {
+    display: none;
+  }
+
+  #sidenav .nav-logo {
+    font-size: 0;
+    padding: var(--spacing-2);
+  }
+
+  #sidenav .nav-logo::before {
+    content: 'F';
+    font-size: 1.1rem;
+  }
+
+  #content {
+    margin-left: var(--sidenav-collapsed-width);
+    padding: var(--spacing-4);
+  }
+}
