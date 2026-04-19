@@ -441,6 +441,132 @@ dialog::backdrop {
 }
 
 /* =========================================================
+   Page title / shared header
+   ========================================================= */
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  flex: 1;
+}
+
+/* =========================================================
+   Models page
+   ========================================================= */
+.models-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.models-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+/* Model card */
+.model-card {
+  margin-bottom: var(--spacing-4);
+  width: 100%;
+}
+
+.model-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.model-params {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-4);
+  width: 100%;
+  margin-bottom: var(--spacing-4);
+}
+
+.param-list {
+  list-style: none;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  border-top: 1px solid var(--gray-100);
+  padding-top: var(--spacing-2);
+}
+
+.param-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-1) 0;
+  border-bottom: 1px solid var(--gray-100);
+  gap: var(--spacing-2);
+}
+
+.param-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  color: var(--gray-500);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.param-value {
+  font-size: 0.85rem;
+  color: var(--gray-900);
+  text-align: right;
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  justify-content: flex-end;
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--gray-100);
+}
+
+.model-btn {
+  font-size: 0.8rem;
+  padding: var(--spacing-1) var(--spacing-3);
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  justify-content: flex-end;
+  padding: var(--spacing-8);
+}
+
+.empty-arrow {
+  width: 32rem;
+  height: 16rem;
+  color: var(--blue-500);
+}
+
+/* Form field icon + unit hint */
+.field-icon {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: var(--spacing-1);
+}
+
+.unit-hint {
+  color: var(--gray-400);
+  font-weight: 400;
+  font-size: 0.85rem;
+  margin-left: var(--spacing-1);
+}
+
+/* =========================================================
    Responsive — narrow viewport (< 768px): icon-only sidenav
    ========================================================= */
 @media (max-width: 767px) {

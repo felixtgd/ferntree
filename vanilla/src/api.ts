@@ -16,7 +16,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 function apiUrl(path: string, params: Record<string, string> = {}): string {
-  const url = new URL(path, BACKEND_BASE_URI);
+  const url = new URL(BACKEND_BASE_URI + path);
   url.searchParams.set('user_id', USER_ID);
   for (const [k, v] of Object.entries(params)) {
     url.searchParams.set(k, v);

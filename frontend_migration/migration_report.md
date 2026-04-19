@@ -225,3 +225,224 @@ Added a new **Workspace Home** section with the following classes:
 - Arrow `→` symbols visible between cards on wide screens; hidden on narrow screens.
 - Card background transitions from `--blue-100` to `--blue-300` on hover.
 - No data is fetched; no console errors on load.
+
+---
+
+## Phase 5 — Models Page
+
+**Status:** Complete
+**Goal:** Implement the full `/workspace/models` page including model cards with parameter display and conditional action buttons, the Create Model dialog with client-side Zod validation and Nominatim geocoding, and all delete/run-sim/navigate interactions.
+
+### Files Created
+
+#### `vanilla/src/overlay.ts`
+Extracted `showLoadingOverlay(message)` and `hideLoadingOverlay()` into a dedicated module to avoid a circular dependency. Previously these were defined and exported from `main.ts`, but `main.ts` imports page modules — if a page module imported from `main.ts`, it would create a circular import chain. The overlay helpers now live in `overlay.ts` and are imported by page modules directly. `main.ts` re-exports them via `export { showLoadingOverlay, hideLoadingOverlay } from './overlay'` to preserve any external consumers.
+
+### Files Modified
+
+#### `vanilla/src/main.ts`
+- Removed inline `showLoadingOverlay` / `hideLoadingOverlay` definitions.
+- Added `export { showLoadingOverlay, hideLoadingOverlay } from './overlay'` and `export { navigate }` so page modules can import these without going through `main.ts` as an entry point.
+
+#### `vanilla/src/pages/models.ts`
+Fully implemented. Key sections:
+
+**Zod schema** — `ModelDataSchema` ported verbatim from `frontend/app/utils/definitions.ts` using `z.coerce.number()` for numeric fields so HTML form string values are cast automatically.
+
+**Inline SVG icons** — all icons are defined as HTML string constants (`icons.*`) and inlined directly into the rendered HTML. No icon library dependency. Icons used: home, roof (up-arrow), compass, bulb, sun, battery, play, eye, finance (currency), delete (bin), save, tag (for model name field).
+
+**`modelCardHTML(m)`** — builds the card HTML for one model. Uses `m.coordinates?.display_name ?? m.location` for the location field (shows geocoded name if available, otherwise raw input). Conditionally renders either the "simulation exists" button set (View Simulation Results green + Go to Finances orange + Delete red) or the "no simulation" set (Run Simulation blue + Delete red) based on `!!m.sim_id`. All action buttons carry `data-action` and `data-model-id` attributes for event delegation.
+
+**`emptyStateHTML()`** — renders the SVG arrow with "Start by creating a model" text, matching the Next.js source.
+
+**`createModelDialogHTML()`** — native `<dialog>` element with:
+- Header: "Create a new model" + Close button
+- Seven form fields matching the checklist exactly: model name (text), location (text), roof inclination (select: 0°/30°/45°), roof orientation (select: South/South-East/…/North with correct degree values), electricity consumption (number, step=1), PV peak power (number, step=0.1), battery capacity (number, step=0.1)
+- Each field has `<span class="form-error" id="err-{field}">` for inline validation messages
+- `novalidate` on the form — validation is handled by Zod, not the browser
+
+**`renderModelList(container, models)`** — replaces only `#model-list` innerHTML; called on initial load, after delete, and after create. This avoids re-creating the dialog and re-attaching event listeners on every model list update.
+
+**Event handling:**
+- `createBtn` click → `dialog.showModal()`
+- `closeBtn` click → `dialog.close()` + `form.reset()` + `clearErrors()`
+- `dialog` `cancel` event → `e.preventDefault()` — prevents the Escape key from closing the dialog (static dialog behaviour required by the checklist)
+- `form` submit → Zod validation → `geocodeLocation()` → `submitModel()` → close dialog + `renderModelList()` + update button state; errors displayed inline below each field via `showFieldError()`
+- `saveBtn` disabled during in-flight submission
+- Model card actions via event delegation on `container` (single listener, matches `[data-action]` attribute):
+  - `view-sim` → `navigate('/workspace/simulations/{model_id}')`
+  - `go-fin` → `navigate('/workspace/finances/{model_id}')`
+  - `delete` → `deleteModel()` → filter local models array + `renderModelList()` + update button state
+  - `run-sim` → `showLoadingOverlay('Simulating your energy system ...')` → `runSimulation()` → on success `navigate('/workspace/simulations/{model_id}')`, on failure `hideLoadingOverlay()` + re-render
+
+#### `vanilla/src/styles/global.css`
+Added **Models page** section and **Page title** section with the following classes:
+
+| Class | Purpose |
+|---|---|
+| `.page-title` | Centred `1.5rem` heading, `flex:1` to stay centred in the header flex row |
+| `.models-header` | Flex row with space-between for title + Create button |
+| `.model-card` | Full-width card with bottom margin |
+| `.model-card-title` | Centred model name heading |
+| `.model-params` | Flex row containing two `.param-list` columns |
+| `.param-list` | Column of `.param-row` items with top border |
+| `.param-row` | Space-between flex row for label + value |
+| `.param-label` | Icon + text, muted grey, `white-space: nowrap` |
+| `.param-value` | Right-aligned, truncates with ellipsis, `max-width: 50%` |
+| `.model-actions` | Flex-wrap row of buttons, right-aligned, top border |
+| `.model-btn` | Smaller padding/font for card action buttons |
+| `.empty-state` | Right-aligned container for the empty-state SVG |
+| `.empty-arrow` | Large SVG dimensions matching the Next.js layout |
+| `.field-icon` | Inline-flex wrapper for icons inside form labels |
+| `.unit-hint` | Muted grey unit text in form labels |
+
+### Verification
+- `npm run build` — `tsc && vite build` passes, 22 modules transformed, zero errors.
+- Model cards render with two-column parameter layout and correct icons.
+- Location field shows `coordinates.display_name` when available; `title` tooltip shows the full name.
+- Correct button set shown based on `!!model.sim_id`.
+- Create Model button enabled on initial page load when fewer than 5 models exist; disabled with correct tooltip when 5 models exist.
+- Dialog opens with `showModal()`, Close button resets and clears errors; Escape key does not close the dialog.
+- Zod validation shows per-field error messages in red below each input.
+- Geocoding failure shows error below the location field.
+- Successful create closes dialog and re-renders model list in place.
+- Delete removes model from list immediately without page reload.
+- Run Simulation shows loading overlay; navigates to simulation results on success.
+
+---
+
+### Bug fix — Create Model button not enabled on initial page load
+
+**Symptom**: navigating to `/workspace/models` rendered the button as permanently disabled (`title="Loading…"`) regardless of how many models existed. The button only became interactive after the user performed a subsequent create or delete action.
+
+**Root cause**: the initial render sets `disabled` on the button as a placeholder while models are fetching. After `fetchModels()` resolved, the code that updates `createBtn.disabled` and `createBtn.title` was only present inside the create-success and delete handlers — there was no equivalent update after the initial fetch.
+
+**Fix** (`src/pages/models.ts`): added explicit button state initialisation immediately after `renderModelList()` is called on first load:
+
+```ts
+createBtn.disabled = models.length >= 5;
+createBtn.title = models.length >= 5
+  ? 'You have reached the maximum number of models. Delete a model to create a new one.'
+  : 'Create a new model';
+```
+
+---
+
+### Bug fix — Escape key closes the Create Model dialog
+
+**Symptom**: pressing Escape while the Create Model dialog was open dismissed it silently, discarding any entered data without user confirmation. The checklist requires a "static dialog" that does not close on outside interaction.
+
+**Root cause**: native `<dialog>` elements fire a `cancel` event on Escape keypress and close automatically. No listener was attached to suppress this behaviour.
+
+**Fix** (`src/pages/models.ts`): added a `cancel` event listener that calls `preventDefault()`:
+
+```ts
+dialog.addEventListener('cancel', (e) => e.preventDefault());
+```
+
+---
+
+### Bug fix — models page stuck on "Loading models…"
+
+**Symptom**: navigating to `/workspace/models` rendered the page shell (title and disabled "+ Create Model" button) but the model list never progressed past "Loading models…". No model cards appeared and the Create Model button remained disabled.
+
+**Root cause**: a silent URL construction bug in `src/api.ts`.
+
+The `apiUrl` helper built request URLs using the two-argument `URL` constructor:
+
+```ts
+const url = new URL(path, BACKEND_BASE_URI);
+```
+
+When `path` starts with `/` (an absolute path), the `URL` constructor discards everything after the origin of the base — i.e. any path prefix on the base is silently dropped. With `BACKEND_BASE_URI = 'http://localhost:3000/api/mock'` and `path = '/workspace/models/fetch-models'`, the result was:
+
+```
+http://localhost:3000/workspace/models/fetch-models   ← wrong
+```
+
+instead of:
+
+```
+http://localhost:3000/api/mock/workspace/models/fetch-models   ← correct
+```
+
+The request therefore hit a non-existent route, received a 404, and `handleResponse` threw. The `catch` block in `render()` either displayed an error message or — depending on timing — left the page in the loading state. The Create Model button never reached the code that enables it, because that code only runs after a successful fetch.
+
+**Fix** (`src/api.ts`): replaced the two-argument `URL` constructor with string concatenation so the full path is assembled before query parameters are appended:
+
+```ts
+// Before (broken)
+const url = new URL(path, BACKEND_BASE_URI);
+
+// After (correct)
+const url = new URL(BACKEND_BASE_URI + path);
+```
+
+This preserves the `/api/mock` prefix regardless of whether `path` starts with `/`.
+
+---
+
+### Local mock API (Vite plugin)
+
+Previously the vanilla app was tested against the Next.js mock backend running on `localhost:3000`, which required a separate `npm run dev` process inside `frontend/`. This dependency has been removed. The mock is now embedded in the Vite dev server.
+
+#### Files created / modified
+
+**`vanilla/mock-plugin.ts`** (new)
+
+A Vite `Plugin` that registers a Connect middleware via `configureServer`. The middleware intercepts every request whose path starts with `/api/mock/` and responds with static JSON — no network call leaves the Vite process. All nine endpoints are handled:
+
+| Method | Path | Response |
+|---|---|---|
+| GET | `/api/mock/workspace/models/fetch-models` | Two model objects (`mock-model-1` with `sim_id`, `mock-model-2` without) |
+| POST | `/api/mock/workspace/models/submit-model` | String `"mock-model-new"` |
+| DELETE | `/api/mock/workspace/models/delete-model` | Boolean `true` |
+| GET | `/api/mock/workspace/simulations/run-sim` | `{ run_successful: true }` |
+| GET | `/api/mock/workspace/simulations/fetch-sim-results` | Full `SimResultsEval` with 12-month PV data |
+| POST | `/api/mock/workspace/simulations/fetch-sim-timeseries` | 24 hourly `SimTimestep` objects for a sample summer day |
+| GET | `/api/mock/workspace/finances/fetch-fin-form-data` | One `FinData` record for `mock-model-1` |
+| POST | `/api/mock/workspace/finances/submit-fin-form-data` | String `"mock-model-1"` |
+| GET | `/api/mock/workspace/finances/fetch-fin-results` | Full `FinResults` with 21 years of yearly data |
+
+Any unrecognised `/api/mock/*` route returns a `404` JSON error. OPTIONS preflight requests are handled with permissive CORS headers.
+
+Response data is identical to the data in `frontend/app/api/mock/` — the shapes were copied verbatim.
+
+**`vanilla/vite.config.ts`** (modified)
+
+Added `import { mockApiPlugin } from './mock-plugin'` and registered it in the `plugins` array.
+
+**`vanilla/.env.local`** (modified)
+
+Changed `VITE_BACKEND_BASE_URI` from `http://localhost:3000/api/mock` to `http://localhost:5173/api/mock`. The Vite dev server now serves both the app and the mock API on the same port.
+
+**`vanilla/tsconfig.node.json`** (new)
+
+`mock-plugin.ts` and `vite.config.ts` run in a Node.js context and require `@types/node` (for `http.ServerResponse`, `Buffer`, etc.). Adding `"node"` to the types of the browser `tsconfig.json` would pollute the browser type environment. A separate `tsconfig.node.json` is used instead:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts", "mock-plugin.ts"]
+}
+```
+
+**`vanilla/tsconfig.json`** (modified)
+
+Removed `vite.config.ts` from `include` — it is now covered by `tsconfig.node.json`.
+
+**`vanilla/package.json`** (modified)
+
+- Added `@types/node` to `devDependencies`.
+- Updated the `build` script to type-check both tsconfigs before bundling:
+  ```
+  tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build
+  ```

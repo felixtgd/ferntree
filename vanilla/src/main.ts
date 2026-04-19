@@ -8,6 +8,9 @@ import { render as renderModels } from './pages/models';
 import { render as renderSimulations } from './pages/simulations';
 import { render as renderFinances } from './pages/finances';
 
+export { navigate };
+export { showLoadingOverlay, hideLoadingOverlay } from './overlay';
+
 // ---------------------------------------------------------------------------
 // Register routes
 // ---------------------------------------------------------------------------
@@ -78,18 +81,3 @@ document.addEventListener('click', (e) => {
 
 // Boot: render the page for the current URL.
 navigate(window.location.pathname, false);
-
-// ---------------------------------------------------------------------------
-// Loading overlay helpers — exported for use by page modules.
-// ---------------------------------------------------------------------------
-export function showLoadingOverlay(message: string): void {
-  const overlay = document.getElementById('loading-overlay')!;
-  const msg = overlay.querySelector<HTMLElement>('.loading-message')!;
-  msg.textContent = message;
-  overlay.style.display = 'flex';
-}
-
-export function hideLoadingOverlay(): void {
-  const overlay = document.getElementById('loading-overlay')!;
-  overlay.style.display = 'none';
-}
