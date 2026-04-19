@@ -54,14 +54,11 @@ export function navigate(path: string, pushState = true): void {
 function dispatch(path: string): void {
   if (!contentEl) return;
 
-  // Root redirect
-  if (path === '/' || path === '') {
-    navigate('/workspace', true);
-    return;
-  }
+  // Normalise empty path to root
+  const normPath = path === '' ? '/' : path;
 
   for (const route of routes) {
-    const match = path.match(route.pattern);
+    const match = normPath.match(route.pattern);
     if (match) {
       const params: RouteParams = {};
       route.paramNames.forEach((name, i) => {
@@ -71,23 +68,53 @@ function dispatch(path: string): void {
         console.error('Page render error:', err);
         contentEl!.innerHTML = `<p style="padding:2rem;color:red">Failed to load page.</p>`;
       });
-      updateActiveNav(path);
+      updateActiveNav(normPath);
+      updateShell(normPath);
       return;
     }
   }
 
   // No match — 404 fallback
   contentEl.innerHTML = `<p style="padding:2rem">Page not found: ${path}</p>`;
+  updateActiveNav(normPath);
+  updateShell(normPath);
 }
 
 // ---------------------------------------------------------------------------
-// Active nav highlighting — uses startsWith so sub-routes stay highlighted.
+// Active nav highlighting
+// Top navbar: exact-prefix matching for Home (/), Blog (/blog), Ferntree (/workspace).
+// Sidenav: existing startsWith matching for workspace sub-routes.
 // ---------------------------------------------------------------------------
-function updateActiveNav(path: string): void {
+export function updateActiveNav(path: string): void {
+  // Top navbar links
+  document.querySelectorAll<HTMLAnchorElement>('#topnav a[data-nav]').forEach((link) => {
+    const nav = link.dataset.nav ?? '';
+    let active = false;
+    if (nav === 'home') {
+      active = path === '/';
+    } else if (nav === 'blog') {
+      active = path === '/blog' || path.startsWith('/blog/');
+    } else if (nav === 'ferntree') {
+      active = path === '/ferntree' || path === '/workspace' || path.startsWith('/workspace/');
+    }
+    link.classList.toggle('active', active);
+  });
+
+  // Sidenav links (workspace sub-navigation)
   document.querySelectorAll<HTMLAnchorElement>('#sidenav a.nav-link').forEach((link) => {
     const href = link.dataset.href ?? '';
     link.classList.toggle('active', href !== '' && path.startsWith(href));
   });
+}
+
+// ---------------------------------------------------------------------------
+// Shell state — show/hide sidenav based on whether we're in /workspace/*.
+// ---------------------------------------------------------------------------
+export function updateShell(path: string): void {
+  const shell = document.getElementById('shell');
+  if (!shell) return;
+  const inWorkspace = path === '/workspace' || path.startsWith('/workspace/');
+  shell.classList.toggle('has-sidenav', inWorkspace);
 }
 
 // ---------------------------------------------------------------------------
