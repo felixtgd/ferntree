@@ -628,3 +628,206 @@ Responsive rules at `@media (max-width: 767px)`:
 - `npm run build` — `tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build` passes with zero TypeScript errors; 25 modules transformed, bundle output to `dist/`.
 - One TypeScript fix was required during implementation: the `cutout` option on Chart.js donut charts requires typing the `new Chart` call as `Chart<'doughnut'>` (not the generic `Chart`) for the compiler to accept doughnut-specific options.
 - The unused `Plugin` and `ChartType` imports from `chart.js` were removed after the doughnut typing fix made the `as Plugin<ChartType>` cast unnecessary.
+
+### Bug fixes applied after initial implementation (Phase 6 post-completion)
+
+Three bugs were discovered during manual testing and fixed before Phase 7 began:
+
+**Bug 1 — Loading overlay never dismissed after Run Simulation success**
+- Symptom: clicking "Run Simulation" showed the overlay; on success the overlay never went away and the Back button appeared non-functional (the overlay covered the entire viewport).
+- Root cause: `hideLoadingOverlay()` was only called in the failure branches (`else` and `catch`). On the success path, `navigate()` was called while the overlay was still visible.
+- Fix (`simulations.ts`): added `hideLoadingOverlay()` immediately before `navigate()` on the success path.
+
+**Bug 2 — "Failed to load page." when clicking "View Simulation Results"**
+- Symptom: navigating from `/workspace/simulations` to `/workspace/simulations/mock-model-1` by clicking "View Simulation Results" caused the router to display "Failed to load page."
+- Root cause: `<main id="content">` is a persistent element. Every `render()` call added a new `click` listener to it via `attachSidebarListeners()`. On the second navigation, two listeners were active simultaneously. Both fired on the same click — the stale listener from the previous render called `navigate()` a second time, which called `render()` again mid-flight, which called `listenerController.abort()`. This aborted the signal used by the first render's in-progress async operations, causing an `AbortError` that the router's `.catch()` displayed as "Failed to load page."
+- Fix: moved listener cleanup into an `AbortController` pattern (`listenerController`). A fresh `AbortController` is created at the top of every `render()` call after aborting the previous one. Both `addEventListener` calls in `attachSidebarListeners()` receive `{ signal }` from this controller, so old listeners are automatically revoked when a new render starts.
+
+**Bug 3 — Simulation results shown for a model with no simulation**
+- Symptom: selecting "Mock Flat" (which has `sim_id: null`) in the dropdown showed chart results instead of the "Run a simulation to view results" card.
+- Root cause: the content area rendered results for any `model_id` present in the URL, without checking whether the selected model had actually been simulated. The mock backend returns results for any `model_id`, so charts rendered regardless.
+- Fix (`simulations.ts`): added a `!!selectedModel.sim_id` check in `render()` before calling `renderSimResults()`. If the model has no `sim_id`, the default card is shown.
+
+**Bug 4 — "Failed to load page." when clicking "View Simulation Results" while already on the results page**
+- Symptom: on `/workspace/simulations/mock-model-1`, clicking "View Simulation Results" caused "Failed to load page."
+- Root cause: `navigate('/workspace/simulations/mock-model-1')` was called while already at that URL. `render()` ran, called `listenerController.abort()`, which aborted the signal belonging to the still-in-progress `await renderSimResults()` of the current render.
+- Fix (`router.ts`): added a same-URL guard at the top of `navigate()` — if `path === window.location.pathname` and `pushState` is true, the function returns immediately without dispatching. This prevents any re-render when navigating to the current URL throughout the entire app.
+
+---
+
+## Phase 7 — Finances Page and Results
+
+**Status:** Complete
+**Goal:** Implement the full `/workspace/finances` and `/workspace/finances/:model_id` pages, replacing the Phase 3 stub. Includes the 11-field finance configuration form with client-side Zod validation, parallel data fetching, and two Chart.js charts (stacked bar + line).
+
+### Files Modified
+
+#### `vanilla/src/pages/finances.ts`
+Fully replaced the Phase 3 stub (5 lines) with a complete implementation (~430 lines). The module follows the same architecture established in `simulations.ts` (Phase 6): `AbortController` listener lifecycle, `destroyCharts()` before re-render, shell-first rendering, event delegation on `container`.
+
+**Chart.js registration**
+
+Only bar and line chart components are needed for this page — no `ArcElement` or `DoughnutController`:
+```
+BarElement, BarController,
+LineElement, LineController, PointElement,
+CategoryScale, LinearScale,
+Tooltip, Legend, Title
+```
+
+**Zod schema (`FinDataSchema`)**
+
+Defined at module top-level. All 11 fields use `z.coerce.number()` to handle HTML form string-to-number coercion. The `module_deg` field uses `.gt(0).lt(100)` (exclusive bounds) — all others use `.gte`/`.lte`. Error messages are explicit and match the checklist's validation descriptions.
+
+**Field definitions array (`FIELDS`)**
+
+A data-driven `FieldDef[]` array describes all 11 form fields (key, label, unit, step, icon). The form HTML (`finFormFieldsHTML`) and form-population logic are both derived from this single array, eliminating repetition and keeping the two in sync automatically.
+
+**Default form values (`FIN_DEFAULTS`)**
+
+Matches the checklist exactly: electricity price 45, feed-in tariff 8, PV price 1500, battery price 650, useful life 20, module degradation 0.5, inflation 3, operation cost 1, down payment 25, pay-off rate 10, interest rate 5.
+
+**Roof orientation mapping**
+
+```typescript
+const ORIENTATION_MAP: Record<number, string> = {
+  0: 'South', 45: 'South-West', 90: 'West', 135: 'North-West', 180: 'North',
+  [-45]: 'South-East', [-90]: 'East', [-135]: 'North-East',
+};
+```
+`orientationName(deg)` returns the mapped string or `'Unknown Orientation'` for unmapped values.
+
+**HTML structure**
+
+`pageShellHTML()` injects the shell synchronously before any `await`. The layout reuses `.sim-layout`, `.sim-sidebar`, and `.sim-content` CSS from Phase 6 — no new layout classes are needed.
+
+**Sidebar (3 states)**
+
+| State | Condition | Content |
+|---|---|---|
+| Empty models | `models.length === 0` | "Please [create a model] first." |
+| Models present | always | `<select>` + form with 11 fields + conditional buttons |
+| Fetch error | `Promise.all` throws | Error message; `render()` returns early |
+
+The selected model's saved `FinData` is looked up from `finDataList` by `model_id`; if none exists, `FIN_DEFAULTS` is used. The destructuring `(({ model_id: _id, ...rest }) => rest)(savedFinData)` strips the `model_id` field before spreading into the form values.
+
+**Conditional sidebar buttons**
+
+- `!model.sim_id` → no-simulation warning + disabled **Calculate Finances** button
+- `model.sim_id` set → enabled **Calculate Finances** button + **View Simulation Results** button (green)
+
+The no-simulation warning contains a `data-link` anchor to `/workspace/simulations/{model_id}` so the router intercepts it correctly.
+
+**Parallel fetch**
+
+`fetchModels()` and `fetchFinFormData()` are fetched in parallel with `Promise.all([...])` since neither depends on the other. A single `catch` covers both.
+
+**Dropdown change logic**
+
+The `change` listener on `#model-select` uses `finDataList.some(f => f.model_id === newId)` to decide the navigation target: if the newly selected model has previously submitted financial data, navigate to `/workspace/finances/{newId}`; otherwise navigate to `/workspace/finances` (showing the default card). This same check gates the results area in `render()`.
+
+**Form submission (`handleCalculate`)**
+
+1. `clearErrors(form)` — resets all `.form-error` spans and `.error` classes.
+2. `FinDataSchema.safeParse(Object.fromEntries(new FormData(form)))` — Zod validation.
+3. If validation fails: iterate `fieldErrors`, call `showFieldError(field, msgs[0])` for each failed field; return without submitting.
+4. If validation passes: construct `payload = { model_id, ...result.data }`, call `showLoadingOverlay('Calculating your system\'s finances ...')`, await `submitFinFormData(payload)`, call `hideLoadingOverlay()`, then `navigate('/workspace/finances/{model_id}')`.
+
+`clearErrors` and `showFieldError` follow the exact same conventions as `models.ts`: error span IDs are `err-{fieldName}`, input IDs are `f-{fieldName}`, `.error` CSS class toggled on the input.
+
+**Event delegation**
+
+Two listeners on `container`, both using `{ signal }` from `listenerController`:
+
+1. `change` listener: targets `#model-select`, applies the dropdown navigation logic above.
+2. `click` listener: two branches —
+   - `#btn-calculate` (not disabled): finds `#fin-form` and the currently selected model, calls `handleCalculate`.
+   - `[data-action="view-sim"]`: `navigate('/workspace/simulations/{modelId}')`.
+
+**Content area (3 states)**
+
+| State | Condition | Content |
+|---|---|---|
+| Default | no `model_id` param | "Set up finances to view results" card |
+| No fin data | `!finDataList.some(f => f.model_id === modelId)` | "Set up finances to view results" card |
+| Full results | fin data exists | `renderFinResults()` |
+
+**`renderFinResults(modelId, models)`**
+
+1. Fetches `fetchFinResults(modelId)` — on error/null: injects `noResultsCardHTML()`, returns.
+2. Looks up the `ModelData` for the `modelId` — if not found: `noResultsCardHTML()`.
+3. Injects `finResultsGridHTML()` (4-card scaffold).
+4. Sets `#card-model-summary` innerHTML to `modelSummaryHTML(model)`.
+5. Sets `#card-kpis` innerHTML to `kpiCardHTML(finResults.fin_kpis)`.
+6. Calls `renderLifetimeChart(finResults.fin_kpis)`.
+7. Calls `renderPerformanceChart(finResults.yearly_data, finResults.fin_kpis.investment.total)`.
+
+**Model Summary card**
+
+6 parameter rows in a 2-column CSS grid. Roof orientation rendered via `orientationName(model.roof_azimuth)` — direction name, not raw degrees.
+
+**KPI card**
+
+7 rows. Number formatting:
+- Euro values (investment, profit, loan): `.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })`, prefixed with `€ `.
+- Decimal values (break-even, loan paid off, LCOE, ROI): `.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })`, suffixed with unit.
+- `solar_interest_rate` in `FinKPIs` maps to the "ROI" label.
+
+**Performance over Lifetime bar chart (`renderLifetimeChart`)**
+
+Type: `bar`. Two x-axis categories (`'Investment'`, `'Revenue'`), five datasets with `stack` grouping:
+
+| Dataset | x-category | y-value | Colour | Stack group |
+|---|---|---|---|---|
+| PV cost | Investment | `kpis.investment.pv` | dark red | `investment` |
+| Battery cost | Investment | `kpis.investment.battery` | light red | `investment` |
+| Cost savings | Revenue | `kpis.cum_cost_savings` | light green | `revenue` |
+| Feed-in revenue | Revenue | `kpis.cum_feed_in_revenue` | medium green | `revenue` |
+| Operation costs | Revenue | `-kpis.cum_operation_costs` | dark green | `revenue` |
+
+Each dataset has a zero entry for the opposite category so Chart.js stacks correctly. `stacked: true` set on both x and y axes. Y axis tick callback: `v => '€ ' + v`. Operation costs are negated to render below the x-axis.
+
+**Financial Performance line chart (`renderPerformanceChart`)**
+
+Type: `line`. X axis labels are individual year strings (`'0'`, `'1'`, … `'20'`) from `yearlyData.map(d => String(d.year))` — all years shown, no `maxTicksLimit`. Four datasets:
+
+| Dataset | Data | Colour | Style |
+|---|---|---|---|
+| Cum. Profit | `d.cum_profit` | dark green | solid |
+| Investment | `-investmentTotal` (flat) | red | dashed (`borderDash: [5,5]`) |
+| Cum. Cash Flow | `d.cum_cash_flow` | blue-500 | solid |
+| Loan | `d.loan` | orange-500 | solid |
+
+`animation: false`, `pointRadius: 0`. Y axis tick callback: `v => '€ ' + v`.
+
+#### `vanilla/src/styles/global.css`
+A new **"Finances page"** section was appended (~130 lines). No existing CSS was changed.
+
+New classes:
+
+| Class | Purpose |
+|---|---|
+| `.fin-form` | Column-flex form container, tight gap between fields |
+| `.fin-form .form-label` | Smaller font (0.8125rem), flex row with icon and unit label |
+| `.form-label-icon` | Muted icon wrapper in form labels |
+| `.field-unit` | Unit label in grey, pushed to the right via `margin-left: auto` |
+| `.fin-form .form-input` | Shorter height (2rem) and smaller font for compact sidebar form |
+| `.fin-warning` | Amber-tinted warning box with border for no-simulation state |
+| `.fin-warning-link` | Blue underlined link inside the warning, displayed as block |
+| `.fin-grid-top` | 3-column CSS grid for Model Summary + KPI + Lifetime bar chart |
+| `.fin-grid-bottom` | Full-width column for the Financial Performance line chart |
+| `.summary-grid` | 2-column CSS grid for the 6 model parameter rows |
+| `.summary-row` | Icon + label + value row in Model Summary |
+| `.summary-label` | Muted flex-1 label text |
+| `.summary-value` | Bold right-aligned value text |
+| `.kpi-list` | Column flex container for KPI rows |
+| `.kpi-row` | Space-between flex row for label + value |
+| `.kpi-label` | Muted icon + text label |
+| `.kpi-value` | Bold dark value |
+
+Responsive rules at `@media (max-width: 767px)`:
+- `.fin-grid-top` collapses to single column
+- `.summary-grid` collapses to single column
+
+### Verification
+- `npm run build` — `tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build` passes with zero TypeScript errors; 25 modules transformed, bundle grows to 284 KB JS / 12.92 KB CSS (from 267 KB / 11.23 KB in Phase 6 — expected given the new page module and chart registrations).
