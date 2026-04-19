@@ -452,7 +452,7 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
           borderColor: COLORS.red,
           backgroundColor: 'transparent',
           borderWidth: 2,
-          borderDash: [5, 5],
+
           pointRadius: 0,
           tension: 0,
         },
@@ -694,7 +694,7 @@ export async function render(
   // Only show results if a calculation has previously been run for this model
   const hasFin = finDataList.some((f) => f.model_id === modelId);
   if (!hasFin) {
-    contentEl.innerHTML = defaultContentHTML();
+    contentEl.innerHTML = noResultsCardHTML();
     return;
   }
 

@@ -139,7 +139,7 @@ function createModelDialogHTML(): string {
         <button class="btn btn-outline" id="dialog-close-btn">Close</button>
       </div>
       <div class="dialog-body">
-        <form id="create-model-form" novalidate>
+        <form id="create-model-form">
 
           <div class="form-group">
             <label class="form-label" for="f-model_name">
@@ -265,8 +265,8 @@ export async function render(container: HTMLElement, _params?: Record<string, st
   // Render the shell immediately so the page is never blank.
   container.innerHTML = `
     <div class="models-page">
+      <h1 class="page-heading">Models</h1>
       <div class="models-header">
-        <h3 class="page-title">Models</h3>
         <button class="btn btn-blue" id="create-model-btn" disabled title="Loading...">
           + Create Model
         </button>

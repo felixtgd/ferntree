@@ -466,8 +466,8 @@ dialog::backdrop {
 .models-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-4);
+  justify-content: flex-end;
+  padding: 0 var(--spacing-4) var(--spacing-4);
   margin-bottom: var(--spacing-4);
 }
 

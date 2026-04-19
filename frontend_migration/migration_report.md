@@ -958,3 +958,55 @@ Additionally, `legend: { display: false }` set on `renderLifetimeChart` — the 
 
 ### Verification
 - `npm run build` — `tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build` passes with zero TypeScript errors; 25 modules transformed, bundle 284.97 KB JS / 13.28 KB CSS.
+
+---
+
+## Phase 9 — Acceptance Testing
+
+**Status:** Complete
+**Goal:** Step through every checkbox in `nextjs_checklist.md` (sections 1–9) and fix all failures. Verify no console errors, correct Back/Forward behaviour, and correct hard-refresh handling at every route.
+
+### Static Analysis Findings
+
+A complete read of all source files was performed against the 329-item checklist before making any changes. The following issues were identified and fixed:
+
+#### Issue 1 — `vite.config.ts`: Hard-refresh at sub-routes (investigation → no fix needed)
+
+**Concern:** Without `historyApiFallback`, a hard refresh at `/workspace/models` could 404.
+
+**Finding:** Vite 5's default `appType` is `'spa'`, which automatically installs the history API fallback middleware for the dev server and sets `single: true` for the preview server. No config change was required — this was a false positive.
+
+#### Issue 2 — `finances.ts`: Wrong fallback content when model has sim but no finance results
+
+**File:** `vanilla/src/pages/finances.ts` line 695–698
+
+**Problem:** When navigating to `/workspace/finances/:model_id` for a model that has been simulated but has no saved finance data, the code fell through to `defaultContentHTML()` which renders "Set up finances to view results". The checklist (§7) requires the content area to show "No results found. Calculate finances to get results."
+
+**Fix:** Changed the `!hasFin` branch to render `noResultsCardHTML()` instead of `defaultContentHTML()`.
+
+```diff
+- contentEl.innerHTML = defaultContentHTML();
++ contentEl.innerHTML = noResultsCardHTML();
+```
+
+#### Issue 3 — `finances.ts`: Investment line in Financial Performance chart was dashed
+
+**File:** `vanilla/src/pages/finances.ts` line 453
+
+**Problem:** The Investment dataset had `borderDash: [5, 5]`, making it a dashed line. The checklist (§7) describes it as a "flat horizontal line" with no mention of dashing.
+
+**Fix:** Removed the `borderDash` property so the line renders as a solid red horizontal line.
+
+#### Issue 4 — `models.ts`: Page heading inconsistent with other pages
+
+**Files:** `vanilla/src/pages/models.ts`, `vanilla/src/styles/global.css`
+
+**Problem:** The Models page used `<h3 class="page-title">` inside the `.models-header` flex row, while Simulations and Finances pages use `<h1 class="page-heading">`. Both classes produce a centred heading, but the markup was inconsistent and `.page-title` had `flex: 1` which was only needed because the heading was inside the button row.
+
+**Fix:**
+- Moved the `<h1 class="page-heading">Models</h1>` above `.models-header`, matching the Simulations/Finances pattern.
+- Updated `.models-header` in CSS from `justify-content: space-between` to `justify-content: flex-end` and removed the top padding (now that the heading is above the row, only bottom padding + right alignment for the Create Model button is needed).
+
+### Verification
+
+- `npm run build` — passes with zero TypeScript errors; 25 modules transformed, bundle 284.96 KB JS / 13.30 KB CSS.
