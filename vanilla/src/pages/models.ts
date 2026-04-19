@@ -398,6 +398,7 @@ export async function render(container: HTMLElement, _params?: Record<string, st
       try {
         const res = await runSimulation(modelId);
         if (res.run_successful) {
+          hideLoadingOverlay();
           navigate(`/workspace/simulations/${modelId}`);
         } else {
           hideLoadingOverlay();

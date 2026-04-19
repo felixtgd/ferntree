@@ -831,3 +831,130 @@ Responsive rules at `@media (max-width: 767px)`:
 
 ### Verification
 - `npm run build` — `tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build` passes with zero TypeScript errors; 25 modules transformed, bundle grows to 284 KB JS / 12.92 KB CSS (from 267 KB / 11.23 KB in Phase 6 — expected given the new page module and chart registrations).
+
+### Bug fixes applied after initial implementation (Phase 7 post-completion)
+
+**Bug 1 — Model selector always reverts to Mock Home**
+
+- Symptom: selecting "Mock Flat" in the finances sidebar model dropdown always snapped back to "Mock Home" (the first model in the list) instead of showing Mock Flat's form.
+- Root cause: the `change` handler navigated to `/workspace/finances` (no `model_id`) when the newly selected model had no existing `FinData`. Re-rendering with no `model_id` caused `sidebarHTML` to fall back to `models[0]` via the `?? models[0]` default, so the dropdown always showed the first model.
+- Fix (`finances.ts`): the `change` handler now always navigates to `/workspace/finances/{newModelId}`, unconditionally keeping the selection in the URL regardless of whether fin data exists for that model.
+
+**Bug 2 — No prompt to run simulation when model has no sim_id**
+
+- Symptom: selecting a model with no simulation on the finances page showed the generic "Set up finances to view results" placeholder with no actionable guidance — the user had no way to discover they needed to simulate first.
+- Fix (`finances.ts`): added a `!selectedModel?.sim_id` check in `render()` before the `hasFin` check. When the selected model has never been simulated, the content area renders a "Simulation Required" card with a **Run Simulation** button that navigates to `/workspace/simulations/{model_id}`. The sidebar still shows the existing inline warning and disabled Calculate button.
+
+**Bug 3 — Loading overlay not dismissed after Run Simulation success (models page)**
+
+- Symptom: clicking "Run Simulation" from the models page showed the loading overlay, but after navigating to simulation results the overlay remained on screen, covering all subsequent pages even across Back/Forward navigation.
+- Root cause: `hideLoadingOverlay()` was only called in the failure and error branches. On the success path, `navigate()` was called while the overlay was still displayed. Since the overlay lives outside `#app` and is never replaced by navigation, it persisted indefinitely.
+- Fix (`models.ts`): added `hideLoadingOverlay()` immediately before `navigate()` on the `run_successful === true` branch. (The equivalent call in `simulations.ts` was already correct.)
+
+---
+
+## Phase 8 — Styling Pass
+
+**Status:** Complete
+**Goal:** Fix missing CSS variables, align the card header design so titles are visible, add missing utility classes, and ensure all charts fill the full area of their respective containers.
+
+### Files Modified
+
+#### `vanilla/src/styles/global.css`
+
+**1. Missing CSS variables added to `:root`**
+
+Three variables were referenced throughout the stylesheet but absent from the `:root` declaration block, causing them to resolve to their unset (inherited or initial) values:
+
+| Variable | Value | Where used |
+|---|---|---|
+| `--gray-600` | `#4b5563` | `.legend-value`, `.fin-form .form-label` |
+| `--gray-800` | `#1f2937` | `.card-title` |
+| `--spacing-5` | `1.25rem` | `.page-heading` bottom margin, `.sim-layout` gap |
+
+**2. `.card-header` redesigned**
+
+The previous definition rendered a solid 4px tall coloured strip:
+```css
+.card-header { height: 4px; background: var(--brand-blue); }
+```
+All page modules place a `<span class="card-title">` inside `.card-header`, but the 4px height made all card titles invisible. The class was changed to use a `border-top` for the decorative strip and add padding for the title text:
+```css
+.card-header {
+  border-top: 4px solid var(--brand-blue);
+  padding: var(--spacing-3) var(--spacing-6);
+  display: flex;
+  align-items: center;
+}
+```
+This single CSS change fixes all card titles across the simulations and finances pages simultaneously, with no changes required in any `.ts` file.
+
+**3. `.truncate` utility class added**
+
+`models.ts` applies `class="param-value truncate"` to the location field in model cards. The `.truncate` class was not defined in CSS (`.param-value` already carries equivalent overflow properties, but the class was still absent). Added:
+```css
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+```
+
+**4. `.fin-page` layout class added**
+
+The finances page wraps its content in `<div class="fin-page">`. No CSS rule existed for this class, unlike `.sim-page` which already had `display: flex; flex-direction: column`. Added the equivalent rule to the Finances section:
+```css
+.fin-page {
+  display: flex;
+  flex-direction: column;
+}
+```
+
+**5. Chart wrapper sizing changed from `max-height` to explicit `height`**
+
+Chart.js requires a defined height on the canvas container when `maintainAspectRatio: false` is set. The previous CSS used `max-height`, which does not give Chart.js a concrete pixel value to fill. Changed to explicit heights:
+
+```css
+/* Before */
+.chart-wrap    { max-height: 220px; }
+.chart-wrap--tall { max-height: 280px; }
+.chart-wrap canvas { max-width: 100%; }
+
+/* After */
+.chart-wrap    { height: 220px; }
+.chart-wrap--tall { height: 300px; }
+.chart-wrap canvas { width: 100% !important; height: 100% !important; }
+```
+
+**6. Model Summary value overflow fixed**
+
+`.summary-value` was `text-align: right` with no overflow handling, and `.summary-label` used `flex: 1` which compressed the value column. In the narrow first column of the `fin-grid-top` 3-column grid, long values ("3000 kWh", "10 kWh") were clipped. Changes:
+- `.summary-row`: added `min-width: 0` (prevents flex children from overflowing their grid cell) and changed `align-items` to `baseline`
+- `.summary-label`: changed from `flex: 1` to `flex-shrink: 0` + `white-space: nowrap` so it never compresses
+- `.summary-value`: added `overflow-wrap: break-word; word-break: break-word; min-width: 0; margin-left: auto` so values wrap rather than clip
+
+#### `vanilla/src/pages/simulations.ts`
+
+`maintainAspectRatio: false` added to the `options` block of all five charts:
+
+| Chart | Function |
+|---|---|
+| Consumption donut | `renderConsumptionDonut` |
+| PV Generation donut | `renderPVGenDonut` |
+| Monthly PV Generation bar | `renderMonthlyChart` |
+| Power Profiles line | `renderTimeseriesCharts` (power) |
+| Battery SoC line | `renderTimeseriesCharts` (soc) |
+
+#### `vanilla/src/pages/finances.ts`
+
+`maintainAspectRatio: false` added to the `options` block of both charts:
+
+| Chart | Function |
+|---|---|
+| Performance over Lifetime bar | `renderLifetimeChart` |
+| Financial Performance line | `renderPerformanceChart` |
+
+Additionally, `legend: { display: false }` set on `renderLifetimeChart` — the legend labels were taking up vertical space without adding useful information, leaving the bars too small.
+
+### Verification
+- `npm run build` — `tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build` passes with zero TypeScript errors; 25 modules transformed, bundle 284.97 KB JS / 13.28 KB CSS.

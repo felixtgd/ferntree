@@ -20,13 +20,16 @@
   --gray-300: #d1d5db;
   --gray-400: #9ca3af;
   --gray-500: #6b7280;
+  --gray-600: #4b5563;
   --gray-700: #374151;
+  --gray-800: #1f2937;
   --gray-900: #111827;
 
   --spacing-1: 0.25rem;
   --spacing-2: 0.5rem;
   --spacing-3: 0.75rem;
   --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
   --spacing-6: 1.5rem;
   --spacing-8: 2rem;
 
@@ -201,8 +204,10 @@ input, select, textarea {
 }
 
 .card-header {
-  height: 4px;
-  background: var(--brand-blue);
+  border-top: 4px solid var(--brand-blue);
+  padding: var(--spacing-3) var(--spacing-6);
+  display: flex;
+  align-items: center;
 }
 
 .card-body {
@@ -525,6 +530,12 @@ dialog::backdrop {
   white-space: nowrap;
 }
 
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .model-actions {
   display: flex;
   flex-wrap: wrap;
@@ -767,15 +778,16 @@ dialog::backdrop {
 .chart-wrap {
   position: relative;
   width: 100%;
-  max-height: 220px;
+  height: 220px;
 }
 
 .chart-wrap--tall {
-  max-height: 280px;
+  height: 300px;
 }
 
 .chart-wrap canvas {
-  max-width: 100%;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* --- Donut legend --- */
@@ -866,6 +878,11 @@ dialog::backdrop {
    .sidebar-param-icon, .sidebar-actions, .centered-card-text,
    .card-title, .chart-wrap, .chart-wrap--tall               */
 
+.fin-page {
+  display: flex;
+  flex-direction: column;
+}
+
 /* --- Finance form --- */
 
 .fin-form {
@@ -951,20 +968,25 @@ dialog::backdrop {
 
 .summary-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: var(--spacing-2);
   font-size: 0.8125rem;
   color: var(--gray-500);
+  min-width: 0;
 }
 
 .summary-label {
-  flex: 1;
+  flex-shrink: 0;
   white-space: nowrap;
 }
 
 .summary-value {
   font-weight: 600;
   color: var(--gray-900);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+  margin-left: auto;
   text-align: right;
 }
 

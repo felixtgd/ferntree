@@ -304,6 +304,7 @@ function renderConsumptionDonut(simResults: SimResultsEval): void {
       ],
     },
     options: {
+      maintainAspectRatio: false,
       cutout: '65%',
       plugins: {
         legend: { display: false },
@@ -360,6 +361,7 @@ function renderPVGenDonut(simResults: SimResultsEval): void {
       ],
     },
     options: {
+      maintainAspectRatio: false,
       cutout: '65%',
       plugins: {
         legend: { display: false },
@@ -412,6 +414,7 @@ function renderMonthlyBar(simResults: SimResultsEval): void {
       ],
     },
     options: {
+      maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
       },
@@ -476,6 +479,7 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
         ],
       },
       options: {
+        maintainAspectRatio: false,
         animation: false,
         plugins: {
           legend: { display: true, position: 'bottom' },
@@ -514,6 +518,7 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
         ],
       },
       options: {
+        maintainAspectRatio: false,
         animation: false,
         plugins: {
           legend: { display: false },

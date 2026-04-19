@@ -411,8 +411,9 @@ function renderLifetimeChart(kpis: FinKPIs): void {
       ],
     },
     options: {
+      maintainAspectRatio: false,
       plugins: {
-        legend: { display: true, position: 'bottom' },
+        legend: { display: false },
       },
       scales: {
         x: { stacked: true },
@@ -476,6 +477,7 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
       ],
     },
     options: {
+      maintainAspectRatio: false,
       animation: false,
       plugins: {
         legend: { display: true, position: 'bottom' },
