@@ -8,6 +8,7 @@ This report documents the completed implementation work for:
 - **Phase 2: Shell and Navigation Refactor**
 - **Phase 3: Primitive Components Consolidation**
 - **Phase 4: Workspace Views Migration**
+- **Phase 5: Landing and Blog Integration**
 
 as defined in `docs/ui/redesign_plan.md`.
 
@@ -22,6 +23,7 @@ as defined in `docs/ui/redesign_plan.md`.
 - `frontend/src/pages/models.ts`
 - `frontend/src/pages/simulations.ts`
 - `frontend/src/pages/finances.ts`
+- `frontend/src/pages/landing-ferntree.ts`
 
 ## Implemented Changes
 
@@ -246,6 +248,52 @@ Behavioral integrity:
 - No routing or API behavior changed.
 - Existing interactions (model selection, run-sim navigation, finance calculation flow) remain intact; changes are presentation-layer only.
 
+### 10) Landing and Blog Integration (Phase 5)
+
+Implemented marketing/editorial migration tasks in:
+
+- `frontend/src/styles/global.css`
+- `frontend/src/pages/landing-ferntree.ts`
+
+Tokenization and legacy-style removal in `global.css`:
+
+- Migrated landing, blog-listing, blog-post, and DontBlackout selectors from legacy aliases and literals to semantic tokens:
+  - `--text-primary`
+  - `--text-secondary`
+  - `--bg-base`
+  - `--bg-surface`
+  - `--bg-hover`
+  - `--border-metal`
+  - `--copper-raw`
+  - `--copper-hover`
+  - `--copper-oxidized`
+- Removed hardcoded hero literals in landing styles (`white`, `rgb(255 255 255 / ...)`).
+- Replaced decorative top-accent borders and lift effects in landing/blog cards:
+  - removed `border-top: 4px ...` treatments
+  - removed hover translate/shadow patterns
+  - replaced with structural `1px` borders and `--bg-hover` state changes
+- Updated blog post editorial styles for dark-surface readability:
+  - headings on `--text-primary`
+  - body copy on `--text-secondary`
+  - links mapped to copper states
+  - code and pre blocks mapped to `--bg-hover` + `--border-metal`
+- Updated DontBlackout project section to the same product-surface system:
+  - section background and separators mapped to base/metal tokens
+  - icon and link accents remapped to copper
+
+Template cleanup in `landing-ferntree.ts`:
+
+- Removed inline SVG styling (`style="flex-shrink:0"`) and centralized behavior in CSS (`.btn svg { flex-shrink: 0; }`).
+- Removed obsolete `landing-cta-secondary` class usage and relied on consolidated `btn btn-outline` primitive behavior.
+
+Phase 5 QA checks completed:
+
+- Verified no remaining `var(--gray-*)`, `var(--blue-*)`, or `var(--brand-blue)` references in landing/blog/DontBlackout selectors.
+- Verified no remaining hardcoded white/rgba landing hero color literals.
+- Verified no remaining `.landing-cta-secondary` selector or template usage.
+- Verified DontBlackout and blog cards use structural border/surface + hover background behavior (no lift/shadow animation).
+- Confirmed blog long-form content selectors cover links, headings, lists, and code blocks with tokenized styling.
+
 ## Verification
 
 Build verification completed:
@@ -258,6 +306,8 @@ Build verification completed:
 - Result: success (Phase 3)
 - Command: `npm run build` (in `frontend/`)
 - Result: success (Phase 4)
+- Command: `npm run build` (in `frontend/`)
+- Result: success (Phase 5)
 
 ## Notes and Deferred Work
 
@@ -266,4 +316,4 @@ The following are intentionally deferred to later phases per plan:
 - Page-level visual harmonization across all sections
 - Chart palette centralization and tokenized chart theme module
 
-Phase 1 established the high-risk global foundation. Phase 2 completed shell/navigation visual refactoring without changing routing behavior or page templates. Phase 3 consolidated primitive component behavior across shared styles. Phase 4 migrated the workspace views to class-based, tokenized presentation and aligned simulations/finances visual language without introducing a shared chart theme module yet.
+Phase 1 established the high-risk global foundation. Phase 2 completed shell/navigation visual refactoring without changing routing behavior or page templates. Phase 3 consolidated primitive component behavior across shared styles. Phase 4 migrated the workspace views to class-based, tokenized presentation and aligned simulations/finances visual language without introducing a shared chart theme module yet. Phase 5 migrated landing and blog surfaces into the same identity system while preserving the DON'T BLACKOUT hero concept and improving long-form readability on dark surfaces.

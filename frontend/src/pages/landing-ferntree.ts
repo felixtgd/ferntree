@@ -23,11 +23,11 @@ export async function render(
             <a href="/workspace" class="btn landing-cta-primary" data-link>
               Launch Ferntree
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                   fill="currentColor" aria-hidden="true" style="flex-shrink:0">
+                   fill="currentColor" aria-hidden="true">
                 <path d="M8 5v14l11-7z"/>
               </svg>
             </a>
-            <a href="/blog" class="btn btn-outline landing-cta-secondary" data-link>
+            <a href="/blog" class="btn btn-outline" data-link>
               Read the Blog
             </a>
           </div>
