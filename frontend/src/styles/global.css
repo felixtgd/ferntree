@@ -633,7 +633,7 @@ dialog::backdrop {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-2);
-  border-top: 1px solid var(--gray-100);
+  border-top: 1px solid var(--border-metal);
   padding-top: var(--spacing-2);
 }
 
@@ -642,7 +642,7 @@ dialog::backdrop {
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-1) 0;
-  border-bottom: 1px solid var(--gray-100);
+  border-bottom: 1px solid var(--border-metal);
   gap: var(--spacing-2);
 }
 
@@ -650,14 +650,14 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  color: var(--gray-500);
+  color: var(--text-secondary);
   font-size: 0.85rem;
   white-space: nowrap;
 }
 
 .param-value {
   font-size: 0.85rem;
-  color: var(--gray-900);
+  color: var(--text-primary);
   text-align: right;
   max-width: 50%;
   overflow: hidden;
@@ -677,7 +677,7 @@ dialog::backdrop {
   gap: var(--spacing-2);
   justify-content: flex-end;
   padding-top: var(--spacing-3);
-  border-top: 1px solid var(--gray-100);
+  border-top: 1px solid var(--border-metal);
 }
 
 .model-btn {
@@ -706,7 +706,7 @@ dialog::backdrop {
 }
 
 .unit-hint {
-  color: var(--gray-400);
+  color: var(--text-secondary);
   font-weight: 400;
   font-size: 0.85rem;
   margin-left: var(--spacing-1);
@@ -760,7 +760,7 @@ dialog::backdrop {
 .page-heading {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--gray-900);
+  color: var(--text-primary);
   margin: 0 0 var(--spacing-5) 0;
   text-align: center;
 }
@@ -790,23 +790,23 @@ dialog::backdrop {
 .sidebar-error,
 .sidebar-empty {
   font-size: 0.875rem;
-  color: var(--gray-500);
+  color: var(--text-secondary);
   padding: var(--spacing-2) 0;
 }
 
 .sidebar-empty a {
-  color: var(--blue-500);
+  color: var(--copper-raw);
   text-decoration: underline;
 }
 
 .sidebar-select {
   width: 100%;
   padding: var(--spacing-2) var(--spacing-3);
-  border: 1px solid var(--gray-300);
+  border: 1px solid var(--border-metal);
   border-radius: var(--radius);
   font-size: 0.875rem;
   background: var(--bg-base);
-  color: var(--gray-900);
+  color: var(--text-primary);
   cursor: pointer;
   appearance: auto;
 }
@@ -821,9 +821,9 @@ dialog::backdrop {
   flex-direction: column;
   gap: var(--spacing-2);
   padding: var(--spacing-3);
-  background: var(--gray-50);
+  background: var(--bg-base);
   border-radius: var(--radius);
-  border: 1px solid var(--gray-200);
+  border: 1px solid var(--border-metal);
 }
 
 .sidebar-param-row {
@@ -831,11 +831,11 @@ dialog::backdrop {
   align-items: center;
   gap: var(--spacing-2);
   font-size: 0.8125rem;
-  color: var(--gray-700);
+  color: var(--text-primary);
 }
 
 .sidebar-param-icon {
-  color: var(--gray-400);
+  color: var(--text-secondary);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -868,7 +868,7 @@ dialog::backdrop {
 .centered-card-text {
   text-align: center;
   padding: var(--spacing-6);
-  color: var(--gray-500);
+  color: var(--text-secondary);
   font-size: 0.9375rem;
 }
 
@@ -901,15 +901,15 @@ dialog::backdrop {
   align-items: center;
   gap: var(--spacing-2);
   font-size: 0.875rem;
-  color: var(--gray-700);
+  color: var(--text-secondary);
 }
 
 .date-label input[type="date"] {
   padding: var(--spacing-1) var(--spacing-2);
-  border: 1px solid var(--gray-300);
+  border: 1px solid var(--border-metal);
   border-radius: var(--radius);
   font-size: 0.875rem;
-  color: var(--gray-900);
+  color: var(--text-primary);
   background: var(--bg-base);
   cursor: pointer;
 }
@@ -950,7 +950,7 @@ dialog::backdrop {
   align-items: center;
   gap: var(--spacing-2);
   font-size: 0.8125rem;
-  color: var(--gray-700);
+  color: var(--text-primary);
 }
 
 .legend-swatch {
@@ -960,30 +960,38 @@ dialog::backdrop {
   flex-shrink: 0;
 }
 
+.legend-swatch--copper {
+  background: var(--copper-raw);
+}
+
+.legend-swatch--border {
+  background: var(--border-metal);
+}
+
 .legend-name {
   flex: 1;
   font-weight: 500;
 }
 
 .legend-value {
-  color: var(--gray-600);
+  color: var(--text-secondary);
 }
 
 .legend-share {
-  color: var(--gray-500);
+  color: var(--text-secondary);
   min-width: 3.5rem;
   text-align: right;
 }
 
 .legend-info {
-  color: var(--gray-400);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   cursor: help;
 }
 
 .legend-info:hover {
-  color: var(--blue-500);
+  color: var(--copper-raw);
 }
 
 /* --- Card title helper --- */
@@ -991,7 +999,7 @@ dialog::backdrop {
 .card-title {
   font-weight: 600;
   font-size: 0.9375rem;
-  color: var(--gray-800);
+  color: var(--text-primary);
 }
 
 /* --- Responsive --- */
@@ -1047,19 +1055,19 @@ dialog::backdrop {
   align-items: center;
   gap: var(--spacing-1);
   font-size: 0.8125rem;
-  color: var(--gray-600);
+  color: var(--text-secondary);
   margin-bottom: 2px;
 }
 
 .form-label-icon {
-  color: var(--gray-400);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
 
 .field-unit {
-  color: var(--gray-400);
+  color: var(--text-secondary);
   font-size: 0.75rem;
   margin-left: auto;
 }
@@ -1117,7 +1125,7 @@ dialog::backdrop {
   align-items: baseline;
   gap: var(--spacing-2);
   font-size: 0.8125rem;
-  color: var(--gray-500);
+  color: var(--text-secondary);
   min-width: 0;
 }
 
@@ -1128,7 +1136,7 @@ dialog::backdrop {
 
 .summary-value {
   font-weight: 600;
-  color: var(--gray-900);
+  color: var(--text-primary);
   overflow-wrap: break-word;
   word-break: break-word;
   min-width: 0;
@@ -1155,12 +1163,38 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   gap: var(--spacing-2);
-  color: var(--gray-500);
+  color: var(--text-secondary);
 }
 
 .kpi-value {
   font-weight: 600;
-  color: var(--gray-900);
+  color: var(--text-primary);
+}
+
+/* Shared status text blocks */
+.status-text {
+  padding: var(--spacing-8);
+  color: var(--text-secondary);
+}
+
+.status-text--error {
+  color: var(--danger-red);
+}
+
+/* Card top-margin modifier */
+.card--mt {
+  margin-top: var(--spacing-4);
+}
+
+/* Centred action row inside card body */
+.centered-card-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* Bottom-margin modifier for centered-card-text */
+.centered-card-text--mb {
+  margin-bottom: 1.5rem;
 }
 
 /* --- Responsive --- */

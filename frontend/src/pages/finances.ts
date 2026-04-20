@@ -89,18 +89,11 @@ function orientationName(deg: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// Chart colours
+// Theme token helpers
 // ---------------------------------------------------------------------------
-const COLORS = {
-  darkGreen:  '#15803d',
-  medGreen:   '#16a34a',
-  lightGreen: '#4ade80',
-  darkRed:    '#b91c1c',
-  lightRed:   '#f87171',
-  blue:       '#3b82f6',
-  orange:     '#f97316',
-  red:        '#ef4444',
-};
+function cssVar(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
 
 // ---------------------------------------------------------------------------
 // SVG icons
@@ -281,11 +274,11 @@ function noSimContentHTML(modelId: string): string {
     <div class="card">
       <div class="card-header"><span class="card-title">Simulation Required</span></div>
       <div class="card-body">
-        <p class="centered-card-text" style="margin-bottom:1.5rem;">
+        <p class="centered-card-text centered-card-text--mb">
           This model has not been simulated yet.<br>
           Run a simulation first before calculating finances.
         </p>
-        <div style="display:flex;justify-content:center;">
+        <div class="centered-card-actions">
           <button class="btn btn-blue" data-action="run-sim" data-model-id="${modelId}" type="button">
             ${icons.play} Run Simulation
           </button>
@@ -381,31 +374,31 @@ function renderLifetimeChart(kpis: FinKPIs): void {
         {
           label: 'PV cost',
           data: [kpis.investment.pv, 0],
-          backgroundColor: COLORS.darkRed,
+          backgroundColor: cssVar('--danger-red'),
           stack: 'investment',
         },
         {
           label: 'Battery cost',
           data: [kpis.investment.battery, 0],
-          backgroundColor: COLORS.lightRed,
+          backgroundColor: cssVar('--danger-red'),
           stack: 'investment',
         },
         {
           label: 'Cost savings',
           data: [0, kpis.cum_cost_savings],
-          backgroundColor: COLORS.lightGreen,
+          backgroundColor: cssVar('--copper-oxidized'),
           stack: 'revenue',
         },
         {
           label: 'Feed-in revenue',
           data: [0, kpis.cum_feed_in_revenue],
-          backgroundColor: COLORS.medGreen,
+          backgroundColor: cssVar('--copper-oxidized'),
           stack: 'revenue',
         },
         {
           label: 'Operation costs',
           data: [0, -kpis.cum_operation_costs],
-          backgroundColor: COLORS.darkGreen,
+          backgroundColor: cssVar('--copper-oxidized'),
           stack: 'revenue',
         },
       ],
@@ -414,12 +407,27 @@ function renderLifetimeChart(kpis: FinKPIs): void {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
+        tooltip: {
+          backgroundColor: cssVar('--bg-surface'),
+          titleColor: cssVar('--text-primary'),
+          bodyColor: cssVar('--text-secondary'),
+          borderColor: cssVar('--border-metal'),
+          borderWidth: 1,
+        },
       },
       scales: {
-        x: { stacked: true },
+        x: {
+          stacked: true,
+          ticks: { color: cssVar('--text-secondary') },
+          grid: { color: cssVar('--border-metal') },
+        },
         y: {
           stacked: true,
-          ticks: { callback: (v) => `€ ${v}` },
+          ticks: {
+            color: cssVar('--text-secondary'),
+            callback: (v) => `€ ${v}`,
+          },
+          grid: { color: cssVar('--border-metal') },
         },
       },
     },
@@ -440,7 +448,7 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
         {
           label: 'Cum. Profit',
           data: yearlyData.map((d) => d.cum_profit),
-          borderColor: COLORS.darkGreen,
+          borderColor: cssVar('--copper-oxidized'),
           backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 0,
@@ -449,7 +457,7 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
         {
           label: 'Investment',
           data: yearlyData.map(() => -investmentTotal),
-          borderColor: COLORS.red,
+          borderColor: cssVar('--danger-red'),
           backgroundColor: 'transparent',
           borderWidth: 2,
 
@@ -459,7 +467,7 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
         {
           label: 'Cum. Cash Flow',
           data: yearlyData.map((d) => d.cum_cash_flow),
-          borderColor: COLORS.blue,
+          borderColor: cssVar('--copper-raw'),
           backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 0,
@@ -468,7 +476,7 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
         {
           label: 'Loan',
           data: yearlyData.map((d) => d.loan),
-          borderColor: COLORS.orange,
+          borderColor: cssVar('--copper-hover'),
           backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 0,
@@ -480,11 +488,30 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
       maintainAspectRatio: false,
       animation: false,
       plugins: {
-        legend: { display: true, position: 'bottom' },
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: { color: cssVar('--text-primary') },
+        },
+        tooltip: {
+          backgroundColor: cssVar('--bg-surface'),
+          titleColor: cssVar('--text-primary'),
+          bodyColor: cssVar('--text-secondary'),
+          borderColor: cssVar('--border-metal'),
+          borderWidth: 1,
+        },
       },
       scales: {
+        x: {
+          ticks: { color: cssVar('--text-secondary') },
+          grid: { color: cssVar('--border-metal') },
+        },
         y: {
-          ticks: { callback: (v) => `€ ${v}` },
+          ticks: {
+            color: cssVar('--text-secondary'),
+            callback: (v) => `€ ${v}`,
+          },
+          grid: { color: cssVar('--border-metal') },
         },
       },
     },

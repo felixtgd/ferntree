@@ -7,6 +7,7 @@ This report documents the completed implementation work for:
 - **Phase 1: Foundation Tokens and Global Reset**
 - **Phase 2: Shell and Navigation Refactor**
 - **Phase 3: Primitive Components Consolidation**
+- **Phase 4: Workspace Views Migration**
 
 as defined in `docs/ui/redesign_plan.md`.
 
@@ -18,6 +19,9 @@ as defined in `docs/ui/redesign_plan.md`.
 ## Files Changed
 
 - `frontend/src/styles/global.css`
+- `frontend/src/pages/models.ts`
+- `frontend/src/pages/simulations.ts`
+- `frontend/src/pages/finances.ts`
 
 ## Implemented Changes
 
@@ -183,6 +187,65 @@ Status/warning utility cleanup:
 - `.fin-warning-link` remapped from legacy blue to `--copper-raw`.
 - `.empty-arrow` remapped from legacy blue to `--text-secondary`.
 
+### 9) Workspace Views Migration (Phase 4)
+
+Implemented workspace-page migration tasks in:
+
+- `frontend/src/pages/models.ts`
+- `frontend/src/pages/simulations.ts`
+- `frontend/src/pages/finances.ts`
+- `frontend/src/styles/global.css`
+
+Inline style removal and class consolidation:
+
+- Replaced inline loading/error state styles in Models with shared status utilities:
+  - `.status-text`
+  - `.status-text--error`
+- Replaced inline card top-spacing in Simulations with `.card--mt`.
+- Replaced inline no-simulation content layout styles in Finances with:
+  - `.centered-card-text--mb`
+  - `.centered-card-actions`
+- Refactored donut legend swatches from inline `style="background:..."` to class-driven swatches:
+  - `.legend-swatch--copper`
+  - `.legend-swatch--border`
+
+Workspace tokenization pass in `global.css`:
+
+- Replaced workspace-section legacy aliases (`--gray-*`, `--blue-500`) with semantic tokens in Models, Simulations, and Finances selectors.
+- Updated sidebar, form labels, card titles, KPI labels/values, date controls, and legend text styles to use:
+  - `--text-primary`
+  - `--text-secondary`
+  - `--border-metal`
+  - `--bg-base`
+  - `--copper-raw`
+
+Simulation chart theming updates (`frontend/src/pages/simulations.ts`):
+
+- Removed legacy `COLORS` hex palette and introduced runtime token resolver:
+  - `cssVar('--token-name')`
+- Remapped chart series to semantic tokens:
+  - load/deficit -> `--danger-red`
+  - PV/primary -> `--copper-raw`
+  - battery/generation -> `--copper-oxidized`
+  - secondary/neutral -> `--border-metal` and `--text-secondary`
+- Updated donut center label from hardcoded `#1f2937` to `--text-primary`.
+- Removed bar chart corner rounding (`borderRadius: 3`) to preserve zero-radius geometry.
+- Added tokenized chart UI styling for axes, grids, legend labels, and tooltips.
+
+Finance chart theming updates (`frontend/src/pages/finances.ts`):
+
+- Removed legacy `COLORS` hex palette and introduced runtime token resolver (`cssVar`).
+- Remapped lifetime and performance chart datasets to semantic tokens:
+  - investment/risk -> `--danger-red`
+  - revenue/savings -> `--copper-oxidized`
+  - cash flow and loan accents -> `--copper-raw` / `--copper-hover`
+- Added tokenized chart UI styling for axes, grids, legend labels, and tooltips.
+
+Behavioral integrity:
+
+- No routing or API behavior changed.
+- Existing interactions (model selection, run-sim navigation, finance calculation flow) remain intact; changes are presentation-layer only.
+
 ## Verification
 
 Build verification completed:
@@ -193,6 +256,8 @@ Build verification completed:
 - Result: success (Phase 2)
 - Command: `npm run build` (in `frontend/`)
 - Result: success (Phase 3)
+- Command: `npm run build` (in `frontend/`)
+- Result: success (Phase 4)
 
 ## Notes and Deferred Work
 
@@ -201,4 +266,4 @@ The following are intentionally deferred to later phases per plan:
 - Page-level visual harmonization across all sections
 - Chart palette centralization and tokenized chart theme module
 
-Phase 1 established the high-risk global foundation. Phase 2 completed shell/navigation visual refactoring without changing routing behavior or page templates. Phase 3 consolidated primitive component behavior across shared styles.
+Phase 1 established the high-risk global foundation. Phase 2 completed shell/navigation visual refactoring without changing routing behavior or page templates. Phase 3 consolidated primitive component behavior across shared styles. Phase 4 migrated the workspace views to class-based, tokenized presentation and aligned simulations/finances visual language without introducing a shared chart theme module yet.

@@ -61,17 +61,11 @@ function destroyCharts(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Brand colours
+// Theme token helpers
 // ---------------------------------------------------------------------------
-const COLORS = {
-  amber: '#f59e0b',
-  teal: '#14b8a6',
-  rose: '#f43f5e',
-  indigo: '#6366f1',
-  blue500: '#3b82f6',
-  blue300: '#93c5fd',
-  blue100: '#dbeafe',
-};
+function cssVar(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
 
 // ---------------------------------------------------------------------------
 // SVG icons (inline, 18×18)
@@ -223,7 +217,7 @@ function resultsGridHTML(): string {
             <div class="chart-wrap chart-wrap--tall"><canvas id="canvas-power"></canvas></div>
           </div>
         </div>
-        <div class="card" style="margin-top: var(--spacing-4)">
+        <div class="card card--mt">
           <div class="card-header"><span class="card-title">Battery State of Charge</span></div>
           <div class="card-body">
             <div class="chart-wrap chart-wrap--tall"><canvas id="canvas-soc"></canvas></div>
@@ -246,7 +240,7 @@ function makeCentrePlugin(text: string): Plugin<'doughnut'> {
       } = chart;
       ctx.save();
       ctx.font = 'bold 20px sans-serif';
-      ctx.fillStyle = '#1f2937';
+      ctx.fillStyle = cssVar('--text-primary');
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(text, (left + right) / 2, (top + bottom) / 2);
@@ -259,13 +253,13 @@ function makeCentrePlugin(text: string): Plugin<'doughnut'> {
 // Legend HTML builder for donut charts
 // ---------------------------------------------------------------------------
 function donutLegendHTML(
-  segments: { name: string; value: number; share: number; tooltip: string; color: string }[],
+  segments: { name: string; value: number; share: number; tooltip: string; swatchClass: string }[],
 ): string {
   return segments
     .map(
       (s) => `
       <div class="donut-legend-row">
-        <span class="legend-swatch" style="background:${s.color}"></span>
+        <span class="legend-swatch ${s.swatchClass}"></span>
         <span class="legend-name">${s.name}</span>
         <span class="legend-value">${s.value.toLocaleString('en-US', { maximumFractionDigits: 0 })} kWh</span>
         <span class="legend-share">${(s.share * 100).toFixed(1)}%</span>
@@ -298,7 +292,7 @@ function renderConsumptionDonut(simResults: SimResultsEval): void {
       datasets: [
         {
           data: [kpis.self_consumption, kpis.grid_consumption],
-          backgroundColor: [COLORS.amber, COLORS.blue300],
+          backgroundColor: [cssVar('--copper-raw'), cssVar('--border-metal')],
           borderWidth: 1,
         },
       ],
@@ -308,7 +302,14 @@ function renderConsumptionDonut(simResults: SimResultsEval): void {
       cutout: '65%',
       plugins: {
         legend: { display: false },
-        tooltip: { enabled: true },
+        tooltip: {
+          enabled: true,
+          backgroundColor: cssVar('--bg-surface'),
+          titleColor: cssVar('--text-primary'),
+          bodyColor: cssVar('--text-secondary'),
+          borderColor: cssVar('--border-metal'),
+          borderWidth: 1,
+        },
       },
     },
     plugins: [makeCentrePlugin(centreText)],
@@ -323,14 +324,14 @@ function renderConsumptionDonut(simResults: SimResultsEval): void {
         value: kpis.self_consumption,
         share: total > 0 ? kpis.self_consumption / total : 0,
         tooltip: 'Energy drawn directly from your PV system',
-        color: COLORS.amber,
+        swatchClass: 'legend-swatch--copper',
       },
       {
         name: 'Grid',
         value: kpis.grid_consumption,
         share: total > 0 ? kpis.grid_consumption / total : 0,
         tooltip: 'Energy drawn from the electricity grid',
-        color: COLORS.blue300,
+        swatchClass: 'legend-swatch--border',
       },
     ]);
   }
@@ -355,7 +356,7 @@ function renderPVGenDonut(simResults: SimResultsEval): void {
       datasets: [
         {
           data: [kpis.self_consumption, kpis.grid_feed_in],
-          backgroundColor: [COLORS.amber, COLORS.blue300],
+          backgroundColor: [cssVar('--copper-raw'), cssVar('--border-metal')],
           borderWidth: 1,
         },
       ],
@@ -365,7 +366,14 @@ function renderPVGenDonut(simResults: SimResultsEval): void {
       cutout: '65%',
       plugins: {
         legend: { display: false },
-        tooltip: { enabled: true },
+        tooltip: {
+          enabled: true,
+          backgroundColor: cssVar('--bg-surface'),
+          titleColor: cssVar('--text-primary'),
+          bodyColor: cssVar('--text-secondary'),
+          borderColor: cssVar('--border-metal'),
+          borderWidth: 1,
+        },
       },
     },
     plugins: [makeCentrePlugin(centreText)],
@@ -380,14 +388,14 @@ function renderPVGenDonut(simResults: SimResultsEval): void {
         value: kpis.self_consumption,
         share: total > 0 ? kpis.self_consumption / total : 0,
         tooltip: 'PV energy consumed directly on-site',
-        color: COLORS.amber,
+        swatchClass: 'legend-swatch--copper',
       },
       {
         name: 'Grid feed-in',
         value: kpis.grid_feed_in,
         share: total > 0 ? kpis.grid_feed_in / total : 0,
         tooltip: 'Surplus PV energy exported to the grid',
-        color: COLORS.blue300,
+        swatchClass: 'legend-swatch--border',
       },
     ]);
   }
@@ -408,8 +416,7 @@ function renderMonthlyBar(simResults: SimResultsEval): void {
         {
           label: 'PV Generation',
           data,
-          backgroundColor: COLORS.amber,
-          borderRadius: 3,
+          backgroundColor: cssVar('--copper-raw'),
         },
       ],
     },
@@ -419,10 +426,16 @@ function renderMonthlyBar(simResults: SimResultsEval): void {
         legend: { display: false },
       },
       scales: {
+        x: {
+          ticks: { color: cssVar('--text-secondary') },
+          grid: { color: cssVar('--border-metal') },
+        },
         y: {
           ticks: {
+            color: cssVar('--text-secondary'),
             callback: (v) => `${v} kWh`,
           },
+          grid: { color: cssVar('--border-metal') },
         },
       },
     },
@@ -443,7 +456,7 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           {
             label: 'Load',
             data: timeseries.map((t) => t.Load),
-            borderColor: COLORS.rose,
+            borderColor: cssVar('--danger-red'),
             backgroundColor: 'transparent',
             borderWidth: 2,
             pointRadius: 0,
@@ -452,7 +465,7 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           {
             label: 'PV',
             data: timeseries.map((t) => t.PV),
-            borderColor: COLORS.amber,
+            borderColor: cssVar('--copper-raw'),
             backgroundColor: 'transparent',
             borderWidth: 2,
             pointRadius: 0,
@@ -461,7 +474,7 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           {
             label: 'Battery',
             data: timeseries.map((t) => t.Battery),
-            borderColor: COLORS.teal,
+            borderColor: cssVar('--copper-oxidized'),
             backgroundColor: 'transparent',
             borderWidth: 2,
             pointRadius: 0,
@@ -470,7 +483,7 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           {
             label: 'Total',
             data: timeseries.map((t) => t.Total),
-            borderColor: COLORS.indigo,
+            borderColor: cssVar('--text-secondary'),
             backgroundColor: 'transparent',
             borderWidth: 2,
             pointRadius: 0,
@@ -482,16 +495,30 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
         maintainAspectRatio: false,
         animation: false,
         plugins: {
-          legend: { display: true, position: 'bottom' },
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: { color: cssVar('--text-primary') },
+          },
+          tooltip: {
+            backgroundColor: cssVar('--bg-surface'),
+            titleColor: cssVar('--text-primary'),
+            bodyColor: cssVar('--text-secondary'),
+            borderColor: cssVar('--border-metal'),
+            borderWidth: 1,
+          },
         },
         scales: {
           x: {
-            ticks: { maxTicksLimit: 2 },
+            ticks: { maxTicksLimit: 2, color: cssVar('--text-secondary') },
+            grid: { color: cssVar('--border-metal') },
           },
           y: {
             ticks: {
+              color: cssVar('--text-secondary'),
               callback: (v) => `${v} kW`,
             },
+            grid: { color: cssVar('--border-metal') },
           },
         },
       },
@@ -509,7 +536,7 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           {
             label: 'State of Charge',
             data: timeseries.map((t) => t.StateOfCharge),
-            borderColor: COLORS.teal,
+            borderColor: cssVar('--copper-oxidized'),
             backgroundColor: 'transparent',
             borderWidth: 2,
             pointRadius: 0,
@@ -522,17 +549,27 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
         animation: false,
         plugins: {
           legend: { display: false },
+          tooltip: {
+            backgroundColor: cssVar('--bg-surface'),
+            titleColor: cssVar('--text-primary'),
+            bodyColor: cssVar('--text-secondary'),
+            borderColor: cssVar('--border-metal'),
+            borderWidth: 1,
+          },
         },
         scales: {
           x: {
-            ticks: { maxTicksLimit: 2 },
+            ticks: { maxTicksLimit: 2, color: cssVar('--text-secondary') },
+            grid: { color: cssVar('--border-metal') },
           },
           y: {
             min: 0,
             max: 100,
             ticks: {
+              color: cssVar('--text-secondary'),
               callback: (v) => `${v}%`,
             },
+            grid: { color: cssVar('--border-metal') },
           },
         },
       },

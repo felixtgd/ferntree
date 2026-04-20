@@ -272,7 +272,7 @@ export async function render(container: HTMLElement, _params?: Record<string, st
         </button>
       </div>
       <div id="model-list">
-        <p style="padding:2rem;color:var(--gray-500)">Loading models…</p>
+        <p class="status-text">Loading models…</p>
       </div>
     </div>
     ${createModelDialogHTML()}
@@ -284,7 +284,7 @@ export async function render(container: HTMLElement, _params?: Record<string, st
   } catch (err) {
     console.error('Failed to fetch models:', err);
     document.querySelector<HTMLElement>('#model-list')!.innerHTML =
-      `<p style="padding:2rem;color:var(--red-500)">Failed to load models. Is the backend running?</p>`;
+      `<p class="status-text status-text--error">Failed to load models. Is the backend running?</p>`;
     return;
   }
 
