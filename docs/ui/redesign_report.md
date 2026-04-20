@@ -6,6 +6,7 @@ This report documents the completed implementation work for:
 
 - **Phase 1: Foundation Tokens and Global Reset**
 - **Phase 2: Shell and Navigation Refactor**
+- **Phase 3: Primitive Components Consolidation**
 
 as defined in `docs/ui/redesign_plan.md`.
 
@@ -122,6 +123,66 @@ Mobile behavior alignment (also in `frontend/src/styles/global.css`):
 
 No router logic changes were required. Existing `updateActiveNav()` and `has-sidenav` shell behavior continue to function as before.
 
+### 8) Primitive Components Consolidation (Phase 3)
+
+Consolidated shared UI primitives in `frontend/src/styles/global.css` so cards, buttons, forms, dialog/overlay, and warning/status surfaces align with the Tinkerer's Grid token semantics.
+
+Loading overlay updates:
+
+- `.loading-message` text moved to `--text-secondary`.
+- Spinner ring updated to semantic tokens:
+  - ring border uses `--border-metal`
+  - spinner accent uses `--copper-raw`
+
+Card primitive updates:
+
+- `.card` now has a structural `1px solid var(--border-metal)` outline.
+- `.card-header` decorative top accent was removed and replaced with a structural bottom divider:
+  - removed `border-top: 4px` accent treatment
+  - added `border-bottom: 1px solid var(--border-metal)`
+
+Button primitive consolidation:
+
+- `.btn` base transition removed (`opacity`-based hover behavior removed).
+- `.btn-blue` remapped to canonical primary copper action style (`--copper-raw` / `--copper-hover`).
+- `.btn-green` remapped to semantic success accent (`--copper-oxidized`) with explicit hover treatment.
+- `.btn-orange` converted from filled variant to outlined copper action style:
+  - transparent background
+  - copper border and text
+  - tokenized hover background/text/border
+- `.btn-red` remapped to semantic danger token (`--danger-red`) with explicit hover treatment.
+- `.btn-outline` normalized to structural secondary style:
+  - `--border-metal` border
+  - `--text-secondary` default text
+  - `--bg-hover` + `--text-primary` hover state
+
+Form primitive normalization:
+
+- `.form-label` text color standardized to `--text-secondary`.
+- `.form-input` border standardized to `--border-metal`.
+- Focus behavior snapped to `--copper-raw` with no slow border transition.
+- Error states standardized to `--danger-red` (`.form-input.error`, `.form-error`).
+
+Workspace primitive consistency:
+
+- `.workflow-card` moved from blue-tinted fill to structural surface:
+  - background `--bg-surface`
+  - `1px solid var(--border-metal)` border
+  - hover state `--bg-hover`
+- `.workflow-badge` remapped to copper (`--copper-raw`) with dark text.
+- `.workflow-desc` and `.workflow-arrow` moved to `--text-secondary`.
+
+Dialog primitive normalization:
+
+- `dialog` now explicitly sets `background: var(--bg-surface)` and `color: var(--text-primary)`.
+- `.dialog-header` and `.dialog-footer` borders now use `--border-metal`.
+
+Status/warning utility cleanup:
+
+- `.fin-warning` text standardized to `--text-secondary`.
+- `.fin-warning-link` remapped from legacy blue to `--copper-raw`.
+- `.empty-arrow` remapped from legacy blue to `--text-secondary`.
+
 ## Verification
 
 Build verification completed:
@@ -130,13 +191,14 @@ Build verification completed:
 - Result: success (Phase 1)
 - Command: `npm run build` (in `frontend/`)
 - Result: success (Phase 2)
+- Command: `npm run build` (in `frontend/`)
+- Result: success (Phase 3)
 
 ## Notes and Deferred Work
 
 The following are intentionally deferred to later phases per plan:
 
-- Full component variant redesign (buttons/forms/cards behavior details)
 - Page-level visual harmonization across all sections
 - Chart palette centralization and tokenized chart theme module
 
-Phase 1 established the high-risk global foundation. Phase 2 completed shell/navigation visual refactoring without changing routing behavior or page templates.
+Phase 1 established the high-risk global foundation. Phase 2 completed shell/navigation visual refactoring without changing routing behavior or page templates. Phase 3 consolidated primitive component behavior across shared styles.
