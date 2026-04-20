@@ -20,6 +20,7 @@ import type { Plugin } from 'chart.js';
 import { fetchModels, fetchSimResults, fetchSimTimeseries, runSimulation } from '../api';
 import { navigate } from '../router';
 import { showLoadingOverlay, hideLoadingOverlay } from '../overlay';
+import { cssVar, tooltipTheme, scaleTheme, legendLabelTheme } from '../chart-theme';
 import type { ModelData, SimResultsEval, SimTimestep } from '../types';
 
 Chart.register(
@@ -58,13 +59,6 @@ function destroyCharts(): void {
     (c) => c?.destroy(),
   );
   consumptionChart = pvGenChart = monthlyChart = powerChart = socChart = null;
-}
-
-// ---------------------------------------------------------------------------
-// Theme token helpers
-// ---------------------------------------------------------------------------
-function cssVar(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
 // ---------------------------------------------------------------------------
@@ -304,11 +298,7 @@ function renderConsumptionDonut(simResults: SimResultsEval): void {
         legend: { display: false },
         tooltip: {
           enabled: true,
-          backgroundColor: cssVar('--bg-surface'),
-          titleColor: cssVar('--text-primary'),
-          bodyColor: cssVar('--text-secondary'),
-          borderColor: cssVar('--border-metal'),
-          borderWidth: 1,
+          ...tooltipTheme(),
         },
       },
     },
@@ -368,11 +358,7 @@ function renderPVGenDonut(simResults: SimResultsEval): void {
         legend: { display: false },
         tooltip: {
           enabled: true,
-          backgroundColor: cssVar('--bg-surface'),
-          titleColor: cssVar('--text-primary'),
-          bodyColor: cssVar('--text-secondary'),
-          borderColor: cssVar('--border-metal'),
-          borderWidth: 1,
+          ...tooltipTheme(),
         },
       },
     },
@@ -427,15 +413,14 @@ function renderMonthlyBar(simResults: SimResultsEval): void {
       },
       scales: {
         x: {
-          ticks: { color: cssVar('--text-secondary') },
-          grid: { color: cssVar('--border-metal') },
+          ...scaleTheme(),
         },
         y: {
+          ...scaleTheme(),
           ticks: {
             color: cssVar('--text-secondary'),
             callback: (v) => `${v} kWh`,
           },
-          grid: { color: cssVar('--border-metal') },
         },
       },
     },
@@ -498,27 +483,23 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           legend: {
             display: true,
             position: 'bottom',
-            labels: { color: cssVar('--text-primary') },
+            labels: { ...legendLabelTheme() },
           },
           tooltip: {
-            backgroundColor: cssVar('--bg-surface'),
-            titleColor: cssVar('--text-primary'),
-            bodyColor: cssVar('--text-secondary'),
-            borderColor: cssVar('--border-metal'),
-            borderWidth: 1,
+            ...tooltipTheme(),
           },
         },
         scales: {
           x: {
-            ticks: { maxTicksLimit: 2, color: cssVar('--text-secondary') },
-            grid: { color: cssVar('--border-metal') },
+            ...scaleTheme(),
+            ticks: { ...scaleTheme().ticks, maxTicksLimit: 2 },
           },
           y: {
+            ...scaleTheme(),
             ticks: {
               color: cssVar('--text-secondary'),
               callback: (v) => `${v} kW`,
             },
-            grid: { color: cssVar('--border-metal') },
           },
         },
       },
@@ -550,26 +531,22 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: cssVar('--bg-surface'),
-            titleColor: cssVar('--text-primary'),
-            bodyColor: cssVar('--text-secondary'),
-            borderColor: cssVar('--border-metal'),
-            borderWidth: 1,
+            ...tooltipTheme(),
           },
         },
         scales: {
           x: {
-            ticks: { maxTicksLimit: 2, color: cssVar('--text-secondary') },
-            grid: { color: cssVar('--border-metal') },
+            ...scaleTheme(),
+            ticks: { ...scaleTheme().ticks, maxTicksLimit: 2 },
           },
           y: {
             min: 0,
             max: 100,
+            ...scaleTheme(),
             ticks: {
               color: cssVar('--text-secondary'),
               callback: (v) => `${v}%`,
             },
-            grid: { color: cssVar('--border-metal') },
           },
         },
       },

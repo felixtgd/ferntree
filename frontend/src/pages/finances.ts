@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { fetchModels, fetchFinFormData, submitFinFormData, fetchFinResults } from '../api';
 import { navigate } from '../router';
 import { showLoadingOverlay, hideLoadingOverlay } from '../overlay';
+import { cssVar, tooltipTheme, scaleTheme, legendLabelTheme } from '../chart-theme';
 import type { ModelData, FinData, FinKPIs, FinResults, FinYearlyData } from '../types';
 
 Chart.register(
@@ -86,13 +87,6 @@ const ORIENTATION_MAP: Record<number, string> = {
 
 function orientationName(deg: number): string {
   return ORIENTATION_MAP[deg] ?? 'Unknown Orientation';
-}
-
-// ---------------------------------------------------------------------------
-// Theme token helpers
-// ---------------------------------------------------------------------------
-function cssVar(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
 // ---------------------------------------------------------------------------
@@ -408,26 +402,21 @@ function renderLifetimeChart(kpis: FinKPIs): void {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: cssVar('--bg-surface'),
-          titleColor: cssVar('--text-primary'),
-          bodyColor: cssVar('--text-secondary'),
-          borderColor: cssVar('--border-metal'),
-          borderWidth: 1,
+          ...tooltipTheme(),
         },
       },
       scales: {
         x: {
           stacked: true,
-          ticks: { color: cssVar('--text-secondary') },
-          grid: { color: cssVar('--border-metal') },
+          ...scaleTheme(),
         },
         y: {
           stacked: true,
+          ...scaleTheme(),
           ticks: {
             color: cssVar('--text-secondary'),
             callback: (v) => `€ ${v}`,
           },
-          grid: { color: cssVar('--border-metal') },
         },
       },
     },
@@ -491,27 +480,22 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
         legend: {
           display: true,
           position: 'bottom',
-          labels: { color: cssVar('--text-primary') },
+          labels: { ...legendLabelTheme() },
         },
         tooltip: {
-          backgroundColor: cssVar('--bg-surface'),
-          titleColor: cssVar('--text-primary'),
-          bodyColor: cssVar('--text-secondary'),
-          borderColor: cssVar('--border-metal'),
-          borderWidth: 1,
+          ...tooltipTheme(),
         },
       },
       scales: {
         x: {
-          ticks: { color: cssVar('--text-secondary') },
-          grid: { color: cssVar('--border-metal') },
+          ...scaleTheme(),
         },
         y: {
+          ...scaleTheme(),
           ticks: {
             color: cssVar('--text-secondary'),
             callback: (v) => `€ ${v}`,
           },
-          grid: { color: cssVar('--border-metal') },
         },
       },
     },

@@ -9,6 +9,7 @@ This report documents the completed implementation work for:
 - **Phase 3: Primitive Components Consolidation**
 - **Phase 4: Workspace Views Migration**
 - **Phase 5: Landing and Blog Integration**
+- **Phase 6: Chart Theme Unification**
 
 as defined in `docs/ui/redesign_plan.md`.
 
@@ -24,6 +25,7 @@ as defined in `docs/ui/redesign_plan.md`.
 - `frontend/src/pages/simulations.ts`
 - `frontend/src/pages/finances.ts`
 - `frontend/src/pages/landing-ferntree.ts`
+- `frontend/src/chart-theme.ts`
 
 ## Implemented Changes
 
@@ -294,6 +296,50 @@ Phase 5 QA checks completed:
 - Verified DontBlackout and blog cards use structural border/surface + hover background behavior (no lift/shadow animation).
 - Confirmed blog long-form content selectors cover links, headings, lists, and code blocks with tokenized styling.
 
+### 11) Chart Theme Unification (Phase 6)
+
+Implemented chart-theme centralization tasks in:
+
+- `frontend/src/chart-theme.ts`
+- `frontend/src/pages/simulations.ts`
+- `frontend/src/pages/finances.ts`
+
+Shared chart theme module:
+
+- Added new `frontend/src/chart-theme.ts` module with reusable token-driven helpers:
+  - `cssVar(name)` runtime token resolver
+  - `tooltipTheme()` for shared tooltip surface, text, and border styles
+  - `scaleTheme()` for shared axis tick/grid styling
+  - `legendLabelTheme()` for shared legend label typography color
+  - `chartTokens` accessors for canonical chart token mappings
+
+Simulations and finances consolidation:
+
+- Removed duplicate local `cssVar` helper definitions from both pages and imported shared helpers from `chart-theme.ts`.
+- Replaced repeated inline Chart.js tooltip config with `...tooltipTheme()` in all chart renderers on both pages.
+- Replaced repeated axis tick/grid styling with `...scaleTheme()` across bar and line charts on both pages.
+- Replaced inline legend label color config with `...legendLabelTheme()` where legends are displayed.
+
+Chart visual grammar and token mapping parity:
+
+- Preserved dataset token roles across both pages:
+  - primary/accent: `--copper-raw`
+  - success/generation: `--copper-oxidized`
+  - danger/deficit: `--danger-red`
+  - neutral/grid: `--border-metal`
+  - axis/secondary text: `--text-secondary`
+  - legend/primary text: `--text-primary`
+  - tooltip surface: `--bg-surface`
+- Donut legend swatches remain class-driven (`legend-swatch--copper`, `legend-swatch--border`) with no inline color styles.
+
+Phase 6 QA checks completed:
+
+- Verified `cssVar` is centralized in `frontend/src/chart-theme.ts` (no local `function cssVar(...)` remains in page files).
+- Verified both simulations and finances import shared chart theme helpers.
+- Verified tooltip, scale, and legend label styles are token-driven via shared helpers in both pages.
+- Verified no hardcoded chart color literals were introduced.
+- Confirmed chart rendering behavior remains presentation-only with no routing/API logic changes.
+
 ## Verification
 
 Build verification completed:
@@ -308,12 +354,13 @@ Build verification completed:
 - Result: success (Phase 4)
 - Command: `npm run build` (in `frontend/`)
 - Result: success (Phase 5)
+- Command: `npm run build` (in `frontend/`)
+- Result: success (Phase 6)
 
 ## Notes and Deferred Work
 
 The following are intentionally deferred to later phases per plan:
 
 - Page-level visual harmonization across all sections
-- Chart palette centralization and tokenized chart theme module
 
-Phase 1 established the high-risk global foundation. Phase 2 completed shell/navigation visual refactoring without changing routing behavior or page templates. Phase 3 consolidated primitive component behavior across shared styles. Phase 4 migrated the workspace views to class-based, tokenized presentation and aligned simulations/finances visual language without introducing a shared chart theme module yet. Phase 5 migrated landing and blog surfaces into the same identity system while preserving the DON'T BLACKOUT hero concept and improving long-form readability on dark surfaces.
+Phase 1 established the high-risk global foundation. Phase 2 completed shell/navigation visual refactoring without changing routing behavior or page templates. Phase 3 consolidated primitive component behavior across shared styles. Phase 4 migrated workspace views to class-based, tokenized presentation. Phase 5 migrated landing and blog surfaces into the same identity system while preserving the DON'T BLACKOUT hero concept and improving long-form readability on dark surfaces. Phase 6 centralized chart theming into a shared module so simulations and finances now use one reusable token-driven chart grammar.
