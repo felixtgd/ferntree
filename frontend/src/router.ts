@@ -66,7 +66,7 @@ function dispatch(path: string): void {
       });
       route.render(contentEl, params).catch((err: unknown) => {
         console.error('Page render error:', err);
-        contentEl!.innerHTML = `<p style="padding:2rem;color:red">Failed to load page.</p>`;
+        contentEl!.innerHTML = '<p class="route-message route-message--error">Failed to load page.</p>';
       });
       updateActiveNav(normPath);
       updateShell(normPath);
@@ -75,7 +75,7 @@ function dispatch(path: string): void {
   }
 
   // No match — 404 fallback
-  contentEl.innerHTML = `<p style="padding:2rem">Page not found: ${path}</p>`;
+  contentEl.innerHTML = `<p class="route-message">Page not found: ${path}</p>`;
   updateActiveNav(normPath);
   updateShell(normPath);
 }

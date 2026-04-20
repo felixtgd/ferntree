@@ -10,6 +10,7 @@ This report documents the completed implementation work for:
 - **Phase 4: Workspace Views Migration**
 - **Phase 5: Landing and Blog Integration**
 - **Phase 6: Chart Theme Unification**
+- **Phase 7: Cleanup and Consistency Enforcement**
 
 as defined in `docs/ui/redesign_plan.md`.
 
@@ -26,6 +27,8 @@ as defined in `docs/ui/redesign_plan.md`.
 - `frontend/src/pages/finances.ts`
 - `frontend/src/pages/landing-ferntree.ts`
 - `frontend/src/chart-theme.ts`
+- `frontend/src/router.ts`
+- `frontend/src/pages/fin-results.ts` (removed)
 
 ## Implemented Changes
 
@@ -340,6 +343,62 @@ Phase 6 QA checks completed:
 - Verified no hardcoded chart color literals were introduced.
 - Confirmed chart rendering behavior remains presentation-only with no routing/API logic changes.
 
+### 12) Cleanup and Consistency Enforcement (Phase 7)
+
+Implemented cleanup and consistency-enforcement tasks in:
+
+- `frontend/src/styles/global.css`
+- `frontend/src/router.ts`
+- `frontend/src/pages/fin-results.ts` (removed)
+
+Legacy token and obsolete style cleanup in `global.css`:
+
+- Removed the full Phase 1 compatibility alias block from `:root`:
+  - `--brand-blue`
+  - `--blue-100`, `--blue-300`, `--blue-500`
+  - `--rose-500`, `--amber-500`, `--teal-500`, `--indigo-500`
+  - `--green-600`, `--red-500`, `--orange-500`
+  - `--gray-50` through `--gray-900`
+- Added shared overlay token and replaced duplicated hardcoded backdrop literals:
+  - new token: `--overlay-backdrop: rgb(0 0 0 / 0.4)`
+  - applied to both `#loading-overlay` and `dialog::backdrop`
+- Removed unused reserved topnav variant selectors:
+  - `.topnav-link--app`
+  - `.topnav-link--app:hover`
+  - `.topnav-link--app.active`
+- Removed unused `.page-title` selector.
+- Removed the lone transition outlier (`transition: background 0.15s`) from `.blog-back-link` to preserve direct interaction behavior.
+
+Structural consistency in `global.css`:
+
+- Added explicit wrapper rules for classes already present in templates so structure is self-documenting and complete:
+  - `.sim-grid`
+  - `.fin-grid`
+
+Template/runtime inline-style cleanup:
+
+- Removed inline-style fallback markup in `router.ts` and replaced it with class-driven markup:
+  - error fallback now uses `.route-message.route-message--error`
+  - 404 fallback now uses `.route-message`
+- Added corresponding utility selectors in `global.css`:
+  - `.route-message`
+  - `.route-message--error`
+
+Optional placeholder page validation / de-scope:
+
+- Removed `frontend/src/pages/fin-results.ts` entirely.
+- The page was previously an unregistered placeholder with inline style and no route/import usage, so removal reduced dead code without affecting routing behavior.
+
+Phase 7 QA checks completed:
+
+- Verified no remaining legacy token aliases are defined or referenced (`--gray-*`, `--blue-*`, `--brand-blue`, and related alias families).
+- Verified no remaining unused Phase 7 target selectors (`.topnav-link--app*`, `.page-title`).
+- Verified duplicated overlay/backdrop literal color was centralized under `--overlay-backdrop`.
+- Verified `.sim-grid` and `.fin-grid` now have explicit CSS definitions.
+- Verified router fallback messages no longer use inline styles.
+- Verified optional `fin-results` placeholder is fully de-scoped (file removed, no route impact).
+- Performed responsive regression review against existing mobile media-query breakpoints for workspace, landing, and blog route groups.
+
 ## Verification
 
 Build verification completed:
@@ -356,11 +415,9 @@ Build verification completed:
 - Result: success (Phase 5)
 - Command: `npm run build` (in `frontend/`)
 - Result: success (Phase 6)
+- Command: `npm run build` (in `frontend/`)
+- Result: success (Phase 7)
 
-## Notes and Deferred Work
+## Notes
 
-The following are intentionally deferred to later phases per plan:
-
-- Page-level visual harmonization across all sections
-
-Phase 1 established the high-risk global foundation. Phase 2 completed shell/navigation visual refactoring without changing routing behavior or page templates. Phase 3 consolidated primitive component behavior across shared styles. Phase 4 migrated workspace views to class-based, tokenized presentation. Phase 5 migrated landing and blog surfaces into the same identity system while preserving the DON'T BLACKOUT hero concept and improving long-form readability on dark surfaces. Phase 6 centralized chart theming into a shared module so simulations and finances now use one reusable token-driven chart grammar.
+Phase 1 established the high-risk global foundation. Phase 2 completed shell/navigation visual refactoring without changing routing behavior or page templates. Phase 3 consolidated primitive component behavior across shared styles. Phase 4 migrated workspace views to class-based, tokenized presentation. Phase 5 migrated landing and blog surfaces into the same identity system while preserving the DON'T BLACKOUT hero concept and improving long-form readability on dark surfaces. Phase 6 centralized chart theming into a shared module so simulations and finances now use one reusable token-driven chart grammar. Phase 7 removed legacy aliases, dead selectors, and unused placeholder code while enforcing class-driven styling and consistency across shell-level fallback states.

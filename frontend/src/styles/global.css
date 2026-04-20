@@ -12,30 +12,7 @@
   --copper-hover: #e88b4f;
   --copper-oxidized: #5e9c88;
   --danger-red: #d25c5c;
-
-  /* Legacy token aliases for Phase 1 compatibility */
-  --brand-blue: var(--copper-raw);
-  --blue-100: var(--bg-hover);
-  --blue-300: #3a3f44;
-  --blue-500: var(--copper-raw);
-  --rose-500: var(--danger-red);
-  --amber-500: var(--copper-hover);
-  --teal-500: var(--copper-oxidized);
-  --indigo-500: var(--copper-raw);
-  --green-600: var(--copper-oxidized);
-  --red-500: var(--danger-red);
-  --orange-500: var(--copper-hover);
-
-  --gray-50: var(--bg-base);
-  --gray-100: var(--bg-surface);
-  --gray-200: var(--border-metal);
-  --gray-300: #4a4e52;
-  --gray-400: #777d82;
-  --gray-500: var(--text-secondary);
-  --gray-600: #b5bbc0;
-  --gray-700: #cfd4d8;
-  --gray-800: #e1e4e6;
-  --gray-900: var(--text-primary);
+  --overlay-backdrop: rgb(0 0 0 / 0.4);
 
   --spacing-1: 0.25rem;
   --spacing-2: 0.5rem;
@@ -181,23 +158,6 @@ input, select, textarea {
   border-bottom-color: var(--copper-raw);
 }
 
-/* "Launch App" button variant in topnav — reserved for future use */
-.topnav-link--app {
-  background: var(--copper-raw);
-  color: var(--bg-base);
-  margin-left: var(--spacing-2);
-}
-
-.topnav-link--app:hover {
-  background: var(--copper-hover);
-  color: var(--bg-base);
-}
-
-.topnav-link--app.active {
-  background: var(--copper-hover);
-  color: var(--bg-base);
-}
-
 /* =========================================================
    Shell (sidenav + content, below topnav)
    ========================================================= */
@@ -286,7 +246,7 @@ input, select, textarea {
 #loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgb(0 0 0 / 0.4);
+  background: var(--overlay-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -318,6 +278,14 @@ input, select, textarea {
   border-top-color: var(--copper-raw);
   border-radius: 0;
   animation: spin 0.8s linear infinite;
+}
+
+.route-message {
+  padding: var(--spacing-8);
+}
+
+.route-message--error {
+  color: var(--danger-red);
 }
 
 @keyframes spin {
@@ -553,7 +521,7 @@ dialog {
 }
 
 dialog::backdrop {
-  background: rgb(0 0 0 / 0.4);
+  background: var(--overlay-backdrop);
 }
 
 .dialog-header {
@@ -582,16 +550,6 @@ dialog::backdrop {
   gap: var(--spacing-3);
   padding: var(--spacing-4) var(--spacing-6);
   border-top: 1px solid var(--border-metal);
-}
-
-/* =========================================================
-   Page title / shared header
-   ========================================================= */
-.page-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  text-align: center;
-  flex: 1;
 }
 
 /* =========================================================
@@ -876,6 +834,12 @@ dialog::backdrop {
   font-size: 0.9375rem;
 }
 
+.sim-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
 /* --- Results grid --- */
 
 .sim-grid-top {
@@ -1100,6 +1064,12 @@ dialog::backdrop {
   text-decoration: underline;
   display: block;
   margin-top: var(--spacing-1);
+}
+
+.fin-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
 }
 
 /* --- Results grid --- */
@@ -1496,7 +1466,6 @@ dialog::backdrop {
   color: var(--copper-raw);
   margin-bottom: var(--spacing-6);
   padding: var(--spacing-1) var(--spacing-2);
-  transition: background 0.15s;
 }
 
 .blog-back-link:hover {
