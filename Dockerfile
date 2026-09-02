@@ -14,11 +14,11 @@ RUN npm run build
 CMD ["npm", "run", "start"]
 
 # Backend image to run FastAPI app with simulation tool
-FROM python:3.12-alpine AS backend-base
+FROM python:3.12-slim AS backend-base
 WORKDIR /usr/src/app
 COPY ./backend/requirements.txt ./
 # this is only necessary because of cvxpy, try to remove it in future
-# RUN apk add --no-cache build-base rust cargo
+# RUN apt-get update && apt-get install -y --no-install-recommends build-essential rustc cargo && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir -r requirements.txt
 COPY ./backend ./
 EXPOSE 8000
