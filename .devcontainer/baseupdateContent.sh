@@ -16,4 +16,7 @@ function postConfig(){
     # fzf-tab for improved tab completion in Zsh
     git clone https://github.com/Aloxaf/fzf-tab ~/fzf-tab
 
+    # install opencode
+    curl -fsSL https://opencode.ai/install | bash
+
 }

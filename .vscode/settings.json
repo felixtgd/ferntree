@@ -26,5 +26,6 @@
     "terminal.integrated.env.windows": {
         "PYTHONPATH": "${workspaceFolder}",
     },
-    "python.formatting.provider": "none"
+    "python.formatting.provider": "none",
+    "vim.showcmd": true
 }

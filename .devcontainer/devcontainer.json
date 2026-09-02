@@ -14,7 +14,8 @@
 				"ms-python.vscode-pylance",
 				"github.copilot",
 				"github.copilot-chat",
-				"charliermarsh.ruff"
+				"charliermarsh.ruff",
+                "vscodevim.vim"
 			]
 		}
 	},
@@ -22,6 +23,9 @@
 		8000,
         3000
 	],
+	"mounts": [
+        "source=${localEnv:HOME}/dotfiles,target=/workspaces/.dotfiles,type=bind,consistency=cached"
+    ],
 	"updateContentCommand": "zsh .devcontainer/updateContentCommand.sh",
 	"postCreateCommand": "zsh .devcontainer/postCreateCommand.sh",
 	"remoteUser": "vscode",
