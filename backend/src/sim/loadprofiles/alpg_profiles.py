@@ -1,16 +1,10 @@
 import os
 import random
-from typing import Hashable, Union
 
-import certifi
 import matplotlib.pyplot as plt
 import pandas as pd
+import psycopg
 from dotenv import load_dotenv
-from pymongo import MongoClient
-from pymongo.collection import Collection
-from pymongo.database import Database
-from pymongo.results import InsertManyResult
-from pymongo.server_api import ServerApi
 
 # Load dataset
 file_path = os.path.abspath(__file__)
@@ -68,45 +62,37 @@ def plot_profiles(df_profiles: pd.DataFrame) -> None:
 
 
 def write_profiles_to_db(df_profiles: pd.DataFrame) -> None:
-    """Write generated annual load profiles to MongoDB database."""
-    # Write generated annual load profiles to MongoDB database
-    # Use certifi to get the path of the CA file
-    ca: str = certifi.where()
-
-    # Load config from .env file:
-    scipt_dir: str = os.path.dirname(os.path.abspath(__file__))
-    env_path: str = os.path.join(scipt_dir, "../../.env")
+    """Write generated annual load profiles to PostgreSQL."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.join(script_dir, "../../../.env")
     load_dotenv(env_path)
-    MONGODB_URI: str = os.environ["MONGODB_URI"]
+    database_url = os.environ["DATABASE_URL"]
 
-    client: MongoClient = MongoClient(
-        MONGODB_URI, server_api=ServerApi("1"), tlsCAFile=ca
-    )
-    db: Database = client["ferntree_db"]
-    collection: Collection = db["loadprofiles"]
-
-    # Convert dataframe to dictionary
-    profiles_dict: dict[Hashable, list[float]] = df_profiles.to_dict(orient="list")
-
-    # Write each profile as a separate document to database
-    profile_docs: list[dict[str, Union[str, int, list[float]]]] = [
-        {
-            "type": "normalised annual loadprofile",
-            "profile_id": int(str(profile_id)),
-            "load_profile": profile,
-        }
+    profiles_dict = df_profiles.to_dict(orient="list")
+    rows = [
+        (
+            int(profile_id),
+            "normalised annual loadprofile",
+            [float(value) for value in profile],
+        )
         for profile_id, profile in profiles_dict.items()
     ]
-    doc_ids: InsertManyResult = collection.insert_many(profile_docs)
-    # Create an index on the 'profile_id' field
-    collection.create_index("profile_id")
 
-    if doc_ids:
-        print("Generated annual load profiles written to MongoDB database.")
-    else:
-        print("Error writing annual load profiles to MongoDB database.")
+    with psycopg.connect(database_url) as conn:
+        with conn.cursor() as cur:
+            cur.executemany(
+                """
+                INSERT INTO loadprofiles (profile_id, type, load_profile)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (profile_id) DO UPDATE SET
+                    type = EXCLUDED.type,
+                    load_profile = EXCLUDED.load_profile
+                """,
+                rows,
+            )
+        conn.commit()
 
-    client.close()
+    print("Generated annual load profiles written to PostgreSQL database.")
 
 
 plot_profiles(df_profiles)

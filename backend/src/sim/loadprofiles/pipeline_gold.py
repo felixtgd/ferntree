@@ -1,24 +1,22 @@
 import os
 
-import certifi
 import numpy as np
 import pandas as pd
+import psycopg
 from dotenv import load_dotenv
-from pymongo import MongoClient
-from pymongo.server_api import ServerApi
-
-# from sqlalchemy import URL, create_engine
 
 # Generate yearly load profiles
 # - Create 100 profiles & get mean annual consumption of all (will be default value if
 # user does not specify)
-# - Normalise all profiles to 1kWh annual consumption
+# - Normalise all profiles to an array sum of 1.0
 # - In sim, each user gets one random number between 0 and 100 that determines load
 # profile,
 # then profile is set and scaled to specified (or default) annual consumption
 # --> This should safe time, since there is no need to always generate a new profile for
 # each user, couple of
 # "standard" profiles should be enough
+
+GOLD_PROFILE_ID_OFFSET = 1_000_000
 
 
 def generate_annual_load_profiles(
@@ -108,20 +106,20 @@ def generate_annual_load_profiles(
             i += timesteps_per_day
 
         # Add annual profile to dataframe
-        df_profiles[f"{n}"] = annual_profile
+        df_profiles[f"{GOLD_PROFILE_ID_OFFSET + n}"] = annual_profile
 
     # Set power values to kW
     df_profiles = df_profiles / 1e3
     # Calculate annual consumption for each profile
     annual_consumption = df_profiles.sum(axis=0) * timebase / (60 * 60)
-    # Scale annual profiles to 1kWh annual consumption
-    df_profiles = df_profiles.div(annual_consumption, axis=1)
+    # Normalize arrays to the invariant expected by the simulation consumer.
+    df_profiles = df_profiles.div(df_profiles.sum(axis=0), axis=1)
 
     print("Annual consumption:")
     print(f"Mean: {annual_consumption.mean():.2f} kWh")
     print(f"Max: {annual_consumption.max():.2f} kWh")
     print(f"Min: {annual_consumption.min():.2f} kWh")
-    print(f"Scaled to 1kWh: {df_profiles.sum(axis=0).mean():.2f}")
+    print(f"Normalized array sum: {df_profiles.sum(axis=0).mean():.2f}")
 
     # Save annual consumption to csv
     output_file = os.path.join(data_dir, "gold", "annual_consumption_gen.csv")
@@ -162,58 +160,35 @@ def generate_daily_profile(
 
 
 def write_profiles_to_db(df_profiles: pd.DataFrame) -> None:
-    """Write generated annual load profiles to MongoDB database."""
-    # Write generated annual load profiles to MongoDB database
-    # Use certifi to get the path of the CA file
-    ca = certifi.where()
-
-    # Load config from .env file:
-    scipt_dir = os.path.dirname(os.path.abspath(__file__))
-    env_path = os.path.join(scipt_dir, "../../.env")
+    """Write generated annual load profiles to PostgreSQL."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.join(script_dir, "../../../.env")
     load_dotenv(env_path)
-    MONGODB_URI = os.environ["MONGODB_URI"]
+    database_url = os.environ["DATABASE_URL"]
 
-    client = MongoClient(MONGODB_URI, server_api=ServerApi("1"), tlsCAFile=ca)
-    db = client["ferntree_db"]
-    collection = db["loadprofiles"]
-
-    # Convert dataframe to dictionary
     profiles_dict = df_profiles.to_dict(orient="list")
 
-    # Write each profile as a separate document to database
-    profile_docs = [
-        {
-            "type": "normalised annual loadprofile",
-            "profile_id": int(profile_id),
-            "load_profile": profile,
-        }
+    rows = [
+        (
+            int(profile_id),
+            "normalised annual loadprofile",
+            [float(value) for value in profile],
+        )
         for profile_id, profile in profiles_dict.items()
     ]
-    doc_ids = collection.insert_many(profile_docs)
-    # Create an index on the 'profile_id' field
-    collection.create_index("profile_id")
 
-    if doc_ids:
-        print("Generated annual load profiles written to MongoDB database.")
-    else:
-        print("Error writing annual load profiles to MongoDB database.")
+    with psycopg.connect(database_url) as conn:
+        with conn.cursor() as cur:
+            cur.executemany(
+                """
+                INSERT INTO loadprofiles (profile_id, type, load_profile)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (profile_id) DO UPDATE SET
+                    type = EXCLUDED.type,
+                    load_profile = EXCLUDED.load_profile
+                """,
+                rows,
+            )
+        conn.commit()
 
-    client.close()
-
-    # host = "localhost"
-    # port = "5432"
-    # db_name = "sim_db"
-    # db_url = URL.create(
-    #     "postgresql+psycopg2",
-    #     host=host,
-    #     port=port,
-    #     database=db_name,
-    # )
-
-    # engine = create_engine(db_url)
-
-    # # Export to database
-    # df_profiles.to_sql(
-    #     "annual_loadprofiles", con=engine, if_exists="replace", index=False
-    # )
-    # print(f"Exported generated annual load profiles to database at {db_url}")
+    print("Generated annual load profiles written to PostgreSQL database.")

@@ -213,6 +213,80 @@ from that credential, is required follow-up work.
 - Stage 5: port load profile and cleanup scripts.
 - Stage 6: run the complete flow and remove remaining MongoDB code.
 
+## Stage 5: Reference Data and Cleanup Scripts
+
+**Status:** Implemented.
+
+### Scope
+
+Stage 5 ports the reference load-profile writers and database cleanup script from
+MongoDB to PostgreSQL. Load-profile generation and plotting behavior remain
+unchanged, while generated gold profiles now use the simulation consumer's
+sum-1.0 normalization invariant.
+
+### Implemented Changes
+
+#### `backend/src/sim/loadprofiles/alpg_profiles.py`
+
+- Replaced the MongoDB writer with a synchronous `psycopg` connection using
+  `DATABASE_URL` from `backend/.env`.
+- Inserts rows into `loadprofiles` with `profile_id`, `type`, and
+  `load_profile`.
+- Uses `ON CONFLICT (profile_id) DO UPDATE` so re-seeding is idempotent.
+- Converts pandas/numpy profile values to plain Python floats before passing
+  them to PostgreSQL's `DOUBLE PRECISION[]` adapter.
+
+#### `backend/src/sim/loadprofiles/pipeline_gold.py`
+
+- Applied the same PostgreSQL writer and idempotent upsert behavior to the gold
+  profile generation pipeline.
+- Assigns generated gold profiles IDs starting at `1_000_000` so they cannot
+  overwrite ALPG profiles in the shared `loadprofiles` table.
+- Normalizes generated arrays to sum to `1.0` for any supported timebase, which
+  matches the simulation baseload consumer's invariant.
+- Removed the obsolete MongoDB, TLS certificate, and commented SQLAlchemy
+  database code.
+
+#### `backend/src/clean_database.py`
+
+- Replaced the async MongoDB client with a standalone synchronous `psycopg`
+  script.
+- Requires `CONFIRM_DB_WIPE=1` when executed and does nothing when imported.
+- Truncates `models`, `simulations`, `sim_timesteps`, `sim_results_eval`,
+  `pv_monthly_gen`, `finances`, `fin_results`, and `fin_yearly_data` with
+  `RESTART IDENTITY CASCADE`.
+- Preserves the seeded `users` row and reference `loadprofiles` data.
+
+### Verification Performed
+
+- `python -m compileall -q backend/src/sim/loadprofiles backend/src/clean_database.py`
+  completed successfully.
+- `git diff --check` completed without whitespace errors.
+- No MongoDB, Motor, PyMongo, BSON, Certifi, or `MONGODB_*` references remain in
+  the two ported load-profile scripts.
+- A PostgreSQL writer smoke test inserted profiles with plain Python float
+  arrays; a second write updated the same `profile_id` rows without increasing
+  the row count.
+- The cleanup script was run with `CONFIRM_DB_WIPE=1`; data tables were emptied
+  while the seeded user and reference profiles remained.
+
+### Known Limitation
+
+The load-profile entrypoints retain their existing module-level execution and
+plotting behavior. Running `alpg_profiles.py` opens its validation plot before
+writing to PostgreSQL, as it did before the migration. Full loader execution and
+database row-count verification require the PostgreSQL compose service and are
+deferred to the environment where that service is available. The cleanup
+command is:
+
+```bash
+CONFIRM_DB_WIPE=1 docker compose run --rm backend python src/clean_database.py
+```
+
+### Follow-up Stages
+
+- Stage 6: run the complete flow and remove remaining MongoDB code.
+
 ## Stage 2: Dependencies
 
 **Status:** Implemented and verified.

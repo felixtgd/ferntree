@@ -51,7 +51,7 @@ if VALIDATION:
     for i in range(5):
         plt.plot(
             time[day : day + 24 * 7],
-            df_profiles[f"{i}"].iloc[day : day + 24 * 7],
+            df_profiles[f"{gold.GOLD_PROFILE_ID_OFFSET + i}"].iloc[day : day + 24 * 7],
             label=f"Profile {i}",
         )
 
