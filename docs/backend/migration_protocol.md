@@ -79,6 +79,56 @@ Full `docker compose config` validation is currently blocked by an existing unre
 - Stage 4: port the synchronous simulation engine database client.
 - Stage 5: port load profile and cleanup scripts.
 
+## Stage 4: Sim Engine Client
+
+**Status:** Implemented.
+
+### Scope
+
+Stage 4 replaces the synchronous simulation-engine MongoDB client with a
+psycopg 3 client. The simulation engine continues to run as a synchronous
+subprocess and writes timestep rows directly to PostgreSQL.
+
+### Implemented Changes
+
+#### `backend/src/sim/ferntree/components/database/postgres.py`
+
+- Added `PostgresClient`, using `DATABASE_URL` and a synchronous
+  `psycopg.Connection`.
+- Replaced the old MongoDB results document with deletion of existing
+  `sim_timesteps` rows for the simulation ID, so reruns replace prior results.
+- Added flat simulation configuration loading from `simulations`.
+- Added load profile reads from the PostgreSQL array column.
+- Added buffered timestep writes using PostgreSQL `COPY`, retaining the
+  1000-row buffer.
+- Flushes pending rows and closes the connection during shutdown.
+
+#### Simulation callers
+
+- Updated `sim_builder.py` and `sim_host.py` to use `PostgresClient`.
+- `SimBuilder` regroups the flattened database settings into the nested
+  device-specific dictionaries expected by the existing simulation devices.
+- Existing device and controller classes remain unchanged.
+
+### Verification Performed
+
+- `python -m compileall -q backend/src/sim` completed successfully.
+- `git diff --check` completed without whitespace errors.
+- A direct client smoke test against the running PostgreSQL container verified
+  flattened config loading, load profile array reads, and buffered `COPY`
+  insertion of timestep data.
+- Reinitializing the same client deleted the prior `sim_timesteps` rows,
+  confirming rerun replacement semantics.
+
+The full `docker compose` command remains blocked by the existing unrelated
+missing `frontend/.env` file. The client verification used the healthy
+PostgreSQL container directly and the built backend image.
+
+### Follow-up Stages
+
+- Stage 5: port load profile and cleanup scripts.
+- Stage 6: run the complete flow and remove remaining MongoDB references.
+
 ## Stage 3: API Data Layer
 
 **Status:** Implemented.

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Optional, Union
 
 from components.core.entity import Entity
-from components.database.mongodb import pyMongoClient
+from components.database.postgres import PostgresClient
 from pytz import timezone
 
 logger = logging.getLogger("ferntree")
@@ -17,15 +17,15 @@ class SimHost:
     - Saving the results to the database.
     """
 
-    def __init__(self, sim_settings: dict[str, Any], db_client: pyMongoClient) -> None:
+    def __init__(self, sim_settings: dict[str, Any], db_client: PostgresClient) -> None:
         """Initializes a new instance of the SimHost class.
 
         Args:
             sim_settings (dict): Simulation settings
-            db_client (pyMongoClient): MongoDB database client
+            db_client (PostgresClient): PostgreSQL database client
 
         """
-        self.db_client: pyMongoClient = db_client  # MongoDB database client
+        self.db_client: PostgresClient = db_client
 
         # self.model_name = sim_settings["model_name"]
         self.timebase: int = int(sim_settings["timebase"])  # Timebase in seconds

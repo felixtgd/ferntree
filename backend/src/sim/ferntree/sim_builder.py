@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 from components.ctrl.battery_ctrl import BatteryCtrl
-from components.database.mongodb import pyMongoClient
+from components.database.postgres import PostgresClient
 from components.dev.baseload import BaseLoad
 from components.dev.battery_dev import BatteryDev
 from components.dev.pv_sys import PVSys
@@ -28,11 +28,32 @@ class SimBuilder:
 
         """
         # Connect to database
-        self.db_client: pyMongoClient = pyMongoClient(sim_id, model_id)
+        self.db_client: PostgresClient = PostgresClient(sim_id, model_id)
 
         # Load simulation config from database
         sim_config: dict[str, Any] = self.db_client.load_config()
-        self.system_settings: dict[str, Any] = sim_config["system_settings"]
+        self.system_settings: dict[str, Any] = {
+            "baseload": {
+                "annual_consumption": sim_config["baseload_annual_consumption"],
+                "profile_id": sim_config["baseload_profile_id"],
+            },
+            "pv": {
+                "roof_tilt": sim_config["pv_roof_tilt"],
+                "roof_azimuth": sim_config["pv_roof_azimuth"],
+                "peak_power": sim_config["pv_peak_power"],
+            },
+            "battery": {
+                "capacity": sim_config["battery_capacity"],
+                "max_power": sim_config["battery_max_power"],
+                "soc_init": sim_config["battery_soc_init"],
+                "battery_ctrl": {
+                    "planning_horizon": sim_config["batctrl_planning_horizon"],
+                    "useable_capacity": sim_config["batctrl_useable_capacity"],
+                    "greedy": sim_config["batctrl_greedy"],
+                    "opt_fill": sim_config["batctrl_opt_fill"],
+                },
+            },
+        }
 
         # Set up simulation host
         self.sim: SimHost = SimHost(sim_config, self.db_client)
