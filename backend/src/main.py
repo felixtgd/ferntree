@@ -1,8 +1,9 @@
 import logging
 import os
+from contextlib import asynccontextmanager
 from datetime import datetime
 from logging import Logger
-from typing import Any, Optional
+from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, status
@@ -19,7 +20,7 @@ from src.database.models import (
     SimTimestepOut,
     StartEndTimes,
 )
-from src.database.mongodb import MongoClient
+from src.database.postgres import Database, pool
 from src.utils.auth_funcs import check_user_exists
 from src.utils.sim_funcs import (
     calc_fin_results,
@@ -37,22 +38,40 @@ logging.basicConfig(
 )
 logger: Logger = logging.getLogger(LOGGERNAME)
 
-# Create a FastAPI instance
-app: FastAPI = FastAPI()
 
-# Create a MongoDB client
-db_client: MongoClient = MongoClient()
+# Create a FastAPI instance
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """Open and close the database pool for the application lifetime.
+
+    Args:
+        _ (FastAPI): The application instance.
+
+    """
+    await pool.open()
+    try:
+        yield
+    finally:
+        await pool.close()
+
+
+app: FastAPI = FastAPI(lifespan=lifespan)
+
+# Create the API database client
+db_client: Database = Database()
 
 # Load config from .env file:
 load_dotenv("./.env")
 FRONTEND_BASE_URI: str = os.environ["FRONTEND_BASE_URI"]
 
-# Configure CORS
-origins: list[str] = FRONTEND_BASE_URI.split(",") + ["*"]
+# Configure CORS for the explicitly configured frontend origins.
+origins: list[str] = [
+    origin.strip() for origin in FRONTEND_BASE_URI.split(",") if origin.strip()
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # Allows all origins
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
@@ -141,7 +160,7 @@ async def delete_model(user_id: str, model_id: str) -> str:
     )
 
     # Delete the model
-    delete_result_acknowledged: bool = await db_client.delete_model(model_id)
+    delete_result_acknowledged: bool = await db_client.delete_model(model_id, user_id)
     if not delete_result_acknowledged:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -177,20 +196,22 @@ async def run_simulation(user_id: str, model_id: str) -> dict[str, bool]:
     )
 
     # Fetch model data from database
-    model_data: ModelDataOut = await db_client.fetch_model_by_id(model_id)
+    model_data: ModelDataOut = await db_client.fetch_model_by_id(model_id, user_id)
 
     # Get simulation input data
     sim_input_data: SimDataIn = await get_sim_input_data(model_data)
 
     # Insert simulation input data into database
-    sim_id: str = await db_client.insert_document("simulations", sim_input_data)
+    sim_id: str = await db_client.upsert_simulation(sim_input_data, user_id)
 
     # Run the simulation
     sim_run: bool = await run_ferntree_simulation(model_id, sim_id)
 
     # If sim run was successful, insert sim_id into model doc in database
     if sim_run:
-        sim_id_updated: bool = await db_client.update_sim_id_of_model(model_id, sim_id)
+        sim_id_updated: bool = await db_client.update_sim_id_of_model(
+            model_id, sim_id, user_id
+        )
         if not sim_id_updated:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -230,11 +251,8 @@ async def fetch_sim_results(user_id: str, model_id: str) -> SimResultsEval:
     )
 
     # Check if sim results are already evaluated
-    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
-        "sim_results_eval", model_id
-    )
-    sim_results_eval_existing: Optional[SimResultsEval] = (
-        SimResultsEval(**doc) if doc else None
+    sim_results_eval_existing = await db_client.fetch_sim_results_eval(
+        model_id, user_id
     )
 
     # If not, evaluate sim results
@@ -244,9 +262,9 @@ async def fetch_sim_results(user_id: str, model_id: str) -> SimResultsEval:
             f"Evaluating sim results for model_id={model_id}"
         )
         sim_results_eval_new: SimResultsEval = await eval_sim_results(
-            db_client, model_id
+            db_client, model_id, user_id
         )
-        await db_client.insert_document("sim_results_eval", sim_results_eval_new)
+        await db_client.upsert_sim_results_eval(sim_results_eval_new, user_id)
         return sim_results_eval_new
     else:
         return sim_results_eval_existing
@@ -285,20 +303,12 @@ async def fetch_sim_timeseries(
         logger.error(f"Error parsing datetime: {e}")
         raise HTTPException(status_code=400, detail="Invalid datetime format")
 
-    # Fetch sim results timeseries data
-    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
-        "sim_results_ts", model_id
+    sim_results = await db_client.fetch_timesteps(
+        model_id, user_id, start_time, end_time, 20 * 24
     )
-    if doc is None:
-        raise RuntimeError(
-            f"Failed to fetch sim results timeseries for model_id {model_id}"
-        )
-    sim_results: list[SimTimestep] = [
-        SimTimestep(**timestep) for timestep in doc["timeseries"]
-    ]
 
     # Fetch model data
-    model_data: ModelDataOut = await db_client.fetch_model_by_id(model_id)
+    model_data: ModelDataOut = await db_client.fetch_model_by_id(model_id, user_id)
     battery_cap: float = model_data.battery_cap
 
     # Filter the timeseries data to only include data within the given date range
@@ -313,8 +323,7 @@ async def fetch_sim_timeseries(
             if battery_cap > 0
             else 0,  # in %
         )
-        for timestep in sim_results
-        if start_time <= timestep.time <= end_time
+        for timestep in (SimTimestep(**item) for item in sim_results)
     ]
 
     if len(sim_timeseries_data) > 20 * 24:
@@ -351,8 +360,7 @@ async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> 
 
     # Fetch fin form data from database
     model_id: str = fin_form_data_sub.model_id
-    doc: Optional[dict[str, Any]] = await db_client.fetch_document("finances", model_id)
-    fin_form_data_db: Optional[FinFormData] = FinFormData(**doc) if doc else None
+    fin_form_data_db = await db_client.fetch_finances(model_id, user_id)
 
     # If model has no form data (1:1 relation),
     # then write form data to database and calculate financial results
@@ -365,10 +373,12 @@ async def submit_fin_form_data(user_id: str, fin_form_data_sub: FinFormData) -> 
             f"Calculating financial results for model {model_id}"
         )
         # Write fin form data to database
-        await db_client.insert_document("finances", fin_form_data_sub)
+        await db_client.upsert_finances(fin_form_data_sub, user_id)
         # Calculate financial results
-        fin_results: FinResults = await calc_fin_results(db_client, fin_form_data_sub)
-        await db_client.insert_document("fin_results", fin_results)
+        fin_results: FinResults = await calc_fin_results(
+            db_client, fin_form_data_sub, user_id
+        )
+        await db_client.upsert_fin_results(fin_results, user_id)
     else:
         logger.info(
             f"POST:\t/workspace/finances/submit-fin-form-data --> "
@@ -405,12 +415,9 @@ async def fetch_fin_results(user_id: str, model_id: str) -> FinResults:
     )
 
     # Fetch financial results from database
-    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
-        "fin_results", model_id
-    )
-    if doc is None:
+    fin_results = await db_client.fetch_fin_results(model_id, user_id)
+    if fin_results is None:
         raise RuntimeError(f"Failed to fetch financial results for model_id {model_id}")
-    fin_results: FinResults = FinResults(**doc)
 
     logger.info(
         f"GET:\t/workspace/finances/fetch-fin-results --> "
@@ -437,19 +444,8 @@ async def fetch_fin_form_data(user_id: str) -> list[FinFormData]:
         f"Received request: user_id={user_id}"
     )
 
-    # Fetch all models of the user
-    models: list[ModelDataOut] = await db_client.fetch_models(user_id)
-
-    # Fetch fin form data for all models (if available) from database
-    fin_form_data_all: list[FinFormData] = []
-    for model in models:
-        model_id = model.model_id
-        doc: Optional[dict[str, Any]] = await db_client.fetch_document(
-            "finances", model_id
-        )
-        if doc:
-            fin_form_data: FinFormData = FinFormData(**doc)
-            fin_form_data_all.append(fin_form_data)
+    # Fetch fin form data for all models (if available) in one query
+    fin_form_data_all = await db_client.fetch_finances_for_user(user_id)
 
     logger.info(
         f"GET:\t/workspace/finances/fetch-fin-form-data --> "

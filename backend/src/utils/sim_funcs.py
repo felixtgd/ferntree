@@ -2,13 +2,12 @@ import logging
 import subprocess
 from datetime import datetime
 from subprocess import CompletedProcess
-from typing import Any, Hashable, Optional, Union
+from typing import Any, Hashable, Union
 
 import pandas as pd
 from fastapi import HTTPException, status
 from pandas import DataFrame, Series
 
-from src.database import mongodb
 from src.database.models import (
     PV,
     Baseload,
@@ -26,6 +25,7 @@ from src.database.models import (
     SimResultsEval,
     SystemSettings,
 )
+from src.database.postgres import Database
 from src.solar_data import geolocator, pvgis_api
 
 logger: logging.Logger = logging.getLogger("ferntree")
@@ -174,7 +174,7 @@ async def run_ferntree_simulation(
 
 
 async def eval_sim_results(
-    db_client: mongodb.MongoClient, model_id: str
+    db_client: Database, model_id: str, user_id: str
 ) -> SimResultsEval:
     """Evaluate simulation results for a given model.
 
@@ -182,8 +182,9 @@ async def eval_sim_results(
     and computes monthly PV generation data.
 
     Args:
-        db_client (mongodb.MongoClient): The MongoDB client.
+        db_client (Database): The PostgreSQL client.
         model_id (str): The ID of the model to evaluate.
+        user_id (str): The username requesting the evaluation.
 
     Returns:
         SimResultsEval: The evaluated simulation results.
@@ -193,14 +194,13 @@ async def eval_sim_results(
 
     """
     # Fetch sim results timeseries data
-    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
-        "sim_results_ts", model_id
+    sim_results_dict: list[dict[str, float]] = await db_client.fetch_timesteps(
+        model_id, user_id
     )
-    if doc is None:
+    if not sim_results_dict:
         raise RuntimeError(
             f"Failed to fetch sim results timeseries for model_id {model_id}"
         )
-    sim_results_dict: list[dict[str, float]] = doc["timeseries"]
 
     energy_kpis: EnergyKPIs = await calc_energy_kpis(sim_results_dict)
     pv_monthly_gen: list[PVMonthlyGen] = await calc_pv_monthly_gen(sim_results_dict)
@@ -335,8 +335,9 @@ async def calc_pv_monthly_gen(sim_results: list[dict[str, Any]]) -> list[PVMonth
 
 
 async def calc_fin_results(
-    db_client: mongodb.MongoClient,
+    db_client: Database,
     fin_data: FinFormData,
+    user_id: str,
 ) -> FinResults:
     """Calculate financial results based on simulation results and financial input data.
 
@@ -344,8 +345,9 @@ async def calc_fin_results(
     calculations including investment costs, profits, and various financial KPIs.
 
     Args:
-        db_client (mongodb.MongoClient): The MongoDB client.
+        db_client (Database): The PostgreSQL client.
         fin_data (FinFormData): The financial input data.
+        user_id (str): The username requesting the calculation.
 
     Returns:
         FinResults: The calculated financial results.
@@ -355,13 +357,14 @@ async def calc_fin_results(
 
     """
     # Fetch model data from database
-    model_data: ModelDataOut = await db_client.fetch_model_by_id(fin_data.model_id)
+    model_data: ModelDataOut = await db_client.fetch_model_by_id(
+        fin_data.model_id, user_id
+    )
 
     # Fetch sim results evaluation from database
-    doc: Optional[dict[str, Any]] = await db_client.fetch_document(
-        "sim_results_eval", model_data.model_id
+    sim_results_eval = await db_client.fetch_sim_results_eval(
+        model_data.model_id, user_id
     )
-    sim_results_eval: Optional[SimResultsEval] = SimResultsEval(**doc) if doc else None
     if sim_results_eval is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

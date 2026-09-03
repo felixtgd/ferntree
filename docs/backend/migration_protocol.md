@@ -79,6 +79,90 @@ Full `docker compose config` validation is currently blocked by an existing unre
 - Stage 4: port the synchronous simulation engine database client.
 - Stage 5: port load profile and cleanup scripts.
 
+## Stage 3: API Data Layer
+
+**Status:** Implemented.
+
+### Scope
+
+Stage 3 replaces the asynchronous API data layer with psycopg 3 and wires the
+PostgreSQL connection pool into the FastAPI application lifecycle. The
+synchronous simulation-engine client and reference-data scripts remain for
+Stages 4 and 5.
+
+### Implemented Changes
+
+#### `backend/src/database/postgres.py`
+
+- Added a module-level `psycopg_pool.AsyncConnectionPool` using `DATABASE_URL`.
+- Added the `Database` API client with typed model, simulation, evaluation,
+  finance, and financial-result methods.
+- Flattened nested coordinates and system settings on writes and reassembled
+  the original Pydantic response shapes on reads.
+- Resolved the external `user_id` username to the internal `users.id` foreign
+  key while returning the username in API responses.
+- Added string/integer ID conversion and not-found handling for malformed IDs.
+- Added transactional parent upserts with child-row replacement for monthly
+  PV generation and yearly financial data.
+- Added `fetch_timesteps`, including model-to-simulation resolution and SQL
+  time-range filtering against `sim_timesteps`.
+- Added allowlisted `clean_collection` support for later cleanup-script use.
+
+#### API callers
+
+- Updated `main.py` to use typed PostgreSQL methods and the SQL-backed
+  timeseries range query.
+- Added FastAPI lifespan handling to open and close the async pool cleanly.
+- Updated `auth_funcs.py` and `sim_funcs.py` to use the PostgreSQL client.
+- Preserved string IDs and existing Pydantic/API response contracts.
+- Model deletion now returns true only when a model row was deleted; foreign
+  key cascades remove dependent rows.
+- Model-scoped reads and writes are restricted to the requesting username,
+  preventing cross-user access through sequential model IDs.
+- CORS now uses only the configured frontend origins instead of combining a
+  wildcard origin with credentialed requests.
+- Timeseries queries apply the 480-row response cap in SQL, and finance form
+  data for a user is loaded with one set-based query.
+
+#### Verification support
+
+- Added `backend/scripts/smoke_db.py`, which exercises model CRUD, simulation,
+  evaluation, finance, and financial-result round trips, idempotent upserts,
+  and model deletion cascade behavior.
+- Added `backend/scripts/__init__.py` so the smoke script can run as a module.
+
+### Verification Performed
+
+- `python -m compileall -q backend/src` completed successfully.
+- `python -m compileall -q backend/scripts backend/src` completed successfully.
+- `git diff --check` completed without whitespace errors.
+
+The repository does not have `ruff` installed in the current environment, so
+the configured lint command could not be run. The database smoke script still
+requires the PostgreSQL service and should be run with:
+
+```bash
+docker compose run --rm backend python -m scripts.smoke_db
+```
+
+### Known Limitation
+
+Timeseries reads now target `sim_timesteps`, which is populated by the Stage 4
+synchronous simulation-engine client. Full simulation and timeseries endpoint
+verification remains deferred to Stage 6 as specified by the migration plan.
+
+The API currently accepts `user_id` from the client without authenticating the
+caller. Database ownership checks therefore protect data only when that value
+is trusted; a caller who knows another username can impersonate that user.
+Authentication from a verified session or token, with endpoint identity derived
+from that credential, is required follow-up work.
+
+### Follow-up Stages
+
+- Stage 4: port the synchronous simulation-engine database client.
+- Stage 5: port load profile and cleanup scripts.
+- Stage 6: run the complete flow and remove remaining MongoDB code.
+
 ## Stage 2: Dependencies
 
 **Status:** Implemented and verified.

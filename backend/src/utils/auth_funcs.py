@@ -3,13 +3,13 @@ from typing import Any, Awaitable, Callable, Optional, TypeVar
 
 from fastapi import HTTPException, status
 
-from src.database.mongodb import MongoClient
+from src.database.postgres import Database
 
 # Define a type variable for the function
 F = TypeVar("F", bound=Callable[..., Awaitable[Any]])
 
 
-def check_user_exists(db_client: MongoClient) -> Callable[[F], F]:
+def check_user_exists(db_client: Database) -> Callable[[F], F]:
     """A decorator that checks if a user exists in the database before
     executing the decorated function.
 
@@ -18,7 +18,7 @@ def check_user_exists(db_client: MongoClient) -> Callable[[F], F]:
     keyword argument or as part of a Pydantic model passed to the function.
 
     Args:
-        db_client (MongoClient): An instance of the MongoDB client used to
+        db_client (Database): An instance of the PostgreSQL client used to
                                     check user existence.
 
     Returns:
