@@ -1,6 +1,6 @@
 # Backend
 
-Ferntree uses a FastAPI-based backend for simulating and analyzing solar energy systems. It integrates with a MongoDB database and a custom energy system simulation tool.
+Ferntree uses a FastAPI-based backend for simulating and analyzing solar energy systems. It integrates with a PostgreSQL database and a custom energy system simulation tool.
 
 ## Features
 
@@ -14,8 +14,8 @@ Ferntree uses a FastAPI-based backend for simulating and analyzing solar energy 
 ## Technology Stack
 
 - **Backend framework**: [FastAPI](https://fastapi.tiangolo.com), a fast, asynchronous web framework for building APIs with Python.
-- **Database**: [MongoDB](https://www.mongodb.com), a document-based NoSQL database for storing user data, models, simulation data and financial results.
-- **Database Driver**: [Motor](https://motor.readthedocs.io/en/stable/#), an asynchronous Python driver for MongoDB.
+- **Database**: [PostgreSQL](https://www.postgresql.org) for storing user data, models, simulation data and financial results.
+- **Database Driver**: [psycopg](https://www.psycopg.org/psycopg3/), used asynchronously by the API and synchronously by the simulation engine.
 - **Data Validation**: [Pydantic](https://docs.pydantic.dev/latest/), data validation and settings management using Python type annotations.
 - **Energy System Simulation**: [ferntree](./sim/ferntree/), a custom simulation tool for detailed energy system modeling and simulation.
 
@@ -31,7 +31,7 @@ The API endpoints for interacting with the backend are defined in the [`main`](.
 
 ### 2. Database Operations
 
-The [`MongoClient`](./database/mongodb.py) class handles all interactions with the MongoDB database, including:
+The [`Database`](./src/database/postgres.py) class handles API interactions with PostgreSQL, including:
 - User authentication
 - Model creation, retrieval, and deletion
 - Simulation data storage and retrieval

@@ -213,6 +213,39 @@ from that credential, is required follow-up work.
 - Stage 5: port load profile and cleanup scripts.
 - Stage 6: run the complete flow and remove remaining MongoDB code.
 
+## Stage 6: End-to-end Verification and Mongo Removal
+
+**Status:** Implemented and verified.
+
+### Implemented Changes
+
+- Removed the obsolete `backend/src/database/mongodb.py` client and the temporary
+  `backend/scripts/smoke_db.py` module.
+- Updated the backend README to document PostgreSQL and psycopg.
+- Added `frontend/.env` for the real local API and committed
+  `frontend/.env.example` as its template, allowing the compose frontend service
+  to start.
+- Added pytest and pytest-asyncio dependencies and ported the data-layer smoke
+  coverage to `backend/tests/test_data_layer.py`. The tests cover model CRUD,
+  typed simulation/evaluation/finance upserts, idempotent IDs, cascade deletion,
+  unknown users, and malformed IDs.
+
+### Verification Performed
+
+- `docker compose build backend` completed successfully with pytest dependencies.
+- `docker compose run --rm backend python -m pytest tests -q` passed: 2 tests.
+- `docker compose up -d` started the PostgreSQL, backend, and frontend services;
+  the backend completed FastAPI startup successfully.
+- The complete API flow passed against PostgreSQL: model submission, simulation
+  execution, evaluated simulation results, SQL-filtered timeseries, financial
+  form submission, financial results, and model deletion.
+- Timeseries verification returned the SQL response cap of 480 rows.
+- Re-running the same model preserved `sim_id=5` and left exactly 8,760
+  timestep rows, confirming replacement rather than append behavior.
+- After deletion, models, simulations, timesteps, evaluations, finances, and
+  financial results all had zero rows for the deleted model.
+- A case-insensitive scan for MongoDB symbols in `backend/` returned no matches.
+
 ## Stage 5: Reference Data and Cleanup Scripts
 
 **Status:** Implemented.
