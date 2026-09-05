@@ -1,5 +1,8 @@
 from logging import Logger
 
+from backend.src.api.sim_funcs import (
+    calc_fin_results,
+)
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.api.dependencies import check_user_exists, get_db_client, get_logger
@@ -7,9 +10,6 @@ from src.db.client import DatabaseClient
 from src.db.models import (
     FinFormData,
     FinResults,
-)
-from src.utils.sim_funcs import (
-    calc_fin_results,
 )
 
 PREFIX: str = "/workspace/finances"

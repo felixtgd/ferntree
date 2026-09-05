@@ -2,7 +2,7 @@ import os
 from typing import Any
 
 import psycopg
-from components.database.models import TimestepData
+from backend.src.domains.simulation.components.database.models import TimestepData
 from dotenv import load_dotenv
 from psycopg.rows import dict_row
 

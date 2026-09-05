@@ -2,8 +2,8 @@ import logging
 from datetime import datetime
 from typing import Any, Optional, Union
 
-from components.core.entity import Entity
-from components.database.postgres import PostgresClient
+from backend.src.domains.simulation.components.core.entity import Entity
+from backend.src.domains.simulation.components.database.postgres import PostgresClient
 from pytz import timezone
 
 logger = logging.getLogger("ferntree")

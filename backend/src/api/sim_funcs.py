@@ -5,6 +5,7 @@ from subprocess import CompletedProcess
 from typing import Any, Hashable, Union
 
 import pandas as pd
+from backend.src.domains.solar_data import geolocator, pvgis_api
 from fastapi import HTTPException, status
 from pandas import DataFrame, Series
 
@@ -26,7 +27,6 @@ from src.db.models import (
     SimResultsEval,
     SystemSettings,
 )
-from src.solar_data import geolocator, pvgis_api
 
 logger: logging.Logger = logging.getLogger("ferntree")
 

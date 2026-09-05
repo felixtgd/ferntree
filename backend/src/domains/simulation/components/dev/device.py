@@ -1,7 +1,7 @@
 from typing import Any
 
-from components.core.entity import Entity
-from components.host.sim_host import SimHost
+from backend.src.domains.simulation.components.core.entity import Entity
+from backend.src.domains.simulation.components.host.sim_host import SimHost
 
 
 class Device(Entity):  # type: ignore[misc]

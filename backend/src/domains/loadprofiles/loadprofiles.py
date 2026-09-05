@@ -1,10 +1,10 @@
 import os
 
+import backend.src.domains.loadprofiles.pipeline_bronze as bronze
+import backend.src.domains.loadprofiles.pipeline_gold as gold
+import backend.src.domains.loadprofiles.pipeline_silver as silver
 import matplotlib.pyplot as plt
 import pandas as pd
-import pipeline_bronze as bronze
-import pipeline_gold as gold
-import pipeline_silver as silver
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(script_dir, "data")

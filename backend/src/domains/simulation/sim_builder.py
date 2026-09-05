@@ -1,14 +1,14 @@
 import logging
 from typing import Any
 
-from components.ctrl.battery_ctrl import BatteryCtrl
-from components.database.postgres import PostgresClient
-from components.dev.baseload import BaseLoad
-from components.dev.battery_dev import BatteryDev
-from components.dev.pv_sys import PVSys
-from components.dev.sf_house import SfHouse
-from components.dev.smart_meter import SmartMeter
-from components.host.sim_host import SimHost
+from backend.src.domains.simulation.components.ctrl.battery_ctrl import BatteryCtrl
+from backend.src.domains.simulation.components.database.postgres import PostgresClient
+from backend.src.domains.simulation.components.dev.baseload import BaseLoad
+from backend.src.domains.simulation.components.dev.battery_dev import BatteryDev
+from backend.src.domains.simulation.components.dev.pv_sys import PVSys
+from backend.src.domains.simulation.components.dev.sf_house import SfHouse
+from backend.src.domains.simulation.components.dev.smart_meter import SmartMeter
+from backend.src.domains.simulation.components.host.sim_host import SimHost
 
 logger = logging.getLogger("ferntree")
 

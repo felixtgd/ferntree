@@ -1,10 +1,10 @@
 import logging
 
-from components.ctrl.heating_ctrl import HeatingCtrl
-from components.dev.device import Device
-from components.dev.heating_dev import HeatingDev
-from components.host.sim_host import SimHost
-from components.models.thermal_model import ThermalModel
+from backend.src.domains.simulation.components.ctrl.heating_ctrl import HeatingCtrl
+from backend.src.domains.simulation.components.dev.device import Device
+from backend.src.domains.simulation.components.dev.heating_dev import HeatingDev
+from backend.src.domains.simulation.components.host.sim_host import SimHost
+from backend.src.domains.simulation.components.models.thermal_model import ThermalModel
 
 logger: logging.Logger = logging.getLogger("ferntree")
 
@@ -100,10 +100,10 @@ class HeatingSys(Device):  # type: ignore[misc]
         total_P_heat_th: float = sum(self.heat_demand_profiles["P_heat_th"])
         scaling_factor: float = annual_net_heat_demand / total_P_heat_th
         logger.info(
-            f"Annual net heat demand (model): {annual_net_heat_demand/self.thermal_model.heated_area:.2f} kWh/m2/a"  # noqa: E501
+            f"Annual net heat demand (model): {annual_net_heat_demand / self.thermal_model.heated_area:.2f} kWh/m2/a"  # noqa: E501
         )
         logger.info(
-            f"Total heating demand (sim): {total_P_heat_th/self.thermal_model.heated_area:.2f} kWh/m2/a"  # noqa: E501
+            f"Total heating demand (sim): {total_P_heat_th / self.thermal_model.heated_area:.2f} kWh/m2/a"  # noqa: E501
         )
         logger.info(f"Scaling factor for heat demand profile: {scaling_factor:.2f}")
         self.heat_demand_profiles["P_heat_th"] = [

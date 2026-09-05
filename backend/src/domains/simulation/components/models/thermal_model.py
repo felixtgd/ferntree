@@ -2,9 +2,11 @@ import logging
 import os
 
 import numpy as np
-from components.dev.device import Device
-from components.host.sim_host import SimHost
-from components.models.linear_regression import LinearRegressionModel
+from backend.src.domains.simulation.components.dev.device import Device
+from backend.src.domains.simulation.components.host.sim_host import SimHost
+from backend.src.domains.simulation.components.models.linear_regression import (
+    LinearRegressionModel,
+)
 
 logger = logging.getLogger("ferntree")
 

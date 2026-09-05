@@ -1,7 +1,7 @@
 from typing import Any
 
-from components.dev.device import Device
-from components.host.sim_host import SimHost
+from backend.src.domains.simulation.components.dev.device import Device
+from backend.src.domains.simulation.components.host.sim_host import SimHost
 
 
 class HeatingCtrl(Device):  # type: ignore[misc]
