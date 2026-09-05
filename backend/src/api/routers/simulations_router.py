@@ -1,22 +1,22 @@
 from datetime import datetime
 from logging import Logger
 
-from fastapi import APIRouter, Depends, HTTPException, status
-
-from src.api.dependencies import check_user_exists, get_db_client, get_logger
-from src.api.sim_funcs import (
-    eval_sim_results,
-    get_sim_input_data,
-    run_ferntree_simulation,
-)
-from src.db.client import DatabaseClient
-from src.db.models import (
+from backend.src.db.models.models import (
     ModelDataOut,
     SimDataIn,
     SimResultsEval,
     SimTimestep,
     SimTimestepOut,
     StartEndTimes,
+)
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from src.api.dependencies import check_user_exists, get_db_client, get_logger
+from src.db.client import DatabaseClient
+from src.domains.sim_funcs import (
+    eval_sim_results,
+    get_sim_input_data,
+    run_ferntree_simulation,
 )
 
 PREFIX: str = "/workspace/simulations"

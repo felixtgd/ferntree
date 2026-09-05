@@ -4,8 +4,8 @@ from typing import Any, Optional, Union
 
 from pytz import timezone
 
-from src.domains.simulation.components.core.entity import Entity
-from src.domains.simulation.components.database.postgres import PostgresClient
+from src.domains.ferntree.components.core.entity import Entity
+from src.domains.ferntree.components.database.postgres import PostgresClient
 
 logger = logging.getLogger("ferntree")
 

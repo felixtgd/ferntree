@@ -1,14 +1,14 @@
 from logging import Logger
 from typing import Optional
 
+from backend.src.db.models.models import (
+    ModelDataIn,
+    ModelDataOut,
+)
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.api.dependencies import check_user_exists, get_db_client, get_logger
 from src.db.client import DatabaseClient
-from src.db.models import (
-    ModelDataIn,
-    ModelDataOut,
-)
 
 PREFIX: str = "/workspace/models"
 TAG: str = "models"

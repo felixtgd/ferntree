@@ -1,10 +1,10 @@
 import logging
 
-from src.domains.simulation.components.ctrl.heating_ctrl import HeatingCtrl
-from src.domains.simulation.components.dev.device import Device
-from src.domains.simulation.components.dev.heating_dev import HeatingDev
-from src.domains.simulation.components.host.sim_host import SimHost
-from src.domains.simulation.components.models.thermal_model import ThermalModel
+from src.domains.ferntree.components.ctrl.heating_ctrl import HeatingCtrl
+from src.domains.ferntree.components.dev.device import Device
+from src.domains.ferntree.components.dev.heating_dev import HeatingDev
+from src.domains.ferntree.components.host.sim_host import SimHost
+from src.domains.ferntree.components.models.thermal_model import ThermalModel
 
 logger: logging.Logger = logging.getLogger("ferntree")
 

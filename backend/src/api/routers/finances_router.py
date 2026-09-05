@@ -1,16 +1,16 @@
 from logging import Logger
 
-from fastapi import APIRouter, Depends, HTTPException, status
-
-from src.api.dependencies import check_user_exists, get_db_client, get_logger
-from src.api.sim_funcs import (
-    calc_fin_results,
-)
-from src.db.client import DatabaseClient
-from src.db.models import (
+from backend.src.db.models.models import (
     FinFormData,
     FinResults,
 )
+from backend.src.domains.sim_funcs import (
+    calc_fin_results,
+)
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from src.api.dependencies import check_user_exists, get_db_client, get_logger
+from src.db.client import DatabaseClient
 
 PREFIX: str = "/workspace/finances"
 TAG: str = "finances"

@@ -1,11 +1,11 @@
 from typing import Any, Optional
 
-from psycopg.rows import dict_row
-
-from src.db.models import (
+from backend.src.db.models.models import (
     SimDataIn,
     SimResultsEval,
 )
+from psycopg.rows import dict_row
+
 from src.db.pool import pool
 from src.db.repositories.base import BaseRepository
 

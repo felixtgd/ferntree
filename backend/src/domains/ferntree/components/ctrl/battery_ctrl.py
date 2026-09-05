@@ -4,8 +4,8 @@ from typing import Any
 # import cvxpy as cp
 import numpy as np
 
-from src.domains.simulation.components.dev.device import Device
-from src.domains.simulation.components.host.sim_host import SimHost
+from src.domains.ferntree.components.dev.device import Device
+from src.domains.ferntree.components.host.sim_host import SimHost
 
 logger = logging.getLogger("ferntree")
 

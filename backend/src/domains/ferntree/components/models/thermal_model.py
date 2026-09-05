@@ -3,9 +3,9 @@ import os
 
 import numpy as np
 
-from src.domains.simulation.components.dev.device import Device
-from src.domains.simulation.components.host.sim_host import SimHost
-from src.domains.simulation.components.models.linear_regression import (
+from src.domains.ferntree.components.dev.device import Device
+from src.domains.ferntree.components.host.sim_host import SimHost
+from src.domains.ferntree.components.models.linear_regression import (
     LinearRegressionModel,
 )
 
