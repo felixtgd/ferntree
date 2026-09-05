@@ -1,10 +1,10 @@
 from typing import Any
 
-from backend.src.db.models.models import ModelDataOut
 from psycopg.rows import dict_row
 
 from src.db.pool import pool
 from src.db.repositories.base import BaseRepository
+from src.db.schemas import ModelDataOut
 
 
 class ModelsRepository(BaseRepository):

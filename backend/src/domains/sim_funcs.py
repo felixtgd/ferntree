@@ -2,7 +2,11 @@ import logging
 from typing import Hashable, Union
 
 import pandas as pd
-from backend.src.db.models.models import (
+from fastapi import HTTPException, status
+from pandas import DataFrame
+
+from src.db.client import DatabaseClient
+from src.db.schemas import (
     EnergyKPIs,
     FinFormData,
     FinInvestment,
@@ -11,10 +15,6 @@ from backend.src.db.models.models import (
     FinYearlyData,
     ModelDataOut,
 )
-from fastapi import HTTPException, status
-from pandas import DataFrame
-
-from src.db.client import DatabaseClient
 
 logger: logging.Logger = logging.getLogger("ferntree")
 

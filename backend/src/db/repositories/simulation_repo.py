@@ -1,13 +1,13 @@
 from typing import Any, Optional
 
-from backend.src.db.models.models import (
-    SimDataIn,
-    SimResultsEval,
-)
 from psycopg.rows import dict_row
 
 from src.db.pool import pool
 from src.db.repositories.base import BaseRepository
+from src.db.schemas import (
+    SimDataIn,
+    SimResultsEval,
+)
 
 MAX_TIMESTEPS = 100_000
 

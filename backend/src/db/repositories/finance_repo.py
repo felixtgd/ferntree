@@ -1,13 +1,13 @@
 from typing import Optional
 
-from backend.src.db.models.models import (
-    FinFormData,
-    FinResults,
-)
 from psycopg.rows import dict_row
 
 from src.db.pool import pool
 from src.db.repositories.base import BaseRepository
+from src.db.schemas import (
+    FinFormData,
+    FinResults,
+)
 
 
 class FinanceRepository(BaseRepository):

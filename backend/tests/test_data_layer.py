@@ -4,7 +4,8 @@ import pytest
 import pytest_asyncio
 
 from src.db.client import DatabaseClient
-from src.db.models import (
+from src.db.pool import pool
+from src.db.schemas import (
     PV,
     Baseload,
     Battery,
@@ -20,7 +21,6 @@ from src.db.models import (
     SimResultsEval,
     SystemSettings,
 )
-from src.db.pool import pool
 
 
 @pytest_asyncio.fixture(scope="module")
