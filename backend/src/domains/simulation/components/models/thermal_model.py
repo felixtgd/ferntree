@@ -2,9 +2,10 @@ import logging
 import os
 
 import numpy as np
-from backend.src.domains.simulation.components.dev.device import Device
-from backend.src.domains.simulation.components.host.sim_host import SimHost
-from backend.src.domains.simulation.components.models.linear_regression import (
+
+from src.domains.simulation.components.dev.device import Device
+from src.domains.simulation.components.host.sim_host import SimHost
+from src.domains.simulation.components.models.linear_regression import (
     LinearRegressionModel,
 )
 

@@ -2,9 +2,10 @@ import os
 from typing import Any
 
 import psycopg
-from backend.src.domains.simulation.components.database.models import TimestepData
 from dotenv import load_dotenv
 from psycopg.rows import dict_row
+
+from src.domains.simulation.components.database.models import TimestepData
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(script_dir, "../../../../../.env"))

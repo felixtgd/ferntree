@@ -2,8 +2,9 @@ import logging
 from typing import Any
 
 import numpy as np
-from backend.src.domains.simulation.components.dev.device import Device
-from backend.src.domains.simulation.components.host.sim_host import SimHost
+
+from src.domains.simulation.components.dev.device import Device
+from src.domains.simulation.components.host.sim_host import SimHost
 
 logger: logging.Logger = logging.getLogger("ferntree")
 

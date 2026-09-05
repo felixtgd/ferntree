@@ -1,14 +1,14 @@
 from datetime import datetime
 from logging import Logger
 
-from backend.src.api.sim_funcs import (
+from fastapi import APIRouter, Depends, HTTPException, status
+
+from src.api.dependencies import check_user_exists, get_db_client, get_logger
+from src.api.sim_funcs import (
     eval_sim_results,
     get_sim_input_data,
     run_ferntree_simulation,
 )
-from fastapi import APIRouter, Depends, HTTPException, status
-
-from src.api.dependencies import check_user_exists, get_db_client, get_logger
 from src.db.client import DatabaseClient
 from src.db.models import (
     ModelDataOut,

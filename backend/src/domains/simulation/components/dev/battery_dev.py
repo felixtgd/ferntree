@@ -1,8 +1,8 @@
 import logging
 
-from backend.src.domains.simulation.components.ctrl.battery_ctrl import BatteryCtrl
-from backend.src.domains.simulation.components.dev.device import Device
-from backend.src.domains.simulation.components.host.sim_host import SimHost
+from src.domains.simulation.components.ctrl.battery_ctrl import BatteryCtrl
+from src.domains.simulation.components.dev.device import Device
+from src.domains.simulation.components.host.sim_host import SimHost
 
 logger: logging.Logger = logging.getLogger("ferntree")
 

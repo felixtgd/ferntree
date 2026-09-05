@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
 
-from backend.src.api.routers.finances_router import router as finances_router
-from backend.src.api.routers.models_router import router as models_router
-from backend.src.api.routers.simulations_router import router as simulations_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.api.routers.finances_router import router as finances_router
+from src.api.routers.models_router import router as models_router
+from src.api.routers.simulations_router import router as simulations_router
 from src.db.pool import pool
 
 
