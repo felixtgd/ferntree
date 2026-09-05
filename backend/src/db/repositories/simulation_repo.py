@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 
 from psycopg.rows import dict_row
 
@@ -8,6 +8,8 @@ from src.db.models import (
 )
 from src.db.pool import pool
 from src.db.repositories.base import BaseRepository
+
+MAX_TIMESTEPS = 100_000
 
 
 class SimulationRepository(BaseRepository):
@@ -204,3 +206,47 @@ class SimulationRepository(BaseRepository):
                         ],
                     )
                     return str(eval_id)
+
+    async def fetch_timesteps(
+        self,
+        model_id: str,
+        user_id: str,
+        start: Optional[float] = None,
+        end: Optional[float] = None,
+        limit: Optional[int] = None,
+    ) -> list[dict[str, float]]:
+        """Fetch user-owned simulation timesteps in an optional time range."""
+        internal_id = self._int_id(model_id)
+        if internal_id is None:
+            return []
+
+        effective_limit = MAX_TIMESTEPS if limit is None else min(limit, MAX_TIMESTEPS)
+        query = """SELECT t.time, t.t_amb, t.p_solar, t.p_base, t.p_pv, t.p_bat,
+                   t.soc_bat, t.fill_level, t.p_load_pred
+                   FROM sim_timesteps t JOIN models m ON m.sim_id = t.sim_id
+                   JOIN users u ON u.id = m.user_id
+                   WHERE m.id = %s AND u.username = %s"""
+        params: list[Any] = [internal_id, user_id]
+        if start is not None and end is not None:
+            query += " AND t.time BETWEEN %s AND %s"
+            params.extend([start, end])
+        query += " ORDER BY t.time LIMIT %s"
+        params.append(effective_limit)
+
+        async with pool.connection() as conn:
+            async with conn.cursor(row_factory=dict_row) as cur:
+                await cur.execute(query, params)
+                return [
+                    {
+                        "time": row["time"],
+                        "T_amb": row["t_amb"],
+                        "P_solar": row["p_solar"],
+                        "P_base": row["p_base"],
+                        "P_pv": row["p_pv"],
+                        "P_bat": row["p_bat"],
+                        "Soc_bat": row["soc_bat"],
+                        "fill_level": row["fill_level"],
+                        "P_load_pred": row["p_load_pred"],
+                    }
+                    async for row in cur
+                ]

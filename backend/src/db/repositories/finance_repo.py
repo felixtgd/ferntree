@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 from psycopg.rows import dict_row
 
@@ -285,58 +285,3 @@ class FinanceRepository(BaseRepository):
                         ],
                     )
                     return str(result_id)
-
-    async def fetch_timesteps(
-        self,
-        model_id: str,
-        user_id: str,
-        start: Optional[float] = None,
-        end: Optional[float] = None,
-        limit: Optional[int] = None,
-    ) -> list[dict[str, float]]:
-        """Fetch user-owned simulation timesteps in an optional time range.
-
-        Args:
-            model_id (str): The string ID of the model.
-            user_id (str): The username that owns the model.
-            start (Optional[float]): The inclusive start timestamp.
-            end (Optional[float]): The inclusive end timestamp.
-            limit (Optional[int]): The maximum number of rows to return.
-
-        Returns:
-            list[dict]: The matching simulation timesteps.
-
-        """
-        internal_id = self._int_id(model_id)
-        if internal_id is None:
-            return []
-        query = """SELECT t.time, t.t_amb, t.p_solar, t.p_base, t.p_pv, t.p_bat,
-                   t.soc_bat, t.fill_level, t.p_load_pred
-                   FROM sim_timesteps t JOIN models m ON m.sim_id = t.sim_id
-                   JOIN users u ON u.id = m.user_id
-                   WHERE m.id = %s AND u.username = %s"""
-        params: list[Any] = [internal_id, user_id]
-        if start is not None and end is not None:
-            query += " AND t.time BETWEEN %s AND %s"
-            params.extend([start, end])
-        query += " ORDER BY t.time"
-        if limit is not None:
-            query += " LIMIT %s"
-            params.append(limit)
-        async with pool.connection() as conn:
-            async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(query, params)
-                return [
-                    {
-                        "time": row["time"],
-                        "T_amb": row["t_amb"],
-                        "P_solar": row["p_solar"],
-                        "P_base": row["p_base"],
-                        "P_pv": row["p_pv"],
-                        "P_bat": row["p_bat"],
-                        "Soc_bat": row["soc_bat"],
-                        "fill_level": row["fill_level"],
-                        "P_load_pred": row["p_load_pred"],
-                    }
-                    async for row in cur
-                ]

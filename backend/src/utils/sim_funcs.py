@@ -8,7 +8,8 @@ import pandas as pd
 from fastapi import HTTPException, status
 from pandas import DataFrame, Series
 
-from src.database.models import (
+from src.db.client import DatabaseClient
+from src.db.models import (
     PV,
     Baseload,
     Battery,
@@ -25,7 +26,6 @@ from src.database.models import (
     SimResultsEval,
     SystemSettings,
 )
-from src.database.postgres import Database
 from src.solar_data import geolocator, pvgis_api
 
 logger: logging.Logger = logging.getLogger("ferntree")
@@ -174,7 +174,7 @@ async def run_ferntree_simulation(
 
 
 async def eval_sim_results(
-    db_client: Database, model_id: str, user_id: str
+    db_client: DatabaseClient, model_id: str, user_id: str
 ) -> SimResultsEval:
     """Evaluate simulation results for a given model.
 
@@ -182,7 +182,7 @@ async def eval_sim_results(
     and computes monthly PV generation data.
 
     Args:
-        db_client (Database): The PostgreSQL client.
+        db_client (DatabaseClient): The PostgreSQL client.
         model_id (str): The ID of the model to evaluate.
         user_id (str): The username requesting the evaluation.
 
@@ -335,7 +335,7 @@ async def calc_pv_monthly_gen(sim_results: list[dict[str, Any]]) -> list[PVMonth
 
 
 async def calc_fin_results(
-    db_client: Database,
+    db_client: DatabaseClient,
     fin_data: FinFormData,
     user_id: str,
 ) -> FinResults:
@@ -345,7 +345,7 @@ async def calc_fin_results(
     calculations including investment costs, profits, and various financial KPIs.
 
     Args:
-        db_client (Database): The PostgreSQL client.
+        db_client (DatabaseClient): The PostgreSQL client.
         fin_data (FinFormData): The financial input data.
         user_id (str): The username requesting the calculation.
 

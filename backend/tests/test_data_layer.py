@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 import pytest
 import pytest_asyncio
 
-from src.database.models import (
+from src.db.client import DatabaseClient
+from src.db.models import (
     PV,
     Baseload,
     Battery,
@@ -19,7 +20,7 @@ from src.database.models import (
     SimResultsEval,
     SystemSettings,
 )
-from src.database.postgres import Database, pool
+from src.db.pool import pool
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -27,13 +28,13 @@ async def database():
     """Provide one PostgreSQL pool for the module's async tests."""
     await pool.open(wait=True)
     try:
-        yield Database()
+        yield DatabaseClient()
     finally:
         await pool.close()
 
 
 @pytest.mark.asyncio(loop_scope="module")
-async def test_database_round_trips_and_cascades(database: Database) -> None:
+async def test_database_round_trips_and_cascades(database: DatabaseClient) -> None:
     """Verify typed round trips, idempotent upserts, and cascade deletion."""
     model_id = await database.insert_model(
         {
@@ -142,7 +143,9 @@ async def test_database_round_trips_and_cascades(database: Database) -> None:
 
 
 @pytest.mark.asyncio(loop_scope="module")
-async def test_database_rejects_unknown_or_malformed_model(database: Database) -> None:
+async def test_database_rejects_unknown_or_malformed_model(
+    database: DatabaseClient,
+) -> None:
     """Verify unknown users and malformed model IDs are handled safely."""
     assert not await database.check_user_exists("unknown-user")
     assert not await database.delete_model("not-an-integer", "mvp-user")
