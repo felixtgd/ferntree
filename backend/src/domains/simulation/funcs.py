@@ -1,8 +1,5 @@
 import logging
-import subprocess
 from datetime import datetime
-from subprocess import CompletedProcess
-from typing import Any
 
 from src.db.schemas import (
     PV,
@@ -117,44 +114,3 @@ async def def_system_settings(model_data: ModelDataOut) -> SystemSettings:
     )
 
     return system_settings
-
-
-async def run_ferntree_simulation(
-    model_id: str,
-    sim_id: str,
-) -> bool:
-    """Start the Ferntree simulation with the given simulation ID and model ID.
-
-    This function runs the Ferntree simulation as a subprocess and checks if it
-    completed successfully.
-
-    Args:
-        model_id (str): The model ID.
-        sim_id (str): The simulation ID.
-
-    Returns:
-        bool: True if the simulation was successful.
-
-    Raises:
-        RuntimeError: If the simulation fails.
-
-    """
-    command: list[str] = [
-        "python",
-        "src/domains/ferntree/ferntree.py",
-        "--sim_id",
-        sim_id,
-        "--model_id",
-        model_id,
-    ]
-
-    logger.info(f"Running Ferntree simulation with command: {command}")
-    completed_process: CompletedProcess[Any] = subprocess.run(command)
-
-    # Check if the simulation has finished successfully
-    if completed_process.returncode != 0:
-        raise RuntimeError(
-            f"Ferntree Simulation failed. Return code: {completed_process.returncode}"
-        )
-
-    return True

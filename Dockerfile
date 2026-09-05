@@ -24,7 +24,7 @@ COPY ./backend ./
 EXPOSE 8000
 
 FROM backend-base AS backend-dev
-CMD [ "uvicorn", "src.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+CMD [ "uvicorn", "src.api.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
 
 FROM backend-base AS backend-prod
-CMD [ "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD [ "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
