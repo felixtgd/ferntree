@@ -8,9 +8,7 @@ from src.db.schemas import (
     FinFormData,
     FinResults,
 )
-from src.domains.sim_funcs import (
-    calc_fin_results,
-)
+from src.domains.finances.funcs import calc_fin_results
 
 PREFIX: str = "/workspace/finances"
 TAG: str = "finances"

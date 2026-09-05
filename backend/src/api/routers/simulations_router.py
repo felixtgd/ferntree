@@ -13,8 +13,8 @@ from src.db.schemas import (
     SimTimestepOut,
     StartEndTimes,
 )
-from src.domains.sim_funcs import (
-    eval_sim_results,
+from src.domains.energy.funcs import eval_sim_results
+from src.domains.simulation.funcs import (
     get_sim_input_data,
     run_ferntree_simulation,
 )

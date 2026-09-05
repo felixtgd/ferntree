@@ -1,3 +1,23 @@
+import logging
+import subprocess
+from datetime import datetime
+from subprocess import CompletedProcess
+from typing import Any
+
+from src.db.schemas import (
+    PV,
+    Baseload,
+    Battery,
+    BatteryCtrl,
+    ModelDataOut,
+    SimDataIn,
+    SystemSettings,
+)
+from src.domains.solar import geolocator, pvgis_api
+
+logger: logging.Logger = logging.getLogger("ferntree")
+
+
 async def get_sim_input_data(model_data: ModelDataOut) -> SimDataIn:
     """Fetch and prepare simulation input data based on the provided model data.
 
@@ -121,7 +141,7 @@ async def run_ferntree_simulation(
     """
     command: list[str] = [
         "python",
-        "src/domains/simulation/ferntree.py",
+        "src/domains/ferntree/ferntree.py",
         "--sim_id",
         sim_id,
         "--model_id",
