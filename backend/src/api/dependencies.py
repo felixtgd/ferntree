@@ -3,7 +3,7 @@ from logging import Logger
 
 from fastapi import Depends, HTTPException, status
 
-from src.database.postgres import Database
+from src.db.client import DatabaseClient
 
 logging.basicConfig(
     level=logging.INFO,
@@ -11,7 +11,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-db_client: Database = Database()
+db_client: DatabaseClient = DatabaseClient()
 
 
 def get_logger(name: str = "fastapi_logger") -> Logger:
@@ -27,22 +27,24 @@ def get_logger(name: str = "fastapi_logger") -> Logger:
     return logging.getLogger(name)
 
 
-def get_db_client() -> Database:
+def get_db_client() -> DatabaseClient:
     """Get the API database client.
 
     Returns:
-        Database: The API database client instance.
+        DatabaseClient: The API database client instance.
 
     """
     return db_client
 
 
-async def check_user_exists(user_id: str, db_client: Database = Depends(get_db_client)):
+async def check_user_exists(
+    user_id: str, db_client: DatabaseClient = Depends(get_db_client)
+):
     """Dependency to check if a user exists in the database.
 
     Args:
         user_id (str): The ID of the user to check.
-        db_client (Database): The database client instance.
+        db_client (DatabaseClient): The database client instance.
 
     Returns:
         bool: True if the user exists, otherwise an HTTPException is raised.

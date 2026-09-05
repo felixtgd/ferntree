@@ -4,11 +4,11 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.api.dependencies import check_user_exists, get_db_client, get_logger
-from src.database.models import (
+from src.db.client import DatabaseClient
+from src.db.models import (
     ModelDataIn,
     ModelDataOut,
 )
-from src.database.postgres import Database
 
 PREFIX: str = "/workspace/models"
 TAG: str = "models"
@@ -24,7 +24,7 @@ router: APIRouter = APIRouter(
 async def submit_model(
     user_id: str,
     model_data: ModelDataIn,
-    db_client: Database = Depends(get_db_client),
+    db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
 ) -> str:
     """Submit a new model to the database.
@@ -32,7 +32,7 @@ async def submit_model(
     Args:
         user_id (str): The ID of the user submitting the model.
         model_data (ModelDataIn): The model data to be submitted.
-        db_client (Database): The database client instance.
+        db_client (DatabaseClient): The database client instance.
         logger (Logger): The logger instance.
 
     Returns:
@@ -63,14 +63,14 @@ async def submit_model(
 @router.get("/fetch-models", response_model=list[ModelDataOut])
 async def fetch_models(
     user_id: str,
-    db_client: Database = Depends(get_db_client),
+    db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
 ) -> list[ModelDataOut]:
     """Fetch all models for a given user.
 
     Args:
         user_id (str): The ID of the user whose models are to be fetched.
-        db_client (Database): The database client instance.
+        db_client (DatabaseClient): The database client instance.
         logger (Logger): The logger instance.
 
     Returns:
@@ -91,7 +91,7 @@ async def fetch_models(
 async def delete_model(
     user_id: str,
     model_id: str,
-    db_client: Database = Depends(get_db_client),
+    db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
 ) -> str:
     """Delete a specific model.
@@ -99,7 +99,7 @@ async def delete_model(
     Args:
         user_id (str): The ID of the user requesting the deletion.
         model_id (str): The ID of the model to be deleted.
-        db_client (Database): The database client instance.
+        db_client (DatabaseClient): The database client instance.
         logger (Logger): The logger instance.
 
     Returns:

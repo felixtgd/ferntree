@@ -3,11 +3,11 @@ from logging import Logger
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.api.dependencies import check_user_exists, get_db_client, get_logger
-from src.database.models import (
+from src.db.client import DatabaseClient
+from src.db.models import (
     FinFormData,
     FinResults,
 )
-from src.database.postgres import Database
 from src.utils.sim_funcs import (
     calc_fin_results,
 )
@@ -26,7 +26,7 @@ router: APIRouter = APIRouter(
 async def submit_fin_form_data(
     user_id: str,
     fin_form_data_sub: FinFormData,
-    db_client: Database = Depends(get_db_client),
+    db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
 ) -> str:
     """Submit financial form data for a model and calculate fin results if necessary.
@@ -34,7 +34,7 @@ async def submit_fin_form_data(
     Args:
         user_id (str): The ID of the user submitting the data.
         fin_form_data_sub (FinFormData): The financial form data to be submitted.
-        db_client (Database): The database client instance.
+        db_client (DatabaseClient): The database client instance.
         logger (Logger): The logger instance.
 
     Returns:
@@ -85,7 +85,7 @@ async def submit_fin_form_data(
 async def fetch_fin_results(
     user_id: str,
     model_id: str,
-    db_client: Database = Depends(get_db_client),
+    db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
 ) -> FinResults:
     """Fetch financial results for a specific model.
@@ -93,7 +93,7 @@ async def fetch_fin_results(
     Args:
         user_id (str): The ID of the user requesting the results.
         model_id (str): The ID of the model for which to fetch financial results.
-        db_client (Database): The database client dependency.
+        db_client (DatabaseClient): The database client dependency.
         logger (Logger): The logger dependency.
 
     Returns:
@@ -127,14 +127,14 @@ async def fetch_fin_results(
 @router.get("/fetch-fin-form-data", response_model=list[FinFormData])
 async def fetch_fin_form_data(
     user_id: str,
-    db_client: Database = Depends(get_db_client),
+    db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
 ) -> list[FinFormData]:
     """Fetch financial form data for all models of a user.
 
     Args:
         user_id (str): The ID of the user requesting the data.
-        db_client (Database): The database client dependency.
+        db_client (DatabaseClient): The database client dependency.
         logger (Logger): The logger dependency.
 
     Returns:

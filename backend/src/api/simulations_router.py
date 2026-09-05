@@ -4,7 +4,8 @@ from logging import Logger
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.api.dependencies import check_user_exists, get_db_client, get_logger
-from src.database.models import (
+from src.db.client import DatabaseClient
+from src.db.models import (
     ModelDataOut,
     SimDataIn,
     SimResultsEval,
@@ -12,7 +13,6 @@ from src.database.models import (
     SimTimestepOut,
     StartEndTimes,
 )
-from src.database.postgres import Database
 from src.utils.sim_funcs import (
     eval_sim_results,
     get_sim_input_data,
@@ -33,7 +33,7 @@ router: APIRouter = APIRouter(
 async def run_simulation(
     user_id: str,
     model_id: str,
-    db_client: Database = Depends(get_db_client),
+    db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
 ) -> dict[str, bool]:
     """Run a simulation for a specific model.
@@ -41,7 +41,7 @@ async def run_simulation(
     Args:
         user_id (str): The ID of the user requesting the simulation.
         model_id (str): The ID of the model to simulate.
-        db_client (Database): The database client instance.
+        db_client (DatabaseClient): The database client instance.
         logger (Logger): The logger instance.
 
     Returns:
@@ -100,7 +100,7 @@ async def run_simulation(
 async def fetch_sim_results(
     user_id: str,
     model_id: str,
-    db_client: Database = Depends(get_db_client),
+    db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
 ) -> SimResultsEval:
     """Fetch simulation results for a specific model.
@@ -108,7 +108,7 @@ async def fetch_sim_results(
     Args:
         user_id (str): The ID of the user requesting the results.
         model_id (str): The ID of the model for which to fetch results.
-        db_client (Database): The database client for fetching simulation results.
+        db_client (DatabaseClient): The database client for fetching simulation results.
         logger (Logger): The logger for logging information and errors.
 
     Returns:
@@ -145,7 +145,7 @@ async def fetch_sim_timeseries(
     user_id: str,
     model_id: str,
     request_body: StartEndTimes,
-    db_client: Database = Depends(get_db_client),
+    db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
 ) -> list[SimTimestepOut]:
     """Fetch simulation timeseries data for a specific model within a given time range.
@@ -154,7 +154,7 @@ async def fetch_sim_timeseries(
         user_id (str): The ID of the user requesting the data.
         model_id (str): The ID of the model for which to fetch timeseries data.
         request_body (StartEndTimes): The start and end times for the requested data.
-        db_client (Database): The database client for fetching simulation data.
+        db_client (DatabaseClient): The database client for fetching simulation data.
         logger (Logger): The logger for logging information and errors.
 
     Returns:
