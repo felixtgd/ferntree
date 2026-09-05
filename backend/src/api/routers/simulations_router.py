@@ -14,10 +14,8 @@ from src.db.schemas import (
     StartEndTimes,
 )
 from src.domains.energy.funcs import eval_sim_results
-from src.domains.simulation.funcs import (
-    get_sim_input_data,
-    run_ferntree_simulation,
-)
+from src.domains.simulation.funcs import get_sim_input_data
+from src.workers.simulation_runner import run_simulation as run_simulation_worker
 
 PREFIX: str = "/workspace/simulations"
 TAG: str = "simulations"
@@ -72,28 +70,25 @@ async def run_simulation(
     sim_id: str = await db_client.upsert_simulation(sim_input_data, user_id)
 
     # Run the simulation
-    sim_run: bool = await run_ferntree_simulation(model_id, sim_id)
-
-    # If sim run was successful, insert sim_id into model doc in database
-    if sim_run:
-        sim_id_updated: bool = await db_client.update_sim_id_of_model(
-            model_id, sim_id, user_id
-        )
-        if not sim_id_updated:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Error updating sim_id {sim_id} of model {model_id}.",
-            )
-        logger.info(f"GET:\t{PREFIX}/run-simulation --> Sim {sim_id} ran successfully!")
-        return {"run_successful": True}
-    else:
-        logger.info(
-            f"ERROR:\t/workspace/simulations/run-simulation --> Sim {sim_id} failed!"
-        )
+    try:
+        await run_simulation_worker(model_id, sim_id)
+    except (RuntimeError, ValueError) as error:
+        logger.error(f"Error running simulation {sim_id}: {error}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error running simulation",
+        ) from error
+
+    sim_id_updated: bool = await db_client.update_sim_id_of_model(
+        model_id, sim_id, user_id
+    )
+    if not sim_id_updated:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Error updating sim_id {sim_id} of model {model_id}.",
         )
+    logger.info(f"GET:\t{PREFIX}/run-simulation --> Sim {sim_id} ran successfully!")
+    return {"run_successful": True}
 
 
 @router.get("/fetch-sim-results", response_model=SimResultsEval)
