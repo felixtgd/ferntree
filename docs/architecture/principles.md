@@ -77,6 +77,16 @@ server or test routes without requiring a real database.
 Use layers to separate meaningful responsibilities, not to maximize the number
 of files.
 
+### Self-review questions
+
+- **Which layer does each import come from?** Bad: a domain or infrastructure module imports transport code. Remedy: move the dependency to the owning layer or invert it through a lower-level interface.
+- **Does a lower-level module import an upper-level module?** Bad: a domain module imports FastAPI or a repository imports a router. Remedy: keep dependencies directed from transport/application toward domain/infrastructure, never upward.
+- **Does this module contain HTTP concepts outside the transport layer?** Bad: domain code raises `HTTPException` or depends on request objects. Remedy: raise a domain/application error and translate it to HTTP in the router.
+- **Is business logic in a router?** Bad: a handler performs financial calculations or simulation decisions. Remedy: keep the router as an HTTP adapter and move orchestration to application code or calculations to the domain.
+- **If an import arrow points upward, can the concern move or be inverted?** Bad: stable policy code is coupled to a volatile framework. Remedy: move the concern outward or define an interface owned by the consuming policy code.
+- **Can the affected logic be tested without unrelated components?** Bad: a calculation test requires FastAPI, PostgreSQL, or an external service. Remedy: inject those dependencies and substitute fakes or deterministic test implementations.
+- **Does a proposed abstraction establish a meaningful boundary?** Bad: it only adds another wrapper or file. Remedy: remove it or keep the simpler design unless it improves ownership, testability, or extraction.
+
 ### Repository location
 
 The main locations are:
@@ -143,6 +153,14 @@ Shared database helpers can live in `base.py`, but avoid making `base.py` a
 second god-class. A shared helper is appropriate for parsing IDs and asserting
 model ownership; unrelated queries are not.
 
+### Self-review questions
+
+- **Does this file contain raw SQL or cursor management?** Bad: SQL is embedded in a router or domain function. Remedy: move it into a repository method expressed in application terms.
+- **Does the repository method express an application operation?** Bad: it is a passive wrapper around an unrelated query with no useful boundary. Remedy: give it cohesive ownership or keep the query next to its use case if a repository adds no value.
+- **Does the repository contain business calculations or policy decisions?** Bad: financial formulas or domain rules are hidden in persistence code. Remedy: return data from the repository and perform calculations in the domain layer.
+- **Is the repository boundary organized around a cohesive capability?** Bad: repositories are split mechanically one per table and an invariant spans several of them. Remedy: group operations around the aggregate or capability that changes together.
+- **Can the repository be replaced with a small fake?** Bad: tests must implement a broad database client or connect to PostgreSQL. Remedy: depend on a narrow interface containing only the required operations.
+
 ## 3. Aggregate and Transaction Boundaries
 
 ### General principle
@@ -177,6 +195,14 @@ transaction boundary.
 The schema may remain normalized and the existing `schema.sql` remains the
 database definition. Aggregate boundaries are an application design concept,
 not a request to denormalize the SQL schema.
+
+### Self-review questions
+
+- **Which records change together and share an invariant?** Bad: the operation is divided by table rather than by the data that must remain consistent. Remedy: identify the aggregate and assign it one application/repository operation.
+- **Does one repository operation own the complete aggregate update?** Bad: callers coordinate parent and child writes themselves. Remedy: put the complete aggregate operation behind one repository boundary.
+- **Are parent and child replacements in the same transaction?** Bad: one write can commit while the other fails. Remedy: wrap the complete replacement in one database transaction.
+- **Could failure leave missing, duplicated, or stale child rows?** Bad: partial output is visible after an error. Remedy: use atomic transactions and test rollback behavior.
+- **Did splitting repositories split the transaction boundary?** Bad: related tables are updated independently. Remedy: keep the tables separate if useful, but keep their coordinated update in one transactional operation.
 
 ## 4. APIRouter Modules and Vertical Cohesion
 
@@ -221,6 +247,13 @@ Use `backend/src/api/`, for example:
 `backend/src/main.py` should create the app, configure lifespan behavior, and
 include these routers.
 
+### Self-review questions
+
+- **Does this router translate HTTP input into a use-case call and translate the result back into HTTP?** Bad: it owns domain workflows or data-access details. Remedy: keep the route as an HTTP adapter and delegate the use case.
+- **Does it contain SQL, cursor management, or substantial business logic?** Bad: transport code performs persistence or calculations. Remedy: move SQL to repositories and policy to application/domain code.
+- **Are authentication, error translation, dependency wiring, prefixes, and tags consistent?** Bad: one route bypasses shared checks or maps errors differently without a reason. Remedy: centralize or consistently apply those transport concerns.
+- **Would changing transport require changing the use case?** Bad: domain/application code returns HTTP responses or knows route details. Remedy: return ordinary results/errors and translate them only at the transport boundary.
+
 ## 5. Dependency Injection and Dependency Inversion
 
 ### General principle
@@ -256,6 +289,20 @@ Wire dependencies in `backend/src/main.py` and API modules. Keep the pool and
 repository construction in the database/infrastructure area. Pass domain
 dependencies into application functions rather than importing the FastAPI app
 from domain code.
+
+### Self-review questions
+
+- **What dependencies does this function need, and are they supplied from outside?** Bad: it constructs clients, repositories, or services internally. Remedy: pass them as arguments or constructor dependencies from the composition root.
+- **Does domain code depend on a concrete infrastructure class?** Bad: a calculation imports and requires `DatabaseClient`, a pool, or a driver. Remedy: define a small domain-owned interface such as a `Protocol` and inject the concrete implementation.
+- **How many methods would a test fake need to implement?** Bad: the fake must stub a broad client even though the use case calls one method. Remedy: narrow the protocol to the operations this consumer actually uses.
+- **Does the function reach into global pool, client, environment, or framework state?** Bad: behavior depends on hidden mutable state. Remedy: supply the needed resource or configuration explicitly.
+- **Can it be unit-tested with a fake and no FastAPI or PostgreSQL?** Bad: importing or testing it requires unrelated infrastructure. Remedy: isolate policy code behind injected dependencies and keep framework translation outside it.
+- **Where is each dependency created?** Bad: construction is scattered across module-level globals. Remedy: create concrete dependencies in the composition root and pass them down.
+- **Is resource lifecycle explicit?** Bad: nobody can tell when a pool opens or closes. Remedy: control startup and shutdown in the application lifespan or worker boundary.
+
+A narrow Python `Protocol` should contain only the methods that the consumer
+needs. Infrastructure implementations can satisfy it structurally, while tests
+can supply a small fake. Do not introduce an interface merely to add indirection.
 
 ## 6. Explicit Python Package Boundaries
 
@@ -295,6 +342,13 @@ API's responsibility.
 The engine belongs under `backend/src/domains/simulation/` if that is the
 chosen target layout. Give the package a deliberate public entry point and
 keep CLI argument parsing in a thin CLI adapter if the CLI is retained.
+
+### Self-review questions
+
+- **Does this module rely on `sys.path`, the current working directory, bare dynamic imports, or filesystem path walks?** Bad: it works only from a particular launch directory or import order. Remedy: use normal package imports and explicit configuration inputs.
+- **Are package imports deterministic from different working directories?** Bad: tests and production resolve different modules. Remedy: use the real package path and configure the project/runtime environment deliberately.
+- **Does the package expose one deliberate public entry point?** Bad: callers depend on deep internal classes. Remedy: expose a small supported entry point and keep internals private.
+- **Would the package retain a clear boundary in a worker process?** Bad: it depends on API routers or hidden process state. Remedy: keep the engine callable through its public entry point with explicit inputs.
 
 ## 7. Non-Blocking Execution Boundaries
 
@@ -340,6 +394,14 @@ status is a separate product/API decision. Non-blocking execution and
 asynchronous client-visible job semantics are related, but they are not the
 same thing.
 
+### Self-review questions
+
+- **Does an `async` function directly call blocking work?** Bad: `subprocess.run`, a synchronous database client, or a long CPU loop blocks the event loop. Remedy: run it through `asyncio.to_thread` or an appropriate executor.
+- **Is there a clear worker or executor boundary?** Bad: the router directly owns expensive execution. Remedy: put the adapter in `workers/` and keep the algorithm separate.
+- **Does the boundary define timeout, exception, cancellation, and partial-output behavior?** Bad: failures leave behavior or database state undefined. Remedy: specify and test those failure semantics at the execution boundary.
+- **Is the execution adapter separate from algorithms and routes?** Bad: worker code contains simulation rules or route definitions. Remedy: make it only bridge orchestration to the simulation package.
+- **Could a queue consumer or worker process reuse the runner?** Bad: it requires FastAPI request state. Remedy: accept explicit inputs and keep client/transport concerns outside the runner.
+
 ## 8. Application Factory and Composition Root
 
 ### General principle
@@ -371,6 +433,14 @@ Use `backend/src/main.py` for app assembly and lifespan. Keep database pool
 creation/configuration in the database infrastructure package, but let app
 lifecycle control when the pool opens and closes.
 
+### Self-review questions
+
+- **Is there one obvious place where the app, routers, infrastructure, and lifecycle are assembled?** Bad: wiring is scattered across unrelated modules. Remedy: consolidate concrete construction and registration in the composition root.
+- **Does importing a module cause construction or other side effects?** Bad: import-time code opens connections, loads configuration unexpectedly, or creates clients. Remedy: construct resources deliberately during application startup or explicit assembly.
+- **Are module-level singletons or globals hiding ownership and lifetime?** Bad: callers cannot tell who owns or closes a shared resource. Remedy: pass dependencies explicitly and make lifecycle ownership visible.
+- **Can a test replace infrastructure without patching globals?** Bad: tests mutate process-wide state to use a fake. Remedy: construct a smaller app or use dependency overrides at the composition boundary.
+- **Is business logic or SQL in the composition root?** Bad: `main.py` becomes another god module. Remedy: keep it limited to configuration, lifecycle, registration, and wiring.
+
 ## 9. Preserve Security and Transaction Invariants
 
 Refactoring changes locations, not behavior. Two classes of behavior deserve
@@ -392,6 +462,14 @@ leave half-written child data if an insert fails.
 These are architectural invariants, not implementation details. Tests should
 make them visible.
 
+### Self-review questions
+
+- **Does every operation accepting user and model identities verify ownership?** Bad: a caller can read or modify a model by guessing its ID. Remedy: enforce ownership in the repository/application boundary for every relevant path.
+- **Did moving SQL preserve checks on reads and writes?** Bad: a refactored query no longer joins or filters by the requesting user. Remedy: restore the equivalent authorization predicate and test both authorized and unauthorized cases.
+- **Are unauthorized access tests present?** Bad: ownership is trusted but not executable as a regression test. Remedy: add tests proving another user cannot read or modify the model.
+- **Are rollback tests present for child-row replacement?** Bad: an insert failure can leave half-written data undetected. Remedy: inject a failure and assert the parent and child records remain consistent.
+- **Did the refactor preserve public behavior?** Bad: URLs, response shapes, status codes, or error behavior change unintentionally. Remedy: preserve the contract or document an intentional API change and update its tests.
+
 ## 10. Keep Database DDL Separate from Pydantic Models
 
 `backend/schema.sql` and Python/Pydantic models serve different purposes:
@@ -407,6 +485,13 @@ Architecture A refactor should preserve that behavior.
 Pydantic DTOs may be reorganized for clarity, but that does not replace the SQL
 DDL or database initialization process.
 
+### Self-review questions
+
+- **Is this change modifying PostgreSQL structure, API validation/serialization, or both?** Bad: database and API schema changes are mixed without identifying ownership. Remedy: update each authoritative definition deliberately.
+- **If it changes a table, constraint, index, or seed record, is `schema.sql` authoritative?** Bad: the database depends on an undocumented Python model or one-off setup. Remedy: update `schema.sql` and preserve the container initialization path.
+- **If it changes an API payload, is the Pydantic model updated independently?** Bad: a Pydantic DTO is treated as PostgreSQL DDL. Remedy: update the DTO for validation/serialization and update SQL separately when the database changes.
+- **Does the PostgreSQL container initialize from the intended `schema.sql`?** Bad: local and deployed databases have different structure or seed data. Remedy: verify the mount and initialization process.
+
 ## Decision Test
 
 When uncertain during the refactor, ask:
@@ -420,3 +505,16 @@ When uncertain during the refactor, ask:
 5. Would this boundary make a future simulation worker easier to extract?
 
 If the answer to the first question is no, prefer the simpler design.
+
+## Refactor Review Workflow
+
+When reviewing a file or change, first inspect its imports and identify its
+layer. Then ask the questions in the corresponding principle section. Finish
+with these cross-cutting questions:
+
+- Does the dependency graph still follow transport -> application -> domain -> infrastructure, with infrastructure depending on domain-owned interfaces where needed?
+- Can the affected logic be tested without starting unrelated components?
+- Did the change preserve ownership checks, transaction boundaries, and public API behavior?
+- Would this boundary make a future simulation worker easier to extract?
+- Does the change establish a meaningful boundary, or does it only add indirection?
+- Would a simpler design satisfy the same principle?
