@@ -2,10 +2,8 @@ import logging
 from typing import Hashable, Union
 
 import pandas as pd
-from fastapi import HTTPException, status
 from pandas import DataFrame
 
-from src.db.client import DatabaseClient
 from src.db.schemas import (
     EnergyKPIs,
     FinFormData,
@@ -15,12 +13,13 @@ from src.db.schemas import (
     FinYearlyData,
     ModelDataOut,
 )
+from src.domains.finances.ports import FinanceDataReader
 
 logger: logging.Logger = logging.getLogger("ferntree")
 
 
 async def calc_fin_results(
-    db_client: DatabaseClient,
+    db: FinanceDataReader,
     fin_data: FinFormData,
     user_id: str,
 ) -> FinResults:
@@ -30,7 +29,7 @@ async def calc_fin_results(
     calculations including investment costs, profits, and various financial KPIs.
 
     Args:
-        db_client (DatabaseClient): The PostgreSQL client.
+        db (FinanceDataReader): The persistence reader.
         fin_data (FinFormData): The financial input data.
         user_id (str): The username requesting the calculation.
 
@@ -38,22 +37,17 @@ async def calc_fin_results(
         FinResults: The calculated financial results.
 
     Raises:
-        HTTPException: If simulation results are not found.
+        RuntimeError: If simulation results are not found.
 
     """
     # Fetch model data from database
-    model_data: ModelDataOut = await db_client.fetch_model_by_id(
-        fin_data.model_id, user_id
-    )
+    model_data: ModelDataOut = await db.fetch_model_by_id(fin_data.model_id, user_id)
 
     # Fetch sim results evaluation from database
-    sim_results_eval = await db_client.fetch_sim_results_eval(
-        model_data.model_id, user_id
-    )
+    sim_results_eval = await db.fetch_sim_results_eval(model_data.model_id, user_id)
     if sim_results_eval is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Simulation results not found.",
+        raise RuntimeError(
+            f"Simulation results not found for model {model_data.model_id}"
         )
     energy_kpis: EnergyKPIs = sim_results_eval.energy_kpis
 

@@ -61,9 +61,15 @@ async def submit_fin_form_data(
         # Write fin form data to database
         await db_client.upsert_finances(fin_form_data_sub, user_id)
         # Calculate financial results
-        fin_results: FinResults = await calc_fin_results(
-            db_client, fin_form_data_sub, user_id
-        )
+        try:
+            fin_results: FinResults = await calc_fin_results(
+                db_client, fin_form_data_sub, user_id
+            )
+        except RuntimeError as error:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Simulation results not found.",
+            ) from error
         await db_client.upsert_fin_results(fin_results, user_id)
     else:
         logger.info(

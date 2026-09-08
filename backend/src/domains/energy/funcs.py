@@ -3,12 +3,12 @@ from typing import Any, Hashable
 import pandas as pd
 from pandas import DataFrame, Series
 
-from src.db.client import DatabaseClient
 from src.db.schemas import EnergyKPIs, PVMonthlyGen, SimResultsEval
+from src.domains.energy.ports import TimestepReader
 
 
 async def eval_sim_results(
-    db_client: DatabaseClient, model_id: str, user_id: str
+    db: TimestepReader, model_id: str, user_id: str
 ) -> SimResultsEval:
     """Evaluate simulation results for a given model.
 
@@ -16,7 +16,7 @@ async def eval_sim_results(
     and computes monthly PV generation data.
 
     Args:
-        db_client (DatabaseClient): The PostgreSQL client.
+        db (TimestepReader): The persistence reader.
         model_id (str): The ID of the model to evaluate.
         user_id (str): The username requesting the evaluation.
 
@@ -28,7 +28,7 @@ async def eval_sim_results(
 
     """
     # Fetch sim results timeseries data
-    sim_results_dict: list[dict[str, float]] = await db_client.fetch_timesteps(
+    sim_results_dict: list[dict[str, float]] = await db.fetch_timesteps(
         model_id, user_id
     )
     if not sim_results_dict:
