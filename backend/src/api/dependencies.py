@@ -1,7 +1,7 @@
 import logging
 from logging import Logger
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 
 from src.db.client import DatabaseClient
 
@@ -10,8 +10,6 @@ logging.basicConfig(
     format="%(asctime)s - %(filename)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
-
-db_client: DatabaseClient = DatabaseClient()
 
 
 def get_logger(name: str = "fastapi_logger") -> Logger:
@@ -27,14 +25,17 @@ def get_logger(name: str = "fastapi_logger") -> Logger:
     return logging.getLogger(name)
 
 
-def get_db_client() -> DatabaseClient:
-    """Get the API database client.
+def get_db_client(request: Request) -> DatabaseClient:
+    """Return the application database client from app state.
+
+    Args:
+        request (Request): The current FastAPI request.
 
     Returns:
-        DatabaseClient: The API database client instance.
+        DatabaseClient: The application database client instance.
 
     """
-    return db_client
+    return request.app.state.db_client
 
 
 async def check_user_exists(
