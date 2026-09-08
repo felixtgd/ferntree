@@ -4,7 +4,7 @@ WORKDIR /usr/local/app
 COPY ./frontend/package*.json ./
 RUN npm install
 COPY ./frontend ./
-EXPOSE 3000
+EXPOSE 5173
 
 FROM frontend-base AS frontend-dev
 CMD ["npm", "run", "dev"]
