@@ -2,7 +2,6 @@
 
 from typing import Optional
 
-from src.db.async_client.pool import pool
 from src.db.async_client.repositories.base import BaseRepository
 from src.db.schemas import (
     FinFormData,
@@ -125,17 +124,15 @@ class FinanceRepository(BaseRepository):
         )
         values = (model_id,) + tuple(getattr(document, field) for field in fields)
         assignments = ", ".join(f"{field}=EXCLUDED.{field}" for field in fields)
-        async with pool.connection() as conn:
-            await self._assert_model_owner(conn, model_id, user_id)
-            async with conn.cursor() as cur:
-                await cur.execute(
-                    f"INSERT INTO finances (model_id,{','.join(fields)}) "
-                    f"VALUES ({','.join(['%s'] * len(values))}) "
-                    f"ON CONFLICT (model_id) DO UPDATE SET {assignments} "
-                    "RETURNING id",
-                    values,
-                )
-                return str((await cur.fetchone())[0])
+        async with self._owned_transaction(model_id, user_id) as cur:
+            await cur.execute(
+                f"INSERT INTO finances (model_id,{','.join(fields)}) "
+                f"VALUES ({','.join(['%s'] * len(values))}) "
+                f"ON CONFLICT (model_id) DO UPDATE SET {assignments} "
+                "RETURNING id",
+                values,
+            )
+            return str((await cur.fetchone())[0])
 
     async def fetch_fin_results(
         self, model_id: str, user_id: int
@@ -237,38 +234,32 @@ class FinanceRepository(BaseRepository):
             kpis.loan,
             kpis.loan_paid_off,
         )
-        assignments = ", ".join(f"{field}=EXCLUDED.{field}" for field in fields)
-        async with pool.connection() as conn:
-            await self._assert_model_owner(conn, model_id, user_id)
-            async with conn.transaction():
-                async with conn.cursor() as cur:
-                    await cur.execute(
-                        "INSERT INTO fin_results "
-                        f"(model_id,{','.join(fields)}) "
-                        f"VALUES ({','.join(['%s'] * len(values))}) "
-                        f"ON CONFLICT (model_id) DO UPDATE SET {assignments} "
-                        "RETURNING id",
-                        values,
+        async with self._owned_transaction(model_id, user_id) as cur:
+            await cur.execute(
+                "DELETE FROM fin_results WHERE model_id = %s",
+                (model_id,),
+            )
+            await cur.execute(
+                "INSERT INTO fin_results "
+                f"(model_id,{','.join(fields)}) "
+                f"VALUES ({','.join(['%s'] * len(values))}) "
+                "RETURNING id",
+                values,
+            )
+            result_id = (await cur.fetchone())[0]
+            await cur.executemany(
+                "INSERT INTO fin_yearly_data "
+                "(fin_results_id, year, cum_profit, cum_cash_flow, "
+                "loan) VALUES (%s,%s,%s,%s,%s)",
+                [
+                    (
+                        result_id,
+                        item.year,
+                        item.cum_profit,
+                        item.cum_cash_flow,
+                        item.loan,
                     )
-                    result_id = (await cur.fetchone())[0]
-                    await cur.execute(
-                        "DELETE FROM fin_yearly_data WHERE fin_results_id = %s",
-                        (result_id,),
-                    )
-                    await cur.executemany(
-                        "INSERT INTO fin_yearly_data "
-                        "(fin_results_id, year, cum_profit, cum_cash_flow, "
-                        "loan) "
-                        "VALUES (%s,%s,%s,%s,%s)",
-                        [
-                            (
-                                result_id,
-                                item.year,
-                                item.cum_profit,
-                                item.cum_cash_flow,
-                                item.loan,
-                            )
-                            for item in document.yearly_data
-                        ],
-                    )
-                    return str(result_id)
+                    for item in document.yearly_data
+                ],
+            )
+            return str(result_id)

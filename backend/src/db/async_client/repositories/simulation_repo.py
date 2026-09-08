@@ -2,7 +2,6 @@
 
 from typing import Any, Optional
 
-from src.db.async_client.pool import pool
 from src.db.async_client.repositories.base import BaseRepository
 from src.db.schemas import (
     SimDataIn,
@@ -81,17 +80,15 @@ class SimulationRepository(BaseRepository):
         )
         column_list = ",".join(columns)
         updates = ", ".join(f"{column} = EXCLUDED.{column}" for column in columns)
-        async with pool.connection() as conn:
-            await self._assert_model_owner(conn, model_id, user_id)
-            async with conn.cursor() as cur:
-                await cur.execute(
-                    f"INSERT INTO simulations ({column_list}) "
-                    f"VALUES ({','.join(['%s'] * len(values))}) "
-                    f"ON CONFLICT (model_id) DO UPDATE SET {updates} "
-                    "RETURNING id",
-                    values,
-                )
-                return str((await cur.fetchone())[0])
+        async with self._owned_transaction(model_id, user_id) as cur:
+            await cur.execute(
+                f"INSERT INTO simulations ({column_list}) "
+                f"VALUES ({','.join(['%s'] * len(values))}) "
+                f"ON CONFLICT (model_id) DO UPDATE SET {updates} "
+                "RETURNING id",
+                values,
+            )
+            return str((await cur.fetchone())[0])
 
     async def fetch_sim_results_eval(
         self, model_id: str, user_id: int
@@ -166,41 +163,30 @@ class SimulationRepository(BaseRepository):
             kpis.self_consumption_rate,
             kpis.self_sufficiency,
         )
-        async with pool.connection() as conn:
-            await self._assert_model_owner(conn, model_id, user_id)
-            async with conn.transaction():
-                async with conn.cursor() as cur:
-                    await cur.execute(
-                        """INSERT INTO sim_results_eval
-                        (model_id, annual_consumption, pv_generation,
-                         grid_consumption, grid_feed_in, self_consumption,
-                         self_consumption_rate, self_sufficiency)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-                        ON CONFLICT (model_id) DO UPDATE SET
-                        annual_consumption=EXCLUDED.annual_consumption,
-                        pv_generation=EXCLUDED.pv_generation,
-                        grid_consumption=EXCLUDED.grid_consumption,
-                        grid_feed_in=EXCLUDED.grid_feed_in,
-                        self_consumption=EXCLUDED.self_consumption,
-                        self_consumption_rate=EXCLUDED.self_consumption_rate,
-                        self_sufficiency=EXCLUDED.self_sufficiency
-                        RETURNING id""",
-                        values,
-                    )
-                    eval_id = (await cur.fetchone())[0]
-                    await cur.execute(
-                        "DELETE FROM pv_monthly_gen WHERE eval_id = %s",
-                        (eval_id,),
-                    )
-                    await cur.executemany(
-                        "INSERT INTO pv_monthly_gen "
-                        "(eval_id, month, pv_generation) VALUES (%s,%s,%s)",
-                        [
-                            (eval_id, item.month, item.pv_generation)
-                            for item in document.pv_monthly_gen
-                        ],
-                    )
-                    return str(eval_id)
+        async with self._owned_transaction(model_id, user_id) as cur:
+            await cur.execute(
+                "DELETE FROM sim_results_eval WHERE model_id = %s",
+                (model_id,),
+            )
+            await cur.execute(
+                """INSERT INTO sim_results_eval
+                (model_id, annual_consumption, pv_generation,
+                 grid_consumption, grid_feed_in, self_consumption,
+                 self_consumption_rate, self_sufficiency)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                RETURNING id""",
+                values,
+            )
+            eval_id = (await cur.fetchone())[0]
+            await cur.executemany(
+                "INSERT INTO pv_monthly_gen "
+                "(eval_id, month, pv_generation) VALUES (%s,%s,%s)",
+                [
+                    (eval_id, item.month, item.pv_generation)
+                    for item in document.pv_monthly_gen
+                ],
+            )
+            return str(eval_id)
 
     async def fetch_timesteps(
         self,

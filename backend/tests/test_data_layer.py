@@ -90,9 +90,10 @@ async def test_database_round_trips_and_cascades(database: DatabaseClient) -> No
             ),
             pv_monthly_gen=[PVMonthlyGen(month="Jan", pv_generation=2)],
         )
-        evaluation_id = await database.upsert_sim_results_eval(evaluation, 1)
+        await database.upsert_sim_results_eval(evaluation, 1)
         assert await database.fetch_sim_results_eval(model_id, 1) == evaluation
-        assert evaluation_id == await database.upsert_sim_results_eval(evaluation, 1)
+        await database.upsert_sim_results_eval(evaluation, 1)
+        assert await database.fetch_sim_results_eval(model_id, 1) == evaluation
 
         finances = FinFormData(
             model_id=model_id,
@@ -128,9 +129,10 @@ async def test_database_round_trips_and_cascades(database: DatabaseClient) -> No
             ),
             yearly_data=[FinYearlyData(year=0, cum_profit=1, cum_cash_flow=2, loan=3)],
         )
-        result_id = await database.upsert_fin_results(results, 1)
+        await database.upsert_fin_results(results, 1)
         assert await database.fetch_fin_results(model_id, 1) == results
-        assert result_id == await database.upsert_fin_results(results, 1)
+        await database.upsert_fin_results(results, 1)
+        assert await database.fetch_fin_results(model_id, 1) == results
 
         assert await database.delete_model(model_id, 1)
         assert await database.fetch_sim_results_eval(model_id, 1) is None

@@ -1,6 +1,6 @@
 """Provide shared helpers for asynchronous database repositories."""
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any, Optional
@@ -14,11 +14,22 @@ class BaseRepository:
     """Class for interacting with the PostgreSQL database."""
 
     @asynccontextmanager
-    async def _cursor(self, row_factory: Any = dict_row) -> AsyncIterator[Any]:
+    async def _cursor(self, row_factory: Any = dict_row) -> AsyncGenerator[Any, None]:
         """Open a cursor with a pooled database connection."""
         async with pool.connection() as conn:
             async with conn.cursor(row_factory=row_factory) as cur:
                 yield cur
+
+    @asynccontextmanager
+    async def _owned_transaction(
+        self, model_id: int, user_id: int, row_factory: Any = None
+    ) -> AsyncGenerator[Any, None]:
+        """Open a transaction after asserting ownership of a model."""
+        async with pool.connection() as conn:
+            await self._assert_model_owner(conn, model_id, user_id)
+            async with conn.transaction():
+                async with conn.cursor(row_factory=row_factory) as cur:
+                    yield cur
 
     async def _fetch_one(self, query: str, params: Any = ()) -> Any:
         """Execute a query and return its first row, if present."""
