@@ -1,10 +1,12 @@
+"""Expose HTTP endpoints for simulations and simulation results."""
+
 from datetime import datetime
 from logging import Logger
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.api.dependencies import check_user_exists, get_db_client, get_logger
-from src.db.client import DatabaseClient
+from src.db.async_client.client import DatabaseClient
 from src.db.schemas import (
     ModelDataOut,
     SimDataIn,
@@ -15,7 +17,9 @@ from src.db.schemas import (
 )
 from src.domains.energy.funcs import eval_sim_results
 from src.domains.simulation.funcs import get_sim_input_data
-from src.workers.simulation_runner import run_simulation as run_simulation_worker
+from src.workers.simulation_runner import (
+    run_simulation as run_simulation_worker,
+)
 
 PREFIX: str = "/workspace/simulations"
 TAG: str = "simulations"
@@ -193,9 +197,9 @@ async def fetch_sim_timeseries(
             PV=timestep.P_pv,
             Battery=timestep.P_bat,
             Total=timestep.P_base + timestep.P_pv + timestep.P_bat,
-            StateOfCharge=timestep.Soc_bat / battery_cap * 100
-            if battery_cap > 0
-            else 0,  # in %
+            StateOfCharge=(
+                timestep.Soc_bat / battery_cap * 100 if battery_cap > 0 else 0
+            ),  # in %
         )
         for timestep in (SimTimestep(**item) for item in sim_results)
     ]

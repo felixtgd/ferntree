@@ -1,9 +1,11 @@
+"""Persist simulations and retrieve simulation results asynchronously."""
+
 from typing import Any, Optional
 
 from psycopg.rows import dict_row
 
-from src.db.pool import pool
-from src.db.repositories.base import BaseRepository
+from src.db.async_client.pool import pool
+from src.db.async_client.repositories.base import BaseRepository
 from src.db.schemas import (
     SimDataIn,
     SimResultsEval,
@@ -87,7 +89,8 @@ class SimulationRepository(BaseRepository):
                 await cur.execute(
                     f"INSERT INTO simulations ({column_list}) "
                     f"VALUES ({','.join(['%s'] * len(values))}) "
-                    f"ON CONFLICT (model_id) DO UPDATE SET {updates} RETURNING id",
+                    f"ON CONFLICT (model_id) DO UPDATE SET {updates} "
+                    "RETURNING id",
                     values,
                 )
                 return str((await cur.fetchone())[0])
@@ -112,7 +115,8 @@ class SimulationRepository(BaseRepository):
             async with conn.cursor(row_factory=dict_row) as cur:
                 await cur.execute(
                     """SELECT e.* FROM sim_results_eval e
-                    JOIN models m ON m.id = e.model_id JOIN users u ON u.id = m.user_id
+                    JOIN models m ON m.id = e.model_id
+                    JOIN users u ON u.id = m.user_id
                     WHERE e.model_id = %s AND u.username = %s""",
                     (internal_id, user_id),
                 )
@@ -175,9 +179,9 @@ class SimulationRepository(BaseRepository):
                 async with conn.cursor() as cur:
                     await cur.execute(
                         """INSERT INTO sim_results_eval
-                        (model_id, annual_consumption, pv_generation, grid_consumption,
-                         grid_feed_in, self_consumption, self_consumption_rate,
-                         self_sufficiency)
+                        (model_id, annual_consumption, pv_generation,
+                         grid_consumption, grid_feed_in, self_consumption,
+                         self_consumption_rate, self_sufficiency)
                         VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
                         ON CONFLICT (model_id) DO UPDATE SET
                         annual_consumption=EXCLUDED.annual_consumption,
@@ -188,14 +192,16 @@ class SimulationRepository(BaseRepository):
                         self_consumption_rate=EXCLUDED.self_consumption_rate,
                         self_sufficiency=EXCLUDED.self_sufficiency
                         WHERE sim_results_eval.model_id IN (
-                            SELECT m.id FROM models m JOIN users u ON u.id = m.user_id
+                            SELECT m.id FROM models m JOIN users u
+                            ON u.id = m.user_id
                             WHERE m.id = EXCLUDED.model_id AND u.username = %s)
                         RETURNING id""",
                         values + (user_id,),
                     )
                     eval_id = (await cur.fetchone())[0]
                     await cur.execute(
-                        "DELETE FROM pv_monthly_gen WHERE eval_id = %s", (eval_id,)
+                        "DELETE FROM pv_monthly_gen WHERE eval_id = %s",
+                        (eval_id,),
                     )
                     await cur.executemany(
                         "INSERT INTO pv_monthly_gen "
@@ -215,7 +221,19 @@ class SimulationRepository(BaseRepository):
         end: Optional[float] = None,
         limit: Optional[int] = None,
     ) -> list[dict[str, float]]:
-        """Fetch user-owned simulation timesteps in an optional time range."""
+        """Fetch user-owned simulation timesteps in an optional time range.
+
+        Args:
+            model_id: The string identifier of the model.
+            user_id: The username that owns the model.
+            start: Optional inclusive start timestamp.
+            end: Optional inclusive end timestamp.
+            limit: Optional maximum number of rows to return.
+
+        Returns:
+            A list of timestep dictionaries ordered by timestamp.
+
+        """
         internal_id = self._int_id(model_id)
         if internal_id is None:
             return []

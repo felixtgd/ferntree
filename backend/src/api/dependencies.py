@@ -1,9 +1,11 @@
+"""Define shared FastAPI dependencies for the application."""
+
 import logging
 from logging import Logger
 
 from fastapi import Depends, HTTPException, Request, status
 
-from src.db.client import DatabaseClient
+from src.db.async_client.client import DatabaseClient
 
 logging.basicConfig(
     level=logging.INFO,

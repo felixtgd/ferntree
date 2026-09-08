@@ -1,9 +1,11 @@
+"""Persist finance inputs and calculated finance results asynchronously."""
+
 from typing import Optional
 
 from psycopg.rows import dict_row
 
-from src.db.pool import pool
-from src.db.repositories.base import BaseRepository
+from src.db.async_client.pool import pool
+from src.db.async_client.repositories.base import BaseRepository
 from src.db.schemas import (
     FinFormData,
     FinResults,
@@ -32,8 +34,8 @@ class FinanceRepository(BaseRepository):
         async with pool.connection() as conn:
             async with conn.cursor(row_factory=dict_row) as cur:
                 await cur.execute(
-                    """SELECT f.* FROM finances f JOIN models m ON m.id = f.model_id
-                    JOIN users u ON u.id = m.user_id
+                    """SELECT f.* FROM finances f JOIN models m
+                    ON m.id = f.model_id JOIN users u ON u.id = m.user_id
                     WHERE f.model_id = %s AND u.username = %s""",
                     (internal_id, user_id),
                 )
@@ -139,7 +141,8 @@ class FinanceRepository(BaseRepository):
                     f"VALUES ({','.join(['%s'] * len(values))}) "
                     f"ON CONFLICT (model_id) DO UPDATE SET {assignments} "
                     "WHERE finances.model_id IN ("
-                    "SELECT m.id FROM models m JOIN users u ON u.id = m.user_id "
+                    "SELECT m.id FROM models m JOIN users u "
+                    "ON u.id = m.user_id "
                     "WHERE m.id = EXCLUDED.model_id AND u.username = %s) "
                     "RETURNING id",
                     values + (user_id,),
@@ -165,8 +168,8 @@ class FinanceRepository(BaseRepository):
         async with pool.connection() as conn:
             async with conn.cursor(row_factory=dict_row) as cur:
                 await cur.execute(
-                    """SELECT f.* FROM fin_results f JOIN models m ON m.id = f.model_id
-                    JOIN users u ON u.id = m.user_id
+                    """SELECT f.* FROM fin_results f JOIN models m
+                    ON m.id = f.model_id JOIN users u ON u.id = m.user_id
                     WHERE f.model_id = %s AND u.username = %s""",
                     (internal_id, user_id),
                 )
@@ -175,7 +178,8 @@ class FinanceRepository(BaseRepository):
                     return None
                 await cur.execute(
                     "SELECT year, cum_profit, cum_cash_flow, loan "
-                    "FROM fin_yearly_data WHERE fin_results_id = %s ORDER BY year",
+                    "FROM fin_yearly_data WHERE fin_results_id = %s "
+                    "ORDER BY year",
                     (row["id"],),
                 )
                 yearly = [dict(item) async for item in cur]
@@ -255,11 +259,13 @@ class FinanceRepository(BaseRepository):
             async with conn.transaction():
                 async with conn.cursor() as cur:
                     await cur.execute(
-                        f"INSERT INTO fin_results (model_id,{','.join(fields)}) "
+                        "INSERT INTO fin_results "
+                        f"(model_id,{','.join(fields)}) "
                         f"VALUES ({','.join(['%s'] * len(values))}) "
                         f"ON CONFLICT (model_id) DO UPDATE SET {assignments} "
                         "WHERE fin_results.model_id IN ("
-                        "SELECT m.id FROM models m JOIN users u ON u.id = m.user_id "
+                        "SELECT m.id FROM models m JOIN users u "
+                        "ON u.id = m.user_id "
                         "WHERE m.id = EXCLUDED.model_id AND u.username = %s) "
                         "RETURNING id",
                         values + (user_id,),
@@ -271,7 +277,8 @@ class FinanceRepository(BaseRepository):
                     )
                     await cur.executemany(
                         "INSERT INTO fin_yearly_data "
-                        "(fin_results_id, year, cum_profit, cum_cash_flow, loan) "
+                        "(fin_results_id, year, cum_profit, cum_cash_flow, "
+                        "loan) "
                         "VALUES (%s,%s,%s,%s,%s)",
                         [
                             (

@@ -1,8 +1,10 @@
+"""Build simulation components from persisted simulation configuration."""
+
 import logging
 from typing import Any
 
+from src.db.sync_client.client import PostgresClient
 from src.domains.ferntree.components.ctrl.battery_ctrl import BatteryCtrl
-from src.domains.ferntree.components.database.postgres import PostgresClient
 from src.domains.ferntree.components.dev.baseload import BaseLoad
 from src.domains.ferntree.components.dev.battery_dev import BatteryDev
 from src.domains.ferntree.components.dev.pv_sys import PVSys
@@ -14,9 +16,10 @@ logger = logging.getLogger("ferntree")
 
 
 class SimBuilder:
-    """Class to build the simulation based on the model specifications. It gets the
-    simulation and model specs from the database and creates the system model with
-    baseload, PV system, and battery.
+    """Build a simulation from persisted model and simulation specifications.
+
+    The builder loads configuration through the synchronous database client
+    and creates the house components used by the simulation engine.
     """
 
     def __init__(self, sim_id: str, model_id: str) -> None:
@@ -107,7 +110,9 @@ class SimBuilder:
                     self.sim, self.system_settings["battery"]
                 )
                 battery.battery_ctrl = BatteryCtrl(
-                    self.sim, self.system_settings["battery"]["battery_ctrl"], sm
+                    self.sim,
+                    self.system_settings["battery"]["battery_ctrl"],
+                    sm,
                 )
                 house.add_component(battery, "battery")
                 logger.info("Battery added to the house.")

@@ -1,10 +1,12 @@
+"""Expose HTTP endpoints for model data."""
+
 from logging import Logger
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.api.dependencies import check_user_exists, get_db_client, get_logger
-from src.db.client import DatabaseClient
+from src.db.async_client.client import DatabaseClient
 from src.db.schemas import (
     ModelDataIn,
     ModelDataOut,

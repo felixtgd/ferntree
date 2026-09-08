@@ -1,4 +1,8 @@
-from pydantic import BaseModel
+"""Define Pydantic models for simulation inputs and results."""
+
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 from src.db.schemas.energy import EnergyKPIs, PVMonthlyGen
 from src.db.schemas.models import SystemSettings
@@ -83,15 +87,35 @@ class SimTimestep(BaseModel):
 
     """
 
-    time: float
-    T_amb: float
-    P_solar: float
-    P_base: float
-    P_pv: float
-    P_bat: float
-    Soc_bat: float
-    fill_level: float
-    P_load_pred: float
+    time: float = Field(title="Time", description="The timestamp in seconds")
+    T_amb: float = Field(
+        title="Ambient Temperature",
+        description="The ambient temperature in degree Celsius",
+    )
+    P_solar: float = Field(
+        title="Solar Irradiance", description="The solar irradiance in W/m2"
+    )
+    P_base: float = Field(
+        title="Baseload Power", description="The baseload power in kW"
+    )
+    P_pv: float = Field(
+        title="PV Power Generation", description="The PV power generation in kW"
+    )
+    P_bat: float = Field(title="Battery Power", description="The battery power in kW")
+    Soc_bat: float = Field(
+        title="State of Charge of Battery",
+        description="The state of charge of the battery in kWh",
+    )
+    fill_level: Optional[float] = Field(
+        title="Fill Level of Battery",
+        description="The fill level of the battery in [0 ... 1]",
+        default=None,
+    )
+    P_load_pred: Optional[float] = Field(
+        title="Predicted Net Load of House",
+        description="The predicted net load of the house in kW",
+        default=None,
+    )
 
 
 class SimTimestepOut(BaseModel):

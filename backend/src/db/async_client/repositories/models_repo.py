@@ -1,9 +1,11 @@
+"""Persist and retrieve user-owned models asynchronously."""
+
 from typing import Any
 
 from psycopg.rows import dict_row
 
-from src.db.pool import pool
-from src.db.repositories.base import BaseRepository
+from src.db.async_client.pool import pool
+from src.db.async_client.repositories.base import BaseRepository
 from src.db.schemas import ModelDataOut
 
 
@@ -73,9 +75,9 @@ class ModelsRepository(BaseRepository):
             peak_power=row["peak_power"],
             battery_cap=row["battery_cap"],
             coordinates=coordinates,
-            time_created=row["time_created"].isoformat()
-            if row["time_created"]
-            else None,
+            time_created=(
+                row["time_created"].isoformat() if row["time_created"] else None
+            ),
             model_id=str(row["id"]),
             sim_id=str(row["sim_id"]) if row["sim_id"] is not None else None,
         )

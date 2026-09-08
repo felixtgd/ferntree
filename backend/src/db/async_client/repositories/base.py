@@ -1,7 +1,9 @@
+"""Provide shared helpers for asynchronous database repositories."""
+
 from datetime import datetime
 from typing import Any, Optional
 
-from src.db.pool import pool
+from src.db.async_client.pool import pool
 
 
 class BaseRepository:
@@ -31,8 +33,8 @@ class BaseRepository:
             value (Optional[str]): The ISO 8601 datetime string to parse.
 
         Returns:
-            Optional[datetime]: The parsed datetime object, or None if the input is
-            None.
+            Optional[datetime]: The parsed datetime object, or None if the
+                input is None.
 
         """
         return datetime.fromisoformat(value) if value else None
@@ -44,6 +46,9 @@ class BaseRepository:
             conn (Any): The active database connection.
             model_id (int): The internal model ID.
             user_id (str): The username claiming ownership of the model.
+
+        Raises:
+            RuntimeError: If the model does not belong to the user.
 
         """
         async with conn.cursor() as cur:
@@ -75,6 +80,9 @@ class BaseRepository:
 
         Args:
             collection (str): The table name to truncate.
+
+        Raises:
+            ValueError: If the table is not in the allowlist.
 
         """
         allowed = {

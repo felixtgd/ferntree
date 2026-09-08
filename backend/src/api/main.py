@@ -1,3 +1,5 @@
+"""Assemble the FastAPI application and manage its resources."""
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -6,8 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.api.routers.finances_router import router as finances_router
 from src.api.routers.models_router import router as models_router
 from src.api.routers.simulations_router import router as simulations_router
-from src.db.client import DatabaseClient
-from src.db.pool import pool
+from src.db.async_client.client import DatabaseClient
+from src.db.async_client.pool import pool
 
 
 # Create a FastAPI instance

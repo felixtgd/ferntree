@@ -1,9 +1,11 @@
+"""Expose HTTP endpoints for financial data and results."""
+
 from logging import Logger
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.api.dependencies import check_user_exists, get_db_client, get_logger
-from src.db.client import DatabaseClient
+from src.db.async_client.client import DatabaseClient
 from src.db.schemas import (
     FinFormData,
     FinResults,

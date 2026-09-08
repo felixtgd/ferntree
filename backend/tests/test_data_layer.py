@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 import pytest
 import pytest_asyncio
 
-from src.db.client import DatabaseClient
-from src.db.pool import pool
+from src.db.async_client.client import DatabaseClient
+from src.db.async_client.pool import pool
 from src.db.schemas import (
     PV,
     Baseload,
