@@ -1,13 +1,49 @@
 """Provide shared helpers for asynchronous database repositories."""
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any, Optional
+
+from psycopg.rows import dict_row
 
 from src.db.async_client.pool import pool
 
 
 class BaseRepository:
     """Class for interacting with the PostgreSQL database."""
+
+    @asynccontextmanager
+    async def _cursor(self, row_factory: Any = dict_row) -> AsyncIterator[Any]:
+        """Open a cursor with a pooled database connection."""
+        async with pool.connection() as conn:
+            async with conn.cursor(row_factory=row_factory) as cur:
+                yield cur
+
+    async def _fetch_one(self, query: str, params: Any = ()) -> Any:
+        """Execute a query and return its first row, if present."""
+        async with self._cursor() as cur:
+            await cur.execute(query, params)
+            return await cur.fetchone()
+
+    async def _fetch_all(self, query: str, params: Any = ()) -> list[Any]:
+        """Execute a query and return all rows."""
+        async with self._cursor() as cur:
+            await cur.execute(query, params)
+            return [row async for row in cur]
+
+    async def _fetch_val(self, query: str, params: Any = ()) -> Any:
+        """Execute a query and return the first column of its first row."""
+        async with self._cursor(row_factory=None) as cur:
+            await cur.execute(query, params)
+            row = await cur.fetchone()
+            return row[0] if row is not None else None
+
+    async def _execute(self, query: str, params: Any = ()) -> int:
+        """Execute a query and return its affected row count."""
+        async with self._cursor(row_factory=None) as cur:
+            await cur.execute(query, params)
+            return cur.rowcount
 
     @staticmethod
     def _int_id(value: str) -> Optional[int]:
@@ -70,10 +106,10 @@ class BaseRepository:
             bool: Whether the user id exists.
 
         """
-        async with pool.connection() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute("SELECT 1 FROM users WHERE id = %s", (user_id,))
-                return await cur.fetchone() is not None
+        return (
+            await self._fetch_val("SELECT 1 FROM users WHERE id = %s", (user_id,))
+            is not None
+        )
 
     async def clean_collection(self, collection: str) -> None:
         """Truncate an allowlisted database table.

@@ -2,8 +2,6 @@
 
 from typing import Any, Optional
 
-from psycopg.rows import dict_row
-
 from src.db.async_client.pool import pool
 from src.db.async_client.repositories.base import BaseRepository
 from src.db.schemas import (
@@ -111,39 +109,35 @@ class SimulationRepository(BaseRepository):
         internal_id = self._int_id(model_id)
         if internal_id is None:
             return None
-        async with pool.connection() as conn:
-            async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(
-                    """SELECT e.* FROM sim_results_eval e
-                    JOIN models m ON m.id = e.model_id
-                    WHERE e.model_id = %s AND m.user_id = %s""",
-                    (internal_id, user_id),
+        row = await self._fetch_one(
+            """SELECT e.* FROM sim_results_eval e
+            JOIN models m ON m.id = e.model_id
+            WHERE e.model_id = %s AND m.user_id = %s""",
+            (internal_id, user_id),
+        )
+        if row is None:
+            return None
+        monthly = await self._fetch_all(
+            "SELECT month, pv_generation FROM pv_monthly_gen "
+            "WHERE eval_id = %s ORDER BY id",
+            (row["id"],),
+        )
+        return SimResultsEval(
+            model_id=model_id,
+            energy_kpis={
+                key: row[key]
+                for key in (
+                    "annual_consumption",
+                    "pv_generation",
+                    "grid_consumption",
+                    "grid_feed_in",
+                    "self_consumption",
+                    "self_consumption_rate",
+                    "self_sufficiency",
                 )
-                row = await cur.fetchone()
-                if row is None:
-                    return None
-                await cur.execute(
-                    "SELECT month, pv_generation FROM pv_monthly_gen "
-                    "WHERE eval_id = %s ORDER BY id",
-                    (row["id"],),
-                )
-                monthly = [dict(item) async for item in cur]
-                return SimResultsEval(
-                    model_id=model_id,
-                    energy_kpis={
-                        key: row[key]
-                        for key in (
-                            "annual_consumption",
-                            "pv_generation",
-                            "grid_consumption",
-                            "grid_feed_in",
-                            "self_consumption",
-                            "self_consumption_rate",
-                            "self_sufficiency",
-                        )
-                    },
-                    pv_monthly_gen=monthly,
-                )
+            },
+            pv_monthly_gen=monthly,
+        )
 
     async def upsert_sim_results_eval(
         self, document: SimResultsEval, user_id: int
@@ -245,20 +239,18 @@ class SimulationRepository(BaseRepository):
         query += " ORDER BY t.time LIMIT %s"
         params.append(effective_limit)
 
-        async with pool.connection() as conn:
-            async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(query, params)
-                return [
-                    {
-                        "time": row["time"],
-                        "T_amb": row["t_amb"],
-                        "P_solar": row["p_solar"],
-                        "P_base": row["p_base"],
-                        "P_pv": row["p_pv"],
-                        "P_bat": row["p_bat"],
-                        "Soc_bat": row["soc_bat"],
-                        "fill_level": row["fill_level"],
-                        "P_load_pred": row["p_load_pred"],
-                    }
-                    async for row in cur
-                ]
+        rows = await self._fetch_all(query, params)
+        return [
+            {
+                "time": row["time"],
+                "T_amb": row["t_amb"],
+                "P_solar": row["p_solar"],
+                "P_base": row["p_base"],
+                "P_pv": row["p_pv"],
+                "P_bat": row["p_bat"],
+                "Soc_bat": row["soc_bat"],
+                "fill_level": row["fill_level"],
+                "P_load_pred": row["p_load_pred"],
+            }
+            for row in rows
+        ]

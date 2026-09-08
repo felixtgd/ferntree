@@ -2,8 +2,6 @@
 
 from typing import Optional
 
-from psycopg.rows import dict_row
-
 from src.db.async_client.pool import pool
 from src.db.async_client.repositories.base import BaseRepository
 from src.db.schemas import (
@@ -31,38 +29,35 @@ class FinanceRepository(BaseRepository):
         internal_id = self._int_id(model_id)
         if internal_id is None:
             return None
-        async with pool.connection() as conn:
-            async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(
-                    """SELECT f.* FROM finances f JOIN models m
-                    ON m.id = f.model_id
-                    WHERE f.model_id = %s AND m.user_id = %s""",
-                    (internal_id, user_id),
-                )
-                row = await cur.fetchone()
-                return (
-                    FinFormData(
-                        model_id=model_id,
-                        **{
-                            key: row[key]
-                            for key in (
-                                "electr_price",
-                                "feed_in_tariff",
-                                "pv_price",
-                                "battery_price",
-                                "useful_life",
-                                "module_deg",
-                                "inflation",
-                                "op_cost",
-                                "down_payment",
-                                "pay_off_rate",
-                                "interest_rate",
-                            )
-                        },
+        row = await self._fetch_one(
+            """SELECT f.* FROM finances f JOIN models m
+            ON m.id = f.model_id
+            WHERE f.model_id = %s AND m.user_id = %s""",
+            (internal_id, user_id),
+        )
+        return (
+            FinFormData(
+                model_id=model_id,
+                **{
+                    key: row[key]
+                    for key in (
+                        "electr_price",
+                        "feed_in_tariff",
+                        "pv_price",
+                        "battery_price",
+                        "useful_life",
+                        "module_deg",
+                        "inflation",
+                        "op_cost",
+                        "down_payment",
+                        "pay_off_rate",
+                        "interest_rate",
                     )
-                    if row
-                    else None
-                )
+                },
+            )
+            if row
+            else None
+        )
 
     async def fetch_finances_for_user(self, user_id: int) -> list[FinFormData]:
         """Fetch financial input data for all models owned by a user.
@@ -74,34 +69,32 @@ class FinanceRepository(BaseRepository):
             list[FinFormData]: The user's financial data.
 
         """
-        async with pool.connection() as conn:
-            async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(
-                    """SELECT f.* FROM finances f
-                    JOIN models m ON m.id = f.model_id
-                    WHERE m.user_id = %s ORDER BY f.model_id""",
-                    (user_id,),
-                )
-                fields = (
-                    "electr_price",
-                    "feed_in_tariff",
-                    "pv_price",
-                    "battery_price",
-                    "useful_life",
-                    "module_deg",
-                    "inflation",
-                    "op_cost",
-                    "down_payment",
-                    "pay_off_rate",
-                    "interest_rate",
-                )
-                return [
-                    FinFormData(
-                        model_id=str(row["model_id"]),
-                        **{field: row[field] for field in fields},
-                    )
-                    async for row in cur
-                ]
+        rows = await self._fetch_all(
+            """SELECT f.* FROM finances f
+            JOIN models m ON m.id = f.model_id
+            WHERE m.user_id = %s ORDER BY f.model_id""",
+            (user_id,),
+        )
+        fields = (
+            "electr_price",
+            "feed_in_tariff",
+            "pv_price",
+            "battery_price",
+            "useful_life",
+            "module_deg",
+            "inflation",
+            "op_cost",
+            "down_payment",
+            "pay_off_rate",
+            "interest_rate",
+        )
+        return [
+            FinFormData(
+                model_id=str(row["model_id"]),
+                **{field: row[field] for field in fields},
+            )
+            for row in rows
+        ]
 
     async def upsert_finances(self, document: FinFormData, user_id: int) -> str:
         """Insert or update financial input data.
@@ -160,49 +153,45 @@ class FinanceRepository(BaseRepository):
         internal_id = self._int_id(model_id)
         if internal_id is None:
             return None
-        async with pool.connection() as conn:
-            async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(
-                    """SELECT f.* FROM fin_results f JOIN models m
-                    ON m.id = f.model_id
-                    WHERE f.model_id = %s AND m.user_id = %s""",
-                    (internal_id, user_id),
-                )
-                row = await cur.fetchone()
-                if row is None:
-                    return None
-                await cur.execute(
-                    "SELECT year, cum_profit, cum_cash_flow, loan "
-                    "FROM fin_yearly_data WHERE fin_results_id = %s "
-                    "ORDER BY year",
-                    (row["id"],),
-                )
-                yearly = [dict(item) async for item in cur]
-                return FinResults(
-                    model_id=model_id,
-                    fin_kpis={
-                        "investment": {
-                            "pv": row["investment_pv"],
-                            "battery": row["investment_battery"],
-                            "total": row["investment_total"],
-                        },
-                        **{
-                            key: row[key]
-                            for key in (
-                                "break_even_year",
-                                "cum_profit",
-                                "cum_cost_savings",
-                                "cum_feed_in_revenue",
-                                "cum_operation_costs",
-                                "lcoe",
-                                "solar_interest_rate",
-                                "loan",
-                                "loan_paid_off",
-                            )
-                        },
-                    },
-                    yearly_data=yearly,
-                )
+        row = await self._fetch_one(
+            """SELECT f.* FROM fin_results f JOIN models m
+            ON m.id = f.model_id
+            WHERE f.model_id = %s AND m.user_id = %s""",
+            (internal_id, user_id),
+        )
+        if row is None:
+            return None
+        yearly = await self._fetch_all(
+            "SELECT year, cum_profit, cum_cash_flow, loan "
+            "FROM fin_yearly_data WHERE fin_results_id = %s "
+            "ORDER BY year",
+            (row["id"],),
+        )
+        return FinResults(
+            model_id=model_id,
+            fin_kpis={
+                "investment": {
+                    "pv": row["investment_pv"],
+                    "battery": row["investment_battery"],
+                    "total": row["investment_total"],
+                },
+                **{
+                    key: row[key]
+                    for key in (
+                        "break_even_year",
+                        "cum_profit",
+                        "cum_cost_savings",
+                        "cum_feed_in_revenue",
+                        "cum_operation_costs",
+                        "lcoe",
+                        "solar_interest_rate",
+                        "loan",
+                        "loan_paid_off",
+                    )
+                },
+            },
+            yearly_data=yearly,
+        )
 
     async def upsert_fin_results(self, document: FinResults, user_id: int) -> str:
         """Insert or update financial results and child rows.

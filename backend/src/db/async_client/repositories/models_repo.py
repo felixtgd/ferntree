@@ -2,9 +2,6 @@
 
 from typing import Any
 
-from psycopg.rows import dict_row
-
-from src.db.async_client.pool import pool
 from src.db.async_client.repositories.base import BaseRepository
 from src.db.schemas import ModelDataOut
 
@@ -24,34 +21,31 @@ class ModelsRepository(BaseRepository):
 
         """
         coordinates = model.get("coordinates") or {}
-        async with pool.connection() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute(
-                    """
-                    INSERT INTO models (
-                        user_id, model_name, location, roof_incl, roof_azimuth,
-                        electr_cons, peak_power, battery_cap, time_created,
-                        coord_lat, coord_lon, coord_display_name
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    RETURNING id
-                    """,
-                    (
-                        user_id,
-                        model["model_name"],
-                        model["location"],
-                        model["roof_incl"],
-                        model["roof_azimuth"],
-                        model["electr_cons"],
-                        model["peak_power"],
-                        model["battery_cap"],
-                        self._parse_datetime(model.get("time_created")),
-                        coordinates.get("lat"),
-                        coordinates.get("lon"),
-                        coordinates.get("display_name"),
-                    ),
-                )
-                row = await cur.fetchone()
-                return str(row[0])
+        model_id = await self._fetch_val(
+            """
+            INSERT INTO models (
+                user_id, model_name, location, roof_incl, roof_azimuth,
+                electr_cons, peak_power, battery_cap, time_created,
+                coord_lat, coord_lon, coord_display_name
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            (
+                user_id,
+                model["model_name"],
+                model["location"],
+                model["roof_incl"],
+                model["roof_azimuth"],
+                model["electr_cons"],
+                model["peak_power"],
+                model["battery_cap"],
+                self._parse_datetime(model.get("time_created")),
+                coordinates.get("lat"),
+                coordinates.get("lon"),
+                coordinates.get("display_name"),
+            ),
+        )
+        return str(model_id)
 
     @staticmethod
     def _model_from_row(row: dict[str, Any]) -> ModelDataOut:
@@ -89,16 +83,14 @@ class ModelsRepository(BaseRepository):
             list[ModelDataOut]: The user's models.
 
         """
-        async with pool.connection() as conn:
-            async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(
-                    """
-                    SELECT m.* FROM models m
-                    WHERE m.user_id = %s ORDER BY m.id
-                    """,
-                    (user_id,),
-                )
-                return [self._model_from_row(row) async for row in cur]
+        rows = await self._fetch_all(
+            """
+            SELECT m.* FROM models m
+            WHERE m.user_id = %s ORDER BY m.id
+            """,
+            (user_id,),
+        )
+        return [self._model_from_row(row) for row in rows]
 
     async def fetch_model_by_id(self, model_id: str, user_id: int) -> ModelDataOut:
         """Fetch one user-owned model by its string ID.
@@ -114,19 +106,16 @@ class ModelsRepository(BaseRepository):
         internal_id = self._int_id(model_id)
         if internal_id is None:
             raise RuntimeError(f"Failed to fetch model with ID {model_id}")
-        async with pool.connection() as conn:
-            async with conn.cursor(row_factory=dict_row) as cur:
-                await cur.execute(
-                    """
-                    SELECT m.* FROM models m
-                    WHERE m.id = %s AND m.user_id = %s
-                    """,
-                    (internal_id, user_id),
-                )
-                row = await cur.fetchone()
-                if row is None:
-                    raise RuntimeError(f"Failed to fetch model with ID {model_id}")
-                return self._model_from_row(row)
+        row = await self._fetch_one(
+            """
+            SELECT m.* FROM models m
+            WHERE m.id = %s AND m.user_id = %s
+            """,
+            (internal_id, user_id),
+        )
+        if row is None:
+            raise RuntimeError(f"Failed to fetch model with ID {model_id}")
+        return self._model_from_row(row)
 
     async def update_sim_id_of_model(
         self, model_id: str, sim_id: str, user_id: int
@@ -145,14 +134,14 @@ class ModelsRepository(BaseRepository):
         model_pk, sim_pk = self._int_id(model_id), self._int_id(sim_id)
         if model_pk is None or sim_pk is None:
             return False
-        async with pool.connection() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute(
-                    """UPDATE models SET sim_id = %s
-                    WHERE id = %s AND user_id = %s""",
-                    (sim_pk, model_pk, user_id),
-                )
-                return cur.rowcount > 0
+        return (
+            await self._execute(
+                """UPDATE models SET sim_id = %s
+                WHERE id = %s AND user_id = %s""",
+                (sim_pk, model_pk, user_id),
+            )
+            > 0
+        )
 
     async def delete_model(self, model_id: str, user_id: int) -> bool:
         """Delete a user-owned model and its dependent records.
@@ -168,10 +157,10 @@ class ModelsRepository(BaseRepository):
         internal_id = self._int_id(model_id)
         if internal_id is None:
             return False
-        async with pool.connection() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute(
-                    """DELETE FROM models WHERE id = %s AND user_id = %s""",
-                    (internal_id, user_id),
-                )
-                return cur.rowcount > 0
+        return (
+            await self._execute(
+                """DELETE FROM models WHERE id = %s AND user_id = %s""",
+                (internal_id, user_id),
+            )
+            > 0
+        )
