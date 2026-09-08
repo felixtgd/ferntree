@@ -8,6 +8,7 @@ export type CoordinateData = {
 };
 
 export type ModelData = {
+  user_id?: number;
   model_name: string;
   location: string;
   roof_incl: number;

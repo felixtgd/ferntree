@@ -17,12 +17,12 @@ MAX_TIMESTEPS = 100_000
 class SimulationRepository(BaseRepository):
     """Class for interacting with the PostgreSQL database."""
 
-    async def upsert_simulation(self, document: SimDataIn, user_id: str) -> str:
+    async def upsert_simulation(self, document: SimDataIn, user_id: int) -> str:
         """Insert or update simulation input data.
 
         Args:
             document (SimDataIn): The simulation input data.
-            user_id (str): The username that owns the simulation's model.
+            user_id (int): The user id that owns the simulation's model.
 
         Returns:
             str: The string ID of the simulation.
@@ -96,13 +96,13 @@ class SimulationRepository(BaseRepository):
                 return str((await cur.fetchone())[0])
 
     async def fetch_sim_results_eval(
-        self, model_id: str, user_id: str
+        self, model_id: str, user_id: int
     ) -> Optional[SimResultsEval]:
         """Fetch evaluated simulation results for a user-owned model.
 
         Args:
             model_id (str): The string ID of the model.
-            user_id (str): The username that owns the model.
+            user_id (int): The user id that owns the model.
 
         Returns:
             Optional[SimResultsEval]: The evaluation, if it exists.
@@ -116,8 +116,7 @@ class SimulationRepository(BaseRepository):
                 await cur.execute(
                     """SELECT e.* FROM sim_results_eval e
                     JOIN models m ON m.id = e.model_id
-                    JOIN users u ON u.id = m.user_id
-                    WHERE e.model_id = %s AND u.username = %s""",
+                    WHERE e.model_id = %s AND m.user_id = %s""",
                     (internal_id, user_id),
                 )
                 row = await cur.fetchone()
@@ -147,13 +146,13 @@ class SimulationRepository(BaseRepository):
                 )
 
     async def upsert_sim_results_eval(
-        self, document: SimResultsEval, user_id: str
+        self, document: SimResultsEval, user_id: int
     ) -> str:
         """Insert or update evaluated simulation results and child rows.
 
         Args:
             document (SimResultsEval): The evaluated simulation results.
-            user_id (str): The username that owns the results' model.
+            user_id (int): The user id that owns the results' model.
 
         Returns:
             str: The string ID of the evaluation.
@@ -212,7 +211,7 @@ class SimulationRepository(BaseRepository):
     async def fetch_timesteps(
         self,
         model_id: str,
-        user_id: str,
+        user_id: int,
         start: Optional[float] = None,
         end: Optional[float] = None,
         limit: Optional[int] = None,
@@ -221,7 +220,7 @@ class SimulationRepository(BaseRepository):
 
         Args:
             model_id: The string identifier of the model.
-            user_id: The username that owns the model.
+            user_id: The user id that owns the model.
             start: Optional inclusive start timestamp.
             end: Optional inclusive end timestamp.
             limit: Optional maximum number of rows to return.
@@ -238,8 +237,7 @@ class SimulationRepository(BaseRepository):
         query = """SELECT t.time, t.t_amb, t.p_solar, t.p_base, t.p_pv, t.p_bat,
                    t.soc_bat, t.fill_level, t.p_load_pred
                    FROM sim_timesteps t JOIN models m ON m.sim_id = t.sim_id
-                   JOIN users u ON u.id = m.user_id
-                   WHERE m.id = %s AND u.username = %s"""
+                   WHERE m.id = %s AND m.user_id = %s"""
         params: list[Any] = [internal_id, user_id]
         if start is not None and end is not None:
             query += " AND t.time BETWEEN %s AND %s"

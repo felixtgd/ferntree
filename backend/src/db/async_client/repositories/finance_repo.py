@@ -16,13 +16,13 @@ class FinanceRepository(BaseRepository):
     """Class for interacting with the PostgreSQL database."""
 
     async def fetch_finances(
-        self, model_id: str, user_id: str
+        self, model_id: str, user_id: int
     ) -> Optional[FinFormData]:
         """Fetch financial input data for a user-owned model.
 
         Args:
             model_id (str): The string ID of the model.
-            user_id (str): The username that owns the model.
+            user_id (int): The user id that owns the model.
 
         Returns:
             Optional[FinFormData]: The financial data, if it exists.
@@ -35,8 +35,8 @@ class FinanceRepository(BaseRepository):
             async with conn.cursor(row_factory=dict_row) as cur:
                 await cur.execute(
                     """SELECT f.* FROM finances f JOIN models m
-                    ON m.id = f.model_id JOIN users u ON u.id = m.user_id
-                    WHERE f.model_id = %s AND u.username = %s""",
+                    ON m.id = f.model_id
+                    WHERE f.model_id = %s AND m.user_id = %s""",
                     (internal_id, user_id),
                 )
                 row = await cur.fetchone()
@@ -64,11 +64,11 @@ class FinanceRepository(BaseRepository):
                     else None
                 )
 
-    async def fetch_finances_for_user(self, user_id: str) -> list[FinFormData]:
+    async def fetch_finances_for_user(self, user_id: int) -> list[FinFormData]:
         """Fetch financial input data for all models owned by a user.
 
         Args:
-            user_id (str): The username that owns the models.
+            user_id (int): The user id that owns the models.
 
         Returns:
             list[FinFormData]: The user's financial data.
@@ -79,8 +79,7 @@ class FinanceRepository(BaseRepository):
                 await cur.execute(
                     """SELECT f.* FROM finances f
                     JOIN models m ON m.id = f.model_id
-                    JOIN users u ON u.id = m.user_id
-                    WHERE u.username = %s ORDER BY f.model_id""",
+                    WHERE m.user_id = %s ORDER BY f.model_id""",
                     (user_id,),
                 )
                 fields = (
@@ -104,12 +103,12 @@ class FinanceRepository(BaseRepository):
                     async for row in cur
                 ]
 
-    async def upsert_finances(self, document: FinFormData, user_id: str) -> str:
+    async def upsert_finances(self, document: FinFormData, user_id: int) -> str:
         """Insert or update financial input data.
 
         Args:
             document (FinFormData): The financial input data.
-            user_id (str): The username that owns the data's model.
+            user_id (int): The user id that owns the data's model.
 
         Returns:
             str: The string ID of the financial data.
@@ -146,13 +145,13 @@ class FinanceRepository(BaseRepository):
                 return str((await cur.fetchone())[0])
 
     async def fetch_fin_results(
-        self, model_id: str, user_id: str
+        self, model_id: str, user_id: int
     ) -> Optional[FinResults]:
         """Fetch financial results for a user-owned model.
 
         Args:
             model_id (str): The string ID of the model.
-            user_id (str): The username that owns the model.
+            user_id (int): The user id that owns the model.
 
         Returns:
             Optional[FinResults]: The financial results, if they exist.
@@ -165,8 +164,8 @@ class FinanceRepository(BaseRepository):
             async with conn.cursor(row_factory=dict_row) as cur:
                 await cur.execute(
                     """SELECT f.* FROM fin_results f JOIN models m
-                    ON m.id = f.model_id JOIN users u ON u.id = m.user_id
-                    WHERE f.model_id = %s AND u.username = %s""",
+                    ON m.id = f.model_id
+                    WHERE f.model_id = %s AND m.user_id = %s""",
                     (internal_id, user_id),
                 )
                 row = await cur.fetchone()
@@ -205,12 +204,12 @@ class FinanceRepository(BaseRepository):
                     yearly_data=yearly,
                 )
 
-    async def upsert_fin_results(self, document: FinResults, user_id: str) -> str:
+    async def upsert_fin_results(self, document: FinResults, user_id: int) -> str:
         """Insert or update financial results and child rows.
 
         Args:
             document (FinResults): The financial results.
-            user_id (str): The username that owns the results' model.
+            user_id (int): The user id that owns the results' model.
 
         Returns:
             str: The string ID of the financial results.

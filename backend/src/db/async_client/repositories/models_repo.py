@@ -12,11 +12,12 @@ from src.db.schemas import ModelDataOut
 class ModelsRepository(BaseRepository):
     """Class for interacting with the PostgreSQL database."""
 
-    async def insert_model(self, model: dict[str, Any]) -> str:
+    async def insert_model(self, model: dict[str, Any], user_id: int) -> str:
         """Insert a model into the database.
 
         Args:
             model (dict): The model data to insert.
+            user_id (int): The user id that owns the model.
 
         Returns:
             str: The string ID of the inserted model.
@@ -31,12 +32,11 @@ class ModelsRepository(BaseRepository):
                         user_id, model_name, location, roof_incl, roof_azimuth,
                         electr_cons, peak_power, battery_cap, time_created,
                         coord_lat, coord_lon, coord_display_name
-                    )
-                    SELECT id, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                    FROM users WHERE username = %s
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """,
                     (
+                        user_id,
                         model["model_name"],
                         model["location"],
                         model["roof_incl"],
@@ -48,12 +48,9 @@ class ModelsRepository(BaseRepository):
                         coordinates.get("lat"),
                         coordinates.get("lon"),
                         coordinates.get("display_name"),
-                        model["user_id"],
                     ),
                 )
                 row = await cur.fetchone()
-                if row is None:
-                    raise RuntimeError(f"User {model['user_id']} not found")
                 return str(row[0])
 
     @staticmethod
@@ -66,7 +63,7 @@ class ModelsRepository(BaseRepository):
                 "display_name": row["coord_display_name"],
             }
         return ModelDataOut(
-            user_id=row["username"],
+            user_id=row["user_id"],
             model_name=row["model_name"],
             location=row["location"],
             roof_incl=row["roof_incl"],
@@ -82,11 +79,11 @@ class ModelsRepository(BaseRepository):
             sim_id=str(row["sim_id"]) if row["sim_id"] is not None else None,
         )
 
-    async def fetch_models(self, user_id: str) -> list[ModelDataOut]:
+    async def fetch_models(self, user_id: int) -> list[ModelDataOut]:
         """Fetch all models belonging to a user.
 
         Args:
-            user_id (str): The username that owns the models.
+            user_id (int): The user id that owns the models.
 
         Returns:
             list[ModelDataOut]: The user's models.
@@ -96,20 +93,19 @@ class ModelsRepository(BaseRepository):
             async with conn.cursor(row_factory=dict_row) as cur:
                 await cur.execute(
                     """
-                    SELECT m.*, u.username FROM models m
-                    JOIN users u ON u.id = m.user_id
-                    WHERE u.username = %s ORDER BY m.id
+                    SELECT m.* FROM models m
+                    WHERE m.user_id = %s ORDER BY m.id
                     """,
                     (user_id,),
                 )
                 return [self._model_from_row(row) async for row in cur]
 
-    async def fetch_model_by_id(self, model_id: str, user_id: str) -> ModelDataOut:
+    async def fetch_model_by_id(self, model_id: str, user_id: int) -> ModelDataOut:
         """Fetch one user-owned model by its string ID.
 
         Args:
             model_id (str): The string ID of the model.
-            user_id (str): The username that owns the model.
+            user_id (int): The user id that owns the model.
 
         Returns:
             ModelDataOut: The requested model.
@@ -122,9 +118,8 @@ class ModelsRepository(BaseRepository):
             async with conn.cursor(row_factory=dict_row) as cur:
                 await cur.execute(
                     """
-                    SELECT m.*, u.username FROM models m
-                    JOIN users u ON u.id = m.user_id
-                    WHERE m.id = %s AND u.username = %s
+                    SELECT m.* FROM models m
+                    WHERE m.id = %s AND m.user_id = %s
                     """,
                     (internal_id, user_id),
                 )
@@ -134,14 +129,14 @@ class ModelsRepository(BaseRepository):
                 return self._model_from_row(row)
 
     async def update_sim_id_of_model(
-        self, model_id: str, sim_id: str, user_id: str
+        self, model_id: str, sim_id: str, user_id: int
     ) -> bool:
         """Associate a simulation with a user-owned model.
 
         Args:
             model_id (str): The string ID of the model.
             sim_id (str): The string ID of the simulation.
-            user_id (str): The username that owns the model.
+            user_id (int): The user id that owns the model.
 
         Returns:
             bool: Whether the model was updated.
@@ -154,18 +149,17 @@ class ModelsRepository(BaseRepository):
             async with conn.cursor() as cur:
                 await cur.execute(
                     """UPDATE models SET sim_id = %s
-                    WHERE id = %s AND user_id = (
-                        SELECT id FROM users WHERE username = %s)""",
+                    WHERE id = %s AND user_id = %s""",
                     (sim_pk, model_pk, user_id),
                 )
                 return cur.rowcount > 0
 
-    async def delete_model(self, model_id: str, user_id: str) -> bool:
+    async def delete_model(self, model_id: str, user_id: int) -> bool:
         """Delete a user-owned model and its dependent records.
 
         Args:
             model_id (str): The string ID of the model.
-            user_id (str): The username that owns the model.
+            user_id (int): The user id that owns the model.
 
         Returns:
             bool: Whether the model was deleted.
@@ -177,8 +171,7 @@ class ModelsRepository(BaseRepository):
         async with pool.connection() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(
-                    """DELETE FROM models WHERE id = %s AND user_id = (
-                        SELECT id FROM users WHERE username = %s)""",
+                    """DELETE FROM models WHERE id = %s AND user_id = %s""",
                     (internal_id, user_id),
                 )
                 return cur.rowcount > 0

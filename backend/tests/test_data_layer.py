@@ -38,7 +38,6 @@ async def test_database_round_trips_and_cascades(database: DatabaseClient) -> No
     """Verify typed round trips, idempotent upserts, and cascade deletion."""
     model_id = await database.insert_model(
         {
-            "user_id": "mvp-user",
             "model_name": "pytest",
             "location": "Berlin",
             "roof_incl": 30,
@@ -47,10 +46,11 @@ async def test_database_round_trips_and_cascades(database: DatabaseClient) -> No
             "peak_power": 5.0,
             "battery_cap": 5.0,
             "coordinates": {"lat": "52.5", "lon": "13.4", "display_name": "Berlin"},
-        }
+        },
+        1,
     )
     try:
-        model = await database.fetch_model_by_id(model_id, "mvp-user")
+        model = await database.fetch_model_by_id(model_id, 1)
         assert model.model_id == model_id
         assert model.coordinates is not None
 
@@ -74,8 +74,8 @@ async def test_database_round_trips_and_cascades(database: DatabaseClient) -> No
                 ),
             ),
         )
-        simulation_id = await database.upsert_simulation(simulation, "mvp-user")
-        assert simulation_id == await database.upsert_simulation(simulation, "mvp-user")
+        simulation_id = await database.upsert_simulation(simulation, 1)
+        assert simulation_id == await database.upsert_simulation(simulation, 1)
 
         evaluation = SimResultsEval(
             model_id=model_id,
@@ -90,11 +90,9 @@ async def test_database_round_trips_and_cascades(database: DatabaseClient) -> No
             ),
             pv_monthly_gen=[PVMonthlyGen(month="Jan", pv_generation=2)],
         )
-        evaluation_id = await database.upsert_sim_results_eval(evaluation, "mvp-user")
-        assert await database.fetch_sim_results_eval(model_id, "mvp-user") == evaluation
-        assert evaluation_id == await database.upsert_sim_results_eval(
-            evaluation, "mvp-user"
-        )
+        evaluation_id = await database.upsert_sim_results_eval(evaluation, 1)
+        assert await database.fetch_sim_results_eval(model_id, 1) == evaluation
+        assert evaluation_id == await database.upsert_sim_results_eval(evaluation, 1)
 
         finances = FinFormData(
             model_id=model_id,
@@ -110,9 +108,9 @@ async def test_database_round_trips_and_cascades(database: DatabaseClient) -> No
             pay_off_rate=10,
             interest_rate=11,
         )
-        finance_id = await database.upsert_finances(finances, "mvp-user")
-        assert await database.fetch_finances(model_id, "mvp-user") == finances
-        assert finance_id == await database.upsert_finances(finances, "mvp-user")
+        finance_id = await database.upsert_finances(finances, 1)
+        assert await database.fetch_finances(model_id, 1) == finances
+        assert finance_id == await database.upsert_finances(finances, 1)
 
         results = FinResults(
             model_id=model_id,
@@ -130,16 +128,16 @@ async def test_database_round_trips_and_cascades(database: DatabaseClient) -> No
             ),
             yearly_data=[FinYearlyData(year=0, cum_profit=1, cum_cash_flow=2, loan=3)],
         )
-        result_id = await database.upsert_fin_results(results, "mvp-user")
-        assert await database.fetch_fin_results(model_id, "mvp-user") == results
-        assert result_id == await database.upsert_fin_results(results, "mvp-user")
+        result_id = await database.upsert_fin_results(results, 1)
+        assert await database.fetch_fin_results(model_id, 1) == results
+        assert result_id == await database.upsert_fin_results(results, 1)
 
-        assert await database.delete_model(model_id, "mvp-user")
-        assert await database.fetch_sim_results_eval(model_id, "mvp-user") is None
-        assert await database.fetch_finances(model_id, "mvp-user") is None
-        assert await database.fetch_fin_results(model_id, "mvp-user") is None
+        assert await database.delete_model(model_id, 1)
+        assert await database.fetch_sim_results_eval(model_id, 1) is None
+        assert await database.fetch_finances(model_id, 1) is None
+        assert await database.fetch_fin_results(model_id, 1) is None
     finally:
-        await database.delete_model(model_id, "mvp-user")
+        await database.delete_model(model_id, 1)
 
 
 @pytest.mark.asyncio(loop_scope="module")
@@ -147,7 +145,7 @@ async def test_database_rejects_unknown_or_malformed_model(
     database: DatabaseClient,
 ) -> None:
     """Verify unknown users and malformed model IDs are handled safely."""
-    assert not await database.check_user_exists("unknown-user")
-    assert not await database.delete_model("not-an-integer", "mvp-user")
+    assert not await database.check_user_exists(999)
+    assert not await database.delete_model("not-an-integer", 1)
     with pytest.raises(RuntimeError):
-        await database.fetch_model_by_id("not-an-integer", "mvp-user")
+        await database.fetch_model_by_id("not-an-integer", 1)

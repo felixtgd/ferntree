@@ -7,7 +7,7 @@ class TimestepReader(Protocol):
     async def fetch_timesteps(
         self,
         model_id: str,
-        user_id: str,
+        user_id: int,
         start: Optional[float] = None,
         end: Optional[float] = None,
         limit: Optional[int] = None,

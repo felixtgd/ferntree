@@ -33,7 +33,7 @@ router: APIRouter = APIRouter(
 
 @router.get("/run-sim", response_model=dict[str, bool])
 async def run_simulation(
-    user_id: str,
+    user_id: int,
     model_id: str,
     db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
@@ -97,7 +97,7 @@ async def run_simulation(
 
 @router.get("/fetch-sim-results", response_model=SimResultsEval)
 async def fetch_sim_results(
-    user_id: str,
+    user_id: int,
     model_id: str,
     db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
@@ -141,7 +141,7 @@ async def fetch_sim_results(
 
 @router.post("/fetch-sim-timeseries", response_model=list[SimTimestepOut])
 async def fetch_sim_timeseries(
-    user_id: str,
+    user_id: int,
     model_id: str,
     request_body: StartEndTimes,
     db_client: DatabaseClient = Depends(get_db_client),

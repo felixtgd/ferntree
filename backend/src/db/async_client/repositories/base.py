@@ -39,13 +39,13 @@ class BaseRepository:
         """
         return datetime.fromisoformat(value) if value else None
 
-    async def _assert_model_owner(self, conn: Any, model_id: int, user_id: str) -> None:
+    async def _assert_model_owner(self, conn: Any, model_id: int, user_id: int) -> None:
         """Raise an error unless the user owns the model.
 
         Args:
             conn (Any): The active database connection.
             model_id (int): The internal model ID.
-            user_id (str): The username claiming ownership of the model.
+            user_id (int): The user id claiming ownership of the model.
 
         Raises:
             RuntimeError: If the model does not belong to the user.
@@ -53,26 +53,26 @@ class BaseRepository:
         """
         async with conn.cursor() as cur:
             await cur.execute(
-                """SELECT 1 FROM models m JOIN users u ON u.id = m.user_id
-                WHERE m.id = %s AND u.username = %s""",
+                """SELECT 1 FROM models
+                WHERE id = %s AND user_id = %s""",
                 (model_id, user_id),
             )
             if await cur.fetchone() is None:
                 raise RuntimeError(f"Model {model_id} not found")
 
-    async def check_user_exists(self, user_id: str) -> bool:
-        """Check whether a username exists in the database.
+    async def check_user_exists(self, user_id: int) -> bool:
+        """Check whether a user id exists in the database.
 
         Args:
-            user_id (str): The username to check.
+            user_id (int): The user id to check.
 
         Returns:
-            bool: Whether the username exists.
+            bool: Whether the user id exists.
 
         """
         async with pool.connection() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT 1 FROM users WHERE username = %s", (user_id,))
+                await cur.execute("SELECT 1 FROM users WHERE id = %s", (user_id,))
                 return await cur.fetchone() is not None
 
     async def clean_collection(self, collection: str) -> None:

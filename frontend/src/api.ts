@@ -1,5 +1,5 @@
 // API fetch wrappers — all calls go directly to FastAPI from the browser.
-// user_id is always passed as a query parameter; never in the request body.
+// The integer user_id is always passed as a query parameter; never in the body.
 
 import { BACKEND_BASE_URI, USER_ID } from './config';
 import type {

@@ -21,7 +21,7 @@ logger: logging.Logger = logging.getLogger("ferntree")
 async def calc_fin_results(
     db: FinanceDataReader,
     fin_data: FinFormData,
-    user_id: str,
+    user_id: int,
 ) -> FinResults:
     """Calculate financial results based on simulation results and financial input data.
 
@@ -31,7 +31,7 @@ async def calc_fin_results(
     Args:
         db (FinanceDataReader): The persistence reader.
         fin_data (FinFormData): The financial input data.
-        user_id (str): The username requesting the calculation.
+        user_id (int): The user id requesting the calculation.
 
     Returns:
         FinResults: The calculated financial results.

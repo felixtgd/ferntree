@@ -8,7 +8,7 @@ from src.domains.energy.ports import TimestepReader
 
 
 async def eval_sim_results(
-    db: TimestepReader, model_id: str, user_id: str
+    db: TimestepReader, model_id: str, user_id: int
 ) -> SimResultsEval:
     """Evaluate simulation results for a given model.
 
@@ -18,7 +18,7 @@ async def eval_sim_results(
     Args:
         db (TimestepReader): The persistence reader.
         model_id (str): The ID of the model to evaluate.
-        user_id (str): The username requesting the evaluation.
+        user_id (int): The user id requesting the evaluation.
 
     Returns:
         SimResultsEval: The evaluated simulation results.

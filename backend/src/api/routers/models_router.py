@@ -1,7 +1,6 @@
 """Expose HTTP endpoints for model data."""
 
 from logging import Logger
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -24,7 +23,7 @@ router: APIRouter = APIRouter(
 
 @router.post("/submit-model", response_model=str)
 async def submit_model(
-    user_id: str,
+    user_id: int,
     model_data: ModelDataIn,
     db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
@@ -50,12 +49,7 @@ async def submit_model(
     )
 
     # Insert model data into database
-    model_id: Optional[str] = await db_client.insert_model(model_data.model_dump())
-    if model_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Error inserting model data into database.",
-        )
+    model_id: str = await db_client.insert_model(model_data.model_dump(), user_id)
 
     logger.info(f"POST:\t{PREFIX}/submit-model --> Return Model ID: {model_id}")
 
@@ -64,7 +58,7 @@ async def submit_model(
 
 @router.get("/fetch-models", response_model=list[ModelDataOut])
 async def fetch_models(
-    user_id: str,
+    user_id: int,
     db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
 ) -> list[ModelDataOut]:
@@ -91,7 +85,7 @@ async def fetch_models(
 
 @router.delete("/delete-model", response_model=str)
 async def delete_model(
-    user_id: str,
+    user_id: int,
     model_id: str,
     db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),

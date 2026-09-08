@@ -41,7 +41,7 @@ def get_db_client(request: Request) -> DatabaseClient:
 
 
 async def check_user_exists(
-    user_id: str, db_client: DatabaseClient = Depends(get_db_client)
+    user_id: int, db_client: DatabaseClient = Depends(get_db_client)
 ):
     """Dependency to check if a user exists in the database.
 

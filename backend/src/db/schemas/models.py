@@ -22,7 +22,7 @@ class ModelDataIn(BaseModel):
     """Represents input data for creating a new model.
 
     Attributes:
-        user_id (str): The ID of the user creating the model.
+        user_id (Optional[int]): The ID of the user creating the model.
         model_name (str): The name of the model.
         location (str): The location for the model.
         roof_incl (int): The roof inclination in degrees.
@@ -35,7 +35,7 @@ class ModelDataIn(BaseModel):
 
     """
 
-    user_id: str
+    user_id: Optional[int] = None
     model_name: str
     location: str
     roof_incl: int
@@ -61,6 +61,7 @@ class ModelDataOut(ModelDataIn):
 
     """
 
+    user_id: int
     model_id: str
     sim_id: Optional[str] = None
 

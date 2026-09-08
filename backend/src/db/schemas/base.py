@@ -7,7 +7,7 @@ class User(BaseModel):
     """Represents a user in the system.
 
     Attributes:
-        user_id (str): The unique identifier for the user.
+        user_id (int): The unique identifier for the user.
         name (str): The user's name.
         email (str): The user's email address.
         image (str): URL or path to the user's profile image.
@@ -16,7 +16,7 @@ class User(BaseModel):
 
     """
 
-    user_id: str
+    user_id: int
     name: str
     email: str
     image: str

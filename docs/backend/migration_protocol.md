@@ -149,7 +149,7 @@ Stages 4 and 5.
   finance, and financial-result methods.
 - Flattened nested coordinates and system settings on writes and reassembled
   the original Pydantic response shapes on reads.
-- Resolved the external `user_id` username to the internal `users.id` foreign
+- Uses the integer `user_id` directly as the internal `users.id` foreign
   key while returning the username in API responses.
 - Added string/integer ID conversion and not-found handling for malformed IDs.
 - Added transactional parent upserts with child-row replacement for monthly

@@ -24,7 +24,7 @@ router: APIRouter = APIRouter(
 
 @router.post("/submit-fin-form-data", response_model=str)
 async def submit_fin_form_data(
-    user_id: str,
+    user_id: int,
     fin_form_data_sub: FinFormData,
     db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
@@ -89,7 +89,7 @@ async def submit_fin_form_data(
 
 @router.get("/fetch-fin-results", response_model=FinResults)
 async def fetch_fin_results(
-    user_id: str,
+    user_id: int,
     model_id: str,
     db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
@@ -132,7 +132,7 @@ async def fetch_fin_results(
 
 @router.get("/fetch-fin-form-data", response_model=list[FinFormData])
 async def fetch_fin_form_data(
-    user_id: str,
+    user_id: int,
     db_client: DatabaseClient = Depends(get_db_client),
     logger: Logger = Depends(get_logger),
 ) -> list[FinFormData]:
