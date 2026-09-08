@@ -191,12 +191,8 @@ class SimulationRepository(BaseRepository):
                         self_consumption=EXCLUDED.self_consumption,
                         self_consumption_rate=EXCLUDED.self_consumption_rate,
                         self_sufficiency=EXCLUDED.self_sufficiency
-                        WHERE sim_results_eval.model_id IN (
-                            SELECT m.id FROM models m JOIN users u
-                            ON u.id = m.user_id
-                            WHERE m.id = EXCLUDED.model_id AND u.username = %s)
                         RETURNING id""",
-                        values + (user_id,),
+                        values,
                     )
                     eval_id = (await cur.fetchone())[0]
                     await cur.execute(

@@ -119,26 +119,7 @@ class SimBuilder:
             else:
                 logger.warning("No battery specifications found.")
 
-            # # Create heating system
-            # if self.system_settings["heating_sys"]:
-            #     heating = heating_sys.HeatingSys(self.sim)
-            #     heating.thermal_model = thermal_model.ThermalModel(
-            #         self.sim, self.system_settings["heating_sys"]["thermal_model"]
-            #     )
-            #     heating.heating_ctrl = heating_ctrl.HeatingCtrl(
-            #         self.sim, self.system_settings["heating_sys"]["thermostat"]
-            #     )
-            #     heating.heating_dev = heating_dev.HeatingDev(
-            #         self.sim, self.system_settings["heating_sys"]["heating_dev"]
-            #     )
-
-            #     house.add_component(heating, "heating")
-            #     logger.info("Heating system added to the house.")
-            # else:
-            #     logger.error(
-            #         "No heating system specifications found. Required for simulation!"
-            #     )
-            #     return
+            # TODO(heating): Re-enable the retained heating modules when supported.
 
         else:
             logger.error("No model specifications found.")

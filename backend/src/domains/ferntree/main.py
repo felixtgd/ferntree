@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     # Build and run the simulation
     start_time: float = time.time()
-    build_and_run_simulation(sim_id, model_id)
+    build_and_run_simulation(sim_id=sim_id, model_id=model_id)
     end_time: float = time.time()
 
     logger.info("")

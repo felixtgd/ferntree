@@ -75,7 +75,7 @@ async def run_simulation(
 
     # Run the simulation
     try:
-        await run_simulation_worker(model_id, sim_id)
+        await run_simulation_worker(sim_id=sim_id, model_id=model_id)
     except (RuntimeError, ValueError) as error:
         logger.error(f"Error running simulation {sim_id}: {error}")
         raise HTTPException(

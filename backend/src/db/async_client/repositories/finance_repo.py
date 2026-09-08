@@ -140,12 +140,8 @@ class FinanceRepository(BaseRepository):
                     f"INSERT INTO finances (model_id,{','.join(fields)}) "
                     f"VALUES ({','.join(['%s'] * len(values))}) "
                     f"ON CONFLICT (model_id) DO UPDATE SET {assignments} "
-                    "WHERE finances.model_id IN ("
-                    "SELECT m.id FROM models m JOIN users u "
-                    "ON u.id = m.user_id "
-                    "WHERE m.id = EXCLUDED.model_id AND u.username = %s) "
                     "RETURNING id",
-                    values + (user_id,),
+                    values,
                 )
                 return str((await cur.fetchone())[0])
 
@@ -263,12 +259,8 @@ class FinanceRepository(BaseRepository):
                         f"(model_id,{','.join(fields)}) "
                         f"VALUES ({','.join(['%s'] * len(values))}) "
                         f"ON CONFLICT (model_id) DO UPDATE SET {assignments} "
-                        "WHERE fin_results.model_id IN ("
-                        "SELECT m.id FROM models m JOIN users u "
-                        "ON u.id = m.user_id "
-                        "WHERE m.id = EXCLUDED.model_id AND u.username = %s) "
                         "RETURNING id",
-                        values + (user_id,),
+                        values,
                     )
                     result_id = (await cur.fetchone())[0]
                     await cur.execute(

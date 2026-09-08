@@ -17,7 +17,10 @@ async def test_run_simulation_runs_the_engine(monkeypatch: pytest.MonkeyPatch) -
         fake_build_and_run_simulation,
     )
 
-    assert await simulation_runner.run_simulation("model-1", "sim-1") is None
+    assert (
+        await simulation_runner.run_simulation(sim_id="sim-1", model_id="model-1")
+        is None
+    )
     assert calls == [("sim-1", "model-1")]
 
 
@@ -37,4 +40,4 @@ async def test_run_simulation_propagates_engine_errors(
     )
 
     with pytest.raises(RuntimeError, match="simulation failed"):
-        await simulation_runner.run_simulation("model-1", "sim-1")
+        await simulation_runner.run_simulation(sim_id="sim-1", model_id="model-1")
