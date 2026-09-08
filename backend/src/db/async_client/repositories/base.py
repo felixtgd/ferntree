@@ -15,7 +15,15 @@ class BaseRepository:
 
     @asynccontextmanager
     async def _cursor(self, row_factory: Any = dict_row) -> AsyncGenerator[Any, None]:
-        """Open a cursor with a pooled database connection."""
+        """Open a cursor with a pooled database connection.
+
+        Args:
+            row_factory (Any): Factory used to convert database rows.
+
+        Yields:
+            Any: An asynchronous database cursor.
+
+        """
         async with pool.connection() as conn:
             async with conn.cursor(row_factory=row_factory) as cur:
                 yield cur
@@ -24,7 +32,20 @@ class BaseRepository:
     async def _owned_transaction(
         self, model_id: int, user_id: int, row_factory: Any = None
     ) -> AsyncGenerator[Any, None]:
-        """Open a transaction after asserting ownership of a model."""
+        """Open a transaction after asserting ownership of a model.
+
+        Args:
+            model_id (int): Internal identifier of the model.
+            user_id (int): Identifier of the user who must own the model.
+            row_factory (Any): Factory used to convert database rows.
+
+        Yields:
+            Any: An asynchronous database cursor inside the transaction.
+
+        Raises:
+            RuntimeError: If the user does not own the model.
+
+        """
         async with pool.connection() as conn:
             await self._assert_model_owner(conn, model_id, user_id)
             async with conn.transaction():
@@ -32,26 +53,62 @@ class BaseRepository:
                     yield cur
 
     async def _fetch_one(self, query: str, params: Any = ()) -> Any:
-        """Execute a query and return its first row, if present."""
+        """Execute a query and return its first row, if present.
+
+        Args:
+            query (str): SQL query to execute.
+            params (Any): Parameters passed to the query.
+
+        Returns:
+            Any: The first row, or None when no row was returned.
+
+        """
         async with self._cursor() as cur:
             await cur.execute(query, params)
             return await cur.fetchone()
 
     async def _fetch_all(self, query: str, params: Any = ()) -> list[Any]:
-        """Execute a query and return all rows."""
+        """Execute a query and return all rows.
+
+        Args:
+            query (str): SQL query to execute.
+            params (Any): Parameters passed to the query.
+
+        Returns:
+            list[Any]: Rows returned by the query.
+
+        """
         async with self._cursor() as cur:
             await cur.execute(query, params)
             return [row async for row in cur]
 
     async def _fetch_val(self, query: str, params: Any = ()) -> Any:
-        """Execute a query and return the first column of its first row."""
+        """Execute a query and return the first column of its first row.
+
+        Args:
+            query (str): SQL query to execute.
+            params (Any): Parameters passed to the query.
+
+        Returns:
+            Any: The first column value, or None when no row was returned.
+
+        """
         async with self._cursor(row_factory=None) as cur:
             await cur.execute(query, params)
             row = await cur.fetchone()
             return row[0] if row is not None else None
 
     async def _execute(self, query: str, params: Any = ()) -> int:
-        """Execute a query and return its affected row count."""
+        """Execute a query and return its affected row count.
+
+        Args:
+            query (str): SQL query to execute.
+            params (Any): Parameters passed to the query.
+
+        Returns:
+            int: Number of rows affected by the query.
+
+        """
         async with self._cursor(row_factory=None) as cur:
             await cur.execute(query, params)
             return cur.rowcount

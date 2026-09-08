@@ -36,7 +36,12 @@ df_profiles = df_profiles.div(annual_consumption, axis=1)
 
 
 def plot_profiles(df_profiles: pd.DataFrame) -> None:
-    """Plot load profiles for two random days."""
+    """Plot load profiles for two random days.
+
+    Args:
+        df_profiles (pd.DataFrame): Annual load profiles to plot.
+
+    """
     # Plot load profiles for two random days
     plt.figure(figsize=(30, 5))
     plt.title("Load Profiles")
@@ -62,7 +67,12 @@ def plot_profiles(df_profiles: pd.DataFrame) -> None:
 
 
 def write_profiles_to_db(df_profiles: pd.DataFrame) -> None:
-    """Write generated annual load profiles to PostgreSQL."""
+    """Write generated annual load profiles to PostgreSQL.
+
+    Args:
+        df_profiles (pd.DataFrame): Generated annual profiles.
+
+    """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     env_path = os.path.join(script_dir, "../../../.env")
     load_dotenv(env_path)

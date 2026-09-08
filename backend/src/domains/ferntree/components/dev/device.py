@@ -8,19 +8,39 @@ class Device(Entity):  # type: ignore[misc]
     """Base class for all devices."""
 
     def __init__(self, host: SimHost) -> None:
-        """Initializes a new instance of the Device class."""
+        """Initialize a device.
+
+        Args:
+            host (SimHost): Simulation host that owns the device.
+
+        """
         super().__init__()
         self.host: SimHost = host
         self.current_state: dict[str, float]
 
     def startup(self) -> None:
-        """Startup of the device."""
+        """Start the device before the simulation begins.
+
+        Returns:
+            None: The base implementation performs no work.
+
+        """
         pass
 
     def timetick(self) -> Any:
-        """Simulates a single timestep of the device."""
+        """Advance the device by one simulation timestep.
+
+        Returns:
+            Any: The base implementation returns None.
+
+        """
         pass
 
     def shutdown(self) -> None:
-        """Shutdown of the device."""
+        """Stop the device after the simulation ends.
+
+        Returns:
+            None: The base implementation performs no work.
+
+        """
         pass

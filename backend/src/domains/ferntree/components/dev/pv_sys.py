@@ -10,7 +10,13 @@ class PVSys(Device):  # type: ignore[misc]
     """Class for photovoltaic system."""
 
     def __init__(self, host: SimHost, dev_specs: dict[str, float]) -> None:
-        """Initializes a new instance of the PVSys class."""
+        """Initialize the photovoltaic system.
+
+        Args:
+            host (SimHost): Simulation host that owns the device.
+            dev_specs (dict[str, float]): Photovoltaic system configuration.
+
+        """
         super().__init__(host)
 
         # Peak power of the PV system [kWp]

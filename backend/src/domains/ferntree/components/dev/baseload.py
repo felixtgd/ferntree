@@ -15,7 +15,14 @@ class BaseLoad(Device):  # type: ignore[misc]
     def __init__(
         self, host: SimHost, dev_specs: dict[str, Any], load_profile: list[float]
     ) -> None:
-        """Initializes a new instance of the BaseLoad class."""
+        """Initialize the baseload device.
+
+        Args:
+            host (SimHost): Simulation host that owns the device.
+            dev_specs (dict[str, Any]): Baseload configuration.
+            load_profile (list[float]): Normalized annual load profile.
+
+        """
         super().__init__(host)
 
         # Annual electricity consumption [kWh] to scale load profile

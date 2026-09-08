@@ -11,7 +11,13 @@ class HeatingDev(Device):  # type: ignore[misc]
     """
 
     def __init__(self, host: SimHost, dev_specs: dict[str, Any]) -> None:
-        """Initializes a new instance of the HeatingDev class."""
+        """Initialize the heating device.
+
+        Args:
+            host (SimHost): Simulation host that owns the device.
+            dev_specs (dict[str, Any]): Heating device configuration.
+
+        """
         super().__init__(host)
 
         self.type: str = dev_specs[
@@ -33,11 +39,13 @@ class HeatingDev(Device):  # type: ignore[misc]
         self.P_heat_th: float = self.P_heat_th_max
 
     def set_thermal_heating_power(self, ctrl_signal: float) -> float:
-        """Calculates the electrical heating power required to provide a given
-        thermal heating power.
+        """Set thermal heating power from a controller signal.
 
         Args:
             ctrl_signal (float): Control signal for the heating device.
+
+        Returns:
+            float: Thermal heating power [kW].
 
         """
         if ctrl_signal == -1.0:

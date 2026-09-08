@@ -5,7 +5,13 @@ import pandas as pd
 
 
 def ingest_datasets(data_dir: str, verbose: bool = False) -> None:
-    """Ingest datasets from bronze to silver directory."""
+    """Ingest datasets from the bronze to the silver directory.
+
+    Args:
+        data_dir (str): Path to the data directory.
+        verbose (bool): Whether to print detailed processing information.
+
+    """
     print("\nBRONZE: Ingesting datasets")
     # Directory of raw datasets (bronze)
     bronze_dir = os.path.join(data_dir, "bronze")

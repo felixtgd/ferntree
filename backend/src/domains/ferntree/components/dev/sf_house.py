@@ -14,9 +14,11 @@ class SfHouse(Device):  # type: ignore[misc]
     """
 
     def __init__(self, host: SimHost) -> None:
-        """Initializes a new instance of the SfHouse class.
-        - Adds the house to the host
-        - Initializes the baseload, heating system, PV system, and battery.
+        """Initialize a single-family house.
+
+        Args:
+            host (SimHost): Simulation host that owns the house.
+
         """
         super().__init__(host)
 
@@ -24,7 +26,16 @@ class SfHouse(Device):  # type: ignore[misc]
         self.components: dict[str, Device] = {}
 
     def add_component(self, comp: Device, name: str) -> None:
-        """Adds a components to the house."""
+        """Add a device component to the house.
+
+        Args:
+            comp (Device): Device to add.
+            name (str): Name used to identify the component.
+
+        Raises:
+            TypeError: If ``comp`` is not a device.
+
+        """
         if isinstance(comp, Device):
             self.components[name] = comp
         else:
@@ -46,6 +57,10 @@ class SfHouse(Device):  # type: ignore[misc]
         electricity demand.
         Then the PV system is simulated to determine the electricity generation.
         Finally the battery is simulated to balance supply and demand.
+
+        Returns:
+            dict[str, Any]: Measurements collected for the current timestep.
+
         """
         for comp in self.components.values():
             comp.timetick()
@@ -59,6 +74,13 @@ class SfHouse(Device):  # type: ignore[misc]
         The current state of each component is read from the smart meter and returned
         as a dictionary.
         These results are then converted to a ORM object and written to the database.
+
+        Returns:
+            dict[str, Any]: Current measurements from the smart meter.
+
+        Raises:
+            TypeError: If the house has no valid smart meter.
+
         """
         smart_meter: SmartMeter = self.components.get("smart_meter")
         if not isinstance(smart_meter, SmartMeter):

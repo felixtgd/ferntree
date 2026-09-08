@@ -17,7 +17,16 @@ class LinearRegressionModel:
         expand: bool = False,
         log: bool = False,
     ) -> None:
-        """Initializes a new instance of the LinearRegressionModel class."""
+        """Initialize a linear regression model.
+
+        Args:
+            dataset (str): CSV file containing training data.
+            features (int): Number of input features.
+            outputs (int): Number of output features.
+            expand (bool): Whether to expand training data by construction year.
+            log (bool): Whether to log the training process.
+
+        """
         self.dataset = str(dataset)  # csv file with training data
         self.features = int(features)  # input features
         self.outputs = int(outputs)  # output features
@@ -93,7 +102,15 @@ class LinearRegressionModel:
         return X_train, Y_train
 
     def get_training_data(self) -> tuple[np.ndarray, np.ndarray]:
-        """Loads the training data from a csv file."""
+        """Load training data from a CSV file.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray]: Input features and output values.
+
+        Raises:
+            ValueError: If the file is empty or has an invalid column count.
+
+        """
         data_list: list[Any] = []
         with open(self.dataset, "r") as file:
             lines = file.readlines()

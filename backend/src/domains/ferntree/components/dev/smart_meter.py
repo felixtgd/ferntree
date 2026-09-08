@@ -11,7 +11,13 @@ class SmartMeter(Device):  # type: ignore[misc]
     """Class for a house smart meter."""
 
     def __init__(self, host: SimHost, house: Device) -> None:
-        """Initializes a new instance of the SmartMeter class."""
+        """Initialize a smart meter.
+
+        Args:
+            host (SimHost): Simulation host that owns the meter.
+            house (Device): House whose component measurements are collected.
+
+        """
         super().__init__(host)
 
         # House object being monitored
@@ -92,7 +98,12 @@ class SmartMeter(Device):  # type: ignore[misc]
         }
 
     def get_net_load(self) -> float:
-        """Returns the net load of the house."""
+        """Return the house's net load.
+
+        Returns:
+            float: Baseload plus photovoltaic power for the current timestep.
+
+        """
         self.update_measurements()
         P_base: float = float(self.measurements.get("P_base") or 0.0)
         P_pv: float = float(self.measurements.get("P_pv") or 0.0)
@@ -102,6 +113,11 @@ class SmartMeter(Device):  # type: ignore[misc]
         return P_net_load
 
     def get_measurements(self) -> dict[str, Optional[Union[float, int]]]:
-        """Returns all measurements of the house."""
+        """Return all current house measurements.
+
+        Returns:
+            dict[str, Optional[Union[float, int]]]: Current measurements.
+
+        """
         self.update_measurements()
         return self.measurements

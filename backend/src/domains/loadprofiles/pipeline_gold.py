@@ -139,14 +139,17 @@ def generate_annual_load_profiles(
 def generate_daily_profile(
     mean: float, std: float, lb: float, ub: float
 ) -> list[float]:
-    """Generate daily load profile for each season-day
+    """Generate a daily load profile for a season-day model.
+
     Args:
         mean (float): Array of means for n timesteps
         std (float): Array of standard deviations for n timesteps
         lb (float): Array of lower bound values (e.g. 25th perc.) for n timesteps
         ub (float): Array of upper bound values (e.g. 75th perc.) for n timesteps
+
     Returns:
-        profile (list[float]): Load profile with n-timesteps.
+        list[float]: Load profile with n timesteps.
+
     """
     # Reduce standard deviation to make profiles smoother
     std = std / 2.0
@@ -160,7 +163,16 @@ def generate_daily_profile(
 
 
 def write_profiles_to_db(df_profiles: pd.DataFrame) -> None:
-    """Write generated annual load profiles to PostgreSQL."""
+    """Write generated annual load profiles to PostgreSQL.
+
+    Args:
+        df_profiles (pd.DataFrame): Generated annual profiles.
+
+    Raises:
+        KeyError: If the database URL is not configured.
+        psycopg.Error: If the database write fails.
+
+    """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     env_path = os.path.join(script_dir, "../../../.env")
     load_dotenv(env_path)

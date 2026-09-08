@@ -11,7 +11,13 @@ class BatteryDev(Device):  # type: ignore[misc]
     """Class for battery energy storage."""
 
     def __init__(self, host: SimHost, dev_specs: dict[str, float]) -> None:
-        """Initializes a new instance of the BatteryDev class."""
+        """Initialize the battery device.
+
+        Args:
+            host (SimHost): Simulation host that owns the device.
+            dev_specs (dict[str, float]): Battery configuration.
+
+        """
         super().__init__(host)
 
         # Capacity of the battery [kWh]

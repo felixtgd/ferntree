@@ -13,7 +13,13 @@ class HeatingCtrl(Device):  # type: ignore[misc]
     """
 
     def __init__(self, host: SimHost, ctrl_specs: dict[str, Any]) -> None:
-        """Initializes a new instance of the HeatingCtrl class."""
+        """Initialize the thermostat controller.
+
+        Args:
+            host (SimHost): Simulation host that owns the controller.
+            ctrl_specs (dict[str, Any]): Thermostat configuration.
+
+        """
         super().__init__(host)
 
         self.temp_setpoint: float = (

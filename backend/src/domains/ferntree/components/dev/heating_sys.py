@@ -22,7 +22,12 @@ class HeatingSys(Device):  # type: ignore[misc]
     """
 
     def __init__(self, host: SimHost) -> None:
-        """Initializes a new instance of the HeatingSys class."""
+        """Initialize the heating system.
+
+        Args:
+            host (SimHost): Simulation host that owns the system.
+
+        """
         super().__init__(host)
 
         # Components of heating system

@@ -49,6 +49,15 @@ class ModelsRepository(BaseRepository):
 
     @staticmethod
     def _model_from_row(row: dict[str, Any]) -> ModelDataOut:
+        """Convert a database row into a model response.
+
+        Args:
+            row (dict[str, Any]): Database row containing model fields.
+
+        Returns:
+            ModelDataOut: Model data parsed from the row.
+
+        """
         coordinates = None
         if row["coord_lat"] is not None:
             coordinates = {

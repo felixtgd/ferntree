@@ -22,7 +22,16 @@ class ThermalModel(Device):  # type: ignore[misc]
     """
 
     def __init__(self, host: SimHost, model_specs: dict[str, float]) -> None:
-        """Initializes a new instance of the ThermalModel class."""
+        """Initialize a thermal building model.
+
+        Args:
+            host (SimHost): Simulation host that owns the model.
+            model_specs (dict[str, float]): Building model configuration.
+
+        Raises:
+            ValueError: If a building parameter is outside its valid range.
+
+        """
         super().__init__(host)
 
         # 2 resistances and 3 capacitances in lumped RC-network
