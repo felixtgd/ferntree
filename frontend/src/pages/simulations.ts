@@ -286,7 +286,7 @@ function renderConsumptionDonut(simResults: SimResultsEval): void {
       datasets: [
         {
           data: [kpis.self_consumption, kpis.grid_consumption],
-          backgroundColor: [cssVar('--copper-raw'), cssVar('--border-metal')],
+          backgroundColor: [cssVar('--accent'), cssVar('--border-strong')],
           borderWidth: 1,
         },
       ],
@@ -314,7 +314,7 @@ function renderConsumptionDonut(simResults: SimResultsEval): void {
         value: kpis.self_consumption,
         share: total > 0 ? kpis.self_consumption / total : 0,
         tooltip: 'Energy drawn directly from your PV system',
-        swatchClass: 'legend-swatch--copper',
+        swatchClass: 'legend-swatch--accent',
       },
       {
         name: 'Grid',
@@ -346,7 +346,7 @@ function renderPVGenDonut(simResults: SimResultsEval): void {
       datasets: [
         {
           data: [kpis.self_consumption, kpis.grid_feed_in],
-          backgroundColor: [cssVar('--copper-raw'), cssVar('--border-metal')],
+          backgroundColor: [cssVar('--accent'), cssVar('--border-strong')],
           borderWidth: 1,
         },
       ],
@@ -374,7 +374,7 @@ function renderPVGenDonut(simResults: SimResultsEval): void {
         value: kpis.self_consumption,
         share: total > 0 ? kpis.self_consumption / total : 0,
         tooltip: 'PV energy consumed directly on-site',
-        swatchClass: 'legend-swatch--copper',
+        swatchClass: 'legend-swatch--accent',
       },
       {
         name: 'Grid feed-in',
@@ -402,7 +402,7 @@ function renderMonthlyBar(simResults: SimResultsEval): void {
         {
           label: 'PV Generation',
           data,
-          backgroundColor: cssVar('--copper-raw'),
+          backgroundColor: cssVar('--accent'),
         },
       ],
     },
@@ -441,7 +441,7 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           {
             label: 'Load',
             data: timeseries.map((t) => t.Load),
-            borderColor: cssVar('--danger-red'),
+            borderColor: cssVar('--danger'),
             backgroundColor: 'transparent',
             borderWidth: 2,
             pointRadius: 0,
@@ -450,7 +450,7 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           {
             label: 'PV',
             data: timeseries.map((t) => t.PV),
-            borderColor: cssVar('--copper-raw'),
+            borderColor: cssVar('--accent'),
             backgroundColor: 'transparent',
             borderWidth: 2,
             pointRadius: 0,
@@ -459,7 +459,7 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           {
             label: 'Battery',
             data: timeseries.map((t) => t.Battery),
-            borderColor: cssVar('--copper-oxidized'),
+            borderColor: cssVar('--success'),
             backgroundColor: 'transparent',
             borderWidth: 2,
             pointRadius: 0,
@@ -479,6 +479,10 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
       options: {
         maintainAspectRatio: false,
         animation: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         plugins: {
           legend: {
             display: true,
@@ -487,6 +491,8 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           },
           tooltip: {
             ...tooltipTheme(),
+            mode: 'index',
+            intersect: false,
           },
         },
         scales: {
@@ -517,7 +523,7 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           {
             label: 'State of Charge',
             data: timeseries.map((t) => t.StateOfCharge),
-            borderColor: cssVar('--copper-oxidized'),
+            borderColor: cssVar('--success'),
             backgroundColor: 'transparent',
             borderWidth: 2,
             pointRadius: 0,
@@ -528,10 +534,16 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
       options: {
         maintainAspectRatio: false,
         animation: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
             ...tooltipTheme(),
+            mode: 'index',
+            intersect: false,
           },
         },
         scales: {

@@ -1,5 +1,5 @@
 /**
- * Shared chart theme helpers for the Tinkerer's Grid design system.
+ * Shared chart theme helpers for the refined dark design system.
  */
 
 export function cssVar(name: string): string {
@@ -11,7 +11,7 @@ export function tooltipTheme() {
     backgroundColor: cssVar('--bg-surface'),
     titleColor: cssVar('--text-primary'),
     bodyColor: cssVar('--text-secondary'),
-    borderColor: cssVar('--border-metal'),
+    borderColor: cssVar('--border-strong'),
     borderWidth: 1,
   };
 }
@@ -19,7 +19,7 @@ export function tooltipTheme() {
 export function scaleTheme() {
   return {
     ticks: { color: cssVar('--text-secondary') },
-    grid: { color: cssVar('--border-metal') },
+    grid: { color: cssVar('--border-strong') },
   };
 }
 
@@ -30,20 +30,38 @@ export function legendLabelTheme() {
 }
 
 export const chartTokens = {
-  get copperRaw() {
-    return cssVar('--copper-raw');
+  get accent() {
+    return cssVar('--accent');
   },
-  get copperHover() {
-    return cssVar('--copper-hover');
+  get accentHover() {
+    return cssVar('--accent-hover');
   },
-  get copperOxidized() {
-    return cssVar('--copper-oxidized');
+  get success() {
+    return cssVar('--success');
   },
-  get dangerRed() {
-    return cssVar('--danger-red');
+  get danger() {
+    return cssVar('--danger');
   },
-  get borderMetal() {
-    return cssVar('--border-metal');
+  get pvCost() {
+    return cssVar('--chart-pv-cost');
+  },
+  get batteryCost() {
+    return cssVar('--chart-battery-cost');
+  },
+  get costSavings() {
+    return cssVar('--chart-cost-savings');
+  },
+  get feedIn() {
+    return cssVar('--chart-feed-in');
+  },
+  get operationCost() {
+    return cssVar('--chart-operation-cost');
+  },
+  get loan() {
+    return cssVar('--chart-loan');
+  },
+  get borderStrong() {
+    return cssVar('--border-strong');
   },
   get textSecondary() {
     return cssVar('--text-secondary');

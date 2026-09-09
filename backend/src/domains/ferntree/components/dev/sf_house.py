@@ -1,0 +1,90 @@
+import logging
+from typing import Any
+
+from src.domains.ferntree.components.dev.device import Device
+from src.domains.ferntree.components.dev.smart_meter import SmartMeter
+from src.domains.ferntree.components.host.sim_host import SimHost
+
+logger = logging.getLogger("ferntree")
+
+
+class SfHouse(Device):
+    """Class for a single-family house.
+    Each house has a baseload, a heating system, and optionally a PV system and battery.
+    """
+
+    def __init__(self, host: SimHost) -> None:
+        """Initialize a single-family house.
+
+        Args:
+            host (SimHost): Simulation host that owns the house.
+
+        """
+        super().__init__(host)
+
+        self.host.add_house(self)
+        self.components: dict[str, Device] = {}
+
+    def add_component(self, comp: Device, name: str) -> None:
+        """Add a device component to the house.
+
+        Args:
+            comp (Device): Device to add.
+            name (str): Name used to identify the component.
+
+        Raises:
+            TypeError: If ``comp`` is not a device.
+
+        """
+        if isinstance(comp, Device):
+            self.components[name] = comp
+        else:
+            raise TypeError("Can only add objects of class 'Device' to house.")
+
+    def startup(self) -> None:
+        """Startup of the house and its components."""
+        for comp in self.components.values():
+            comp.startup()
+
+    def shutdown(self) -> None:
+        """Shutdown of the house and its components."""
+        for comp in self.components.values():
+            comp.shutdown()
+
+    def timetick(self) -> dict[str, Any]:
+        """Simulates a single timestep of the house's components.
+        First the baseload and the heating system are simulated to determine the
+        electricity demand.
+        Then the PV system is simulated to determine the electricity generation.
+        Finally the battery is simulated to balance supply and demand.
+
+        Returns:
+            dict[str, Any]: Measurements collected for the current timestep.
+
+        """
+        for comp in self.components.values():
+            comp.timetick()
+
+        results: dict[str, Any] = self.get_results()
+
+        return results
+
+    def get_results(self) -> dict[str, Any]:
+        """Returns the results of the house's components for the current timestep.
+        The current state of each component is read from the smart meter and returned
+        as a dictionary.
+        These results are then converted to a ORM object and written to the database.
+
+        Returns:
+            dict[str, Any]: Current measurements from the smart meter.
+
+        Raises:
+            TypeError: If the house has no valid smart meter.
+
+        """
+        smart_meter: Device | None = self.components.get("smart_meter")
+        if not isinstance(smart_meter, SmartMeter):
+            raise TypeError("Expected 'smart_meter' to be of type 'SmartMeter'")
+        results: dict[str, Any] = smart_meter.get_measurements()
+
+        return results

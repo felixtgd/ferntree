@@ -15,7 +15,9 @@
 				"github.copilot",
 				"github.copilot-chat",
 				"charliermarsh.ruff",
-                "vscodevim.vim"
+                "vscodevim.vim",
+				"astral-sh.ty",
+				"opentofu.vscode-opentofu"
 			]
 		}
 	},

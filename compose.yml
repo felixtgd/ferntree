@@ -5,11 +5,9 @@ services:
       context: ./
       target: frontend-dev
     ports:
-      - 3000:3000
+      - 5173:5173
     env_file:
       - ./frontend/.env
-    environment:
-      - MONGO_URI=mongodb://mongodb:27017/ferntree_db
     develop:
       watch:
         - path: ./frontend
@@ -29,26 +27,39 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      - MONGO_URI=mongodb://mongodb:27017/ferntree_db
+      - DATABASE_URL=postgresql://ferntree:ferntree@postgres:5432/ferntree_db
     develop:
       watch:
-      - path: ./backend
-        action: sync
-        target: /usr/local/app
-      - path: ./backend/requirements.txt
-        action: rebuild
+        - path: ./backend
+          action: sync
+          target: /usr/src/app
+        - path: ./backend/pyproject.toml
+          action: rebuild
+        - path: ./backend/uv.lock
+          action: rebuild
     depends_on:
-      - mongodb
+      postgres:
+        condition: service_healthy
 
-  mongodb:
-    image: mongodb/mongodb-community-server
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=ferntree
+      - POSTGRES_PASSWORD=ferntree
+      - POSTGRES_DB=ferntree_db
     ports:
-      - 27017:27017
+      - 5432:5432
     volumes:
-      - mongodb_data:/data/db
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ferntree -d ferntree_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  mongodb_data:
+  postgres_data:
 
 networks:
   default:

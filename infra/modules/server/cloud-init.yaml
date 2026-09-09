@@ -1,0 +1,82 @@
+#cloud-config
+
+# https://community.hetzner.com/tutorials/basic-cloud-config
+# https://community.hetzner.com/tutorials/securing-ssh
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - git
+  - gh
+  - docker.io
+  - docker-compose
+  - fail2ban
+  - ufw
+  - apparmor
+  - apparmor-utils
+
+users:
+  - name: admin
+    primary_group: admin
+    groups:
+      - users
+      - sudo
+      - docker
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+
+disable_root: true
+
+# Fail2Ban configuration for SSH
+write_files:
+  - path: /etc/fail2ban/jail.local
+    content: |
+      [sshd]
+      enabled = true
+      port = 2222
+      banaction = iptables-multiport
+      bantime = 600
+      findtime = 300
+      maxretry = 3
+    owner: root:root
+    permissions: '0644'
+
+runcmd:
+  # Update SSH configuration
+  - sed -i -e '/^\(#\|\)Port/s/^.*$/Port 2222/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)KbdInteractiveAuthentication/s/^.*$/KbdInteractiveAuthentication no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)ChallengeResponseAuthentication/s/^.*$/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)MaxAuthTries/s/^.*$/MaxAuthTries 2/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)AllowTcpForwarding/s/^.*$/AllowTcpForwarding yes/' /etc/ssh/sshd_config # necessary for VSCode Remote SSH
+  - sed -i -e '/^\(#\|\)X11Forwarding/s/^.*$/X11Forwarding no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)AllowAgentForwarding/s/^.*$/AllowAgentForwarding no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)AuthorizedKeysFile/s/^.*$/AuthorizedKeysFile .ssh\/authorized_keys/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)GSSAPIAuthentication/s/^.*$/GSSAPIAuthentication no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)ClientAliveInterval/s/^.*$/ClientAliveInterval 300/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)#ClientAliveCountMax/s/^.*$/#ClientAliveCountMax 3/' /etc/ssh/sshd_config
+  - sed -i '$a AllowUsers admin' /etc/ssh/sshd_config
+
+  # UFW config (Uncomplicated Firewall)
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 2222/tcp # allow SSH on custom port
+  - ufw allow 80/tcp # allow HTTP
+  - ufw allow 443/tcp # allow HTTPS
+  - ufw enable
+
+  # Enable and start services
+  - systemctl enable --now docker
+  - systemctl enable --now fail2ban
+
+  # Restart SSH service to apply changes
+  - systemctl restart sshd
+
+  # Set git config
+  # TODO: investigate why this is not working, breaks the cloud init
+  # - git config --global user.name "${github_user}"
+  # - git config --global user.email "${github_email}"

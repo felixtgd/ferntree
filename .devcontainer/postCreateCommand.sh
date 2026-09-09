@@ -4,6 +4,6 @@ set -euo pipefail
 # git pull for automatic intraday updates
 git pull origin $(git branch --show-current)
 
-# Pre-commit hooks
-pip install pre-commit
+# Install dependencies and update packages
+cd backend && uv sync
 pre-commit install
