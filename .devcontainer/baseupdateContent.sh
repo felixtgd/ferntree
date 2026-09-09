@@ -19,4 +19,10 @@ function postConfig(){
 
     # install uv
     curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # install OpenTofu
+    curl -fsSL https://get.opentofu.org/install-opentofu.sh -o install-opentofu.sh
+    chmod +x install-opentofu.sh
+    ./install-opentofu.sh --install-method standalone
+    rm install-opentofu.sh
 }

@@ -104,3 +104,9 @@ cover/
 
 # vercel
 .vercel
+
+# terraform
+*.tfstate
+**/.terraform/
+.terraform.lock.hcl
+mc
