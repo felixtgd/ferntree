@@ -15,14 +15,14 @@ locals {
         {
           direction  = "in"
           protocol   = "tcp"
-          port       = "80"          # HTTP
-          source_ips = ["0.0.0.0/0"] # local.allowed_ips
+          port       = "80" # HTTP
+          source_ips = ["0.0.0.0/0", "::/0"]
         },
         {
           direction  = "in"
           protocol   = "tcp"
           port       = "443" # HTTPS
-          source_ips = local.allowed_ips
+          source_ips = ["0.0.0.0/0", "::/0"]
         },
         {
           direction  = "in"
