@@ -1,33 +1,50 @@
-- # Ferntree
-- Open-source web application for designing, simulating, and analysing residential solar energy systems.
-- **Features**
-  - Solar and battery system modelling
-  - Timeseries energy simulations
-  - Financial and investment analysis
-  - Solar irradiance and geolocation data through PVGIS and related APIs
-- **Tech stack**
-  - Frontend: TypeScript SPA built with Vite
-  - Backend: FastAPI on Python 3.12+, managed with uv
-  - Database: PostgreSQL
-  - Simulation engine: `backend/src/domains/ferntree/`
-  - Development and production: Docker Compose and Caddy
-- **Repository layout**
-  - `frontend/`: Vite frontend application
-  - `backend/`: FastAPI API, database access, domain logic, and simulation workers
-  - `infra/`: Terraform configuration for Hetzner Cloud and S3-compatible object storage
-  - `docs/`: Architecture, deployment, and component documentation
-- **Run locally**
-  - Prerequisite: Docker with Docker Compose
-  - Start the development stack: `docker compose up --watch`
-  - Frontend: `http://localhost:5173`
-  - Backend API: `http://localhost:8000`
-- **Configuration**
-  - Backend environment: `backend/.env`
-  - Frontend environment: `frontend/.env`
-  - Set `DATABASE_URL` for the backend and `VITE_BACKEND_BASE_URI` for the frontend as needed.
-- **Deployment**
-  - Production services are defined in `compose.prod.yml`; infrastructure details are in `infra/` and [`docs/deployment/`](./docs/deployment/).
-- **Contributing**
-  - Contributions are welcome through issues and pull requests.
-- **License**
-  - MIT; see [`LICENSE`](./LICENSE).
+# Ferntree
+
+Open-source web application for designing, simulating, and analysing residential solar energy systems.
+
+## Features
+
+- Solar and battery system modelling
+- Timeseries energy simulations
+- Financial and investment analysis
+- Solar irradiance and geolocation data through PVGIS and related APIs
+
+## Tech stack
+
+- Frontend: TypeScript SPA built with Vite
+- Backend: FastAPI on Python 3.12+, managed with uv
+- Database: PostgreSQL
+- Simulation engine: `backend/src/domains/ferntree/`
+- Development and production: Docker Compose and Caddy
+
+## Repository layout
+
+- `frontend/`: Vite frontend application
+- `backend/`: FastAPI API, database access, domain logic, and simulation workers
+- `infra/`: Terraform configuration for Hetzner Cloud and S3-compatible object storage
+- `docs/`: Architecture, deployment, and component documentation
+
+## Run locally
+
+- Prerequisite: Docker with Docker Compose
+- Start the development stack: `docker compose up --watch`
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8000`
+
+## Configuration
+
+- Backend environment: `backend/.env`
+- Frontend environment: `frontend/.env`
+- Set `DATABASE_URL` for the backend and `VITE_BACKEND_BASE_URI` for the frontend as needed.
+
+## Deployment
+
+- Production services are defined in `compose.prod.yml`; infrastructure details are in `infra/` and [`docs/deployment/`](./docs/deployment/).
+
+## Contributing
+
+Contributions are welcome through issues and pull requests.
+
+## License
+
+MIT; see [`LICENSE`](./LICENSE).
