@@ -1,7 +1,7 @@
 ferntree.dev {
 	encode zstd gzip
 
-	handle /api/* {
+	handle_path /api/* {
 		reverse_proxy backend:8000
 	}
 
