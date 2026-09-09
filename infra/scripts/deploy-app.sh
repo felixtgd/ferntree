@@ -98,10 +98,13 @@ if [[ ! -f .env ]]; then
 fi
 
 if docker compose version >/dev/null 2>&1; then
-    docker compose -f compose.prod.yml up -d --build
+    COMPOSE=(docker compose)
 else
-    docker-compose -f compose.prod.yml up -d --build
+    COMPOSE=(docker-compose)
 fi
+
+"${COMPOSE[@]}" -f compose.prod.yml build --no-cache
+"${COMPOSE[@]}" -f compose.prod.yml up -d --force-recreate --remove-orphans
 REMOTE_SCRIPT
 
 printf 'Application deployment completed.\n'
