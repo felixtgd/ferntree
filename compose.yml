@@ -30,11 +30,13 @@ services:
       - DATABASE_URL=postgresql://ferntree:ferntree@postgres:5432/ferntree_db
     develop:
       watch:
-      - path: ./backend
-        action: sync
-        target: /usr/local/app
-      - path: ./backend/requirements.txt
-        action: rebuild
+        - path: ./backend
+          action: sync
+          target: /usr/src/app
+        - path: ./backend/pyproject.toml
+          action: rebuild
+        - path: ./backend/uv.lock
+          action: rebuild
     depends_on:
       postgres:
         condition: service_healthy

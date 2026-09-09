@@ -6,19 +6,24 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "aiohttp==3.14.3",
-    "datetime==5.5.0",
+    "aiohttp>=3.14.3",
     "fastapi>=0.141.1",
     "numpy>=2.5.3",
     "pandas>=3.0.5",
-    "pre-commit==3.7.0",
-    "psycopg-pool==3.3.1",
-    "psycopg[binary]==3.3.5",
+    "psycopg[binary]>=3.3.5",
+    "psycopg-pool>=3.3.1",
     "pydantic>=2.13.5",
-    "pytest==8.4.2",
-    "pytest-asyncio==1.2.0",
-    "python-dotenv==1.2.2",
-    "uvicorn==0.29.0",
+    "python-dotenv>=1.2.3",
+    "pytz>=2026.1",
+    "uvicorn>=0.52.4",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.6",
 ]
 
 [tool.uv]

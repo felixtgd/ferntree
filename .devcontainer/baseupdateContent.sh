@@ -2,8 +2,6 @@ function preConfig() {
     sudo apt -y update
     sudo apt -y upgrade
     sudo apt-get install fzf eza tmux -y
-    pip install --upgrade pip
-    pip install -r backend/requirements.txt --user
 }
 
 
@@ -19,4 +17,6 @@ function postConfig(){
     # install opencode
     curl -fsSL https://opencode.ai/install | bash
 
+    # install uv
+    curl -LsSf https://astral.sh/uv/install.sh | sh
 }

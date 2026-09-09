@@ -16,15 +16,14 @@ CMD ["npm", "run", "start"]
 # Backend image to run FastAPI app with simulation tool
 FROM python:3.12-slim AS backend-base
 WORKDIR /usr/src/app
-COPY ./backend/requirements.txt ./
-# this is only necessary because of cvxpy, try to remove it in future
-# RUN apt-get update && apt-get install -y --no-install-recommends build-essential rustc cargo && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir -r requirements.txt
 COPY ./backend ./
+RUN pip install uv
 EXPOSE 8000
 
 FROM backend-base AS backend-dev
-CMD [ "uvicorn", "src.api.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+RUN uv sync --frozen
+CMD [ "uv", "run", "uvicorn", "src.api.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
 
 FROM backend-base AS backend-prod
-CMD [ "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+RUN uv sync --frozen --no-dev
+CMD [ "uv", "run", "uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
