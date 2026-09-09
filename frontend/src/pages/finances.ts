@@ -437,7 +437,7 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
         {
           label: 'Cum. Profit',
           data: yearlyData.map((d) => d.cum_profit),
-          borderColor: cssVar('--copper-oxidized'),
+          borderColor: cssVar('--success'),
           backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 0,
@@ -446,7 +446,7 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
         {
           label: 'Investment',
           data: yearlyData.map(() => -investmentTotal),
-          borderColor: cssVar('--danger-red'),
+          borderColor: cssVar('--danger'),
           backgroundColor: 'transparent',
           borderWidth: 2,
 
@@ -456,7 +456,7 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
         {
           label: 'Cum. Cash Flow',
           data: yearlyData.map((d) => d.cum_cash_flow),
-          borderColor: cssVar('--copper-raw'),
+          borderColor: cssVar('--accent'),
           backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 0,

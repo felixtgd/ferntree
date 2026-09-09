@@ -33,8 +33,9 @@ app.innerHTML = `
   <nav id="topnav">
     <a href="/" class="topnav-logo" data-link data-nav="home">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-           fill="currentColor" aria-hidden="true">
-        <path d="M11 2.05V13h-1a8 8 0 1 0 8 8h-7.95c-.55 0-1.05-.5-1.05-1.05V2.05zM13 2.05V11h8.95c.55 0 1.05.5 1.05 1.05C23 17.08 18.08 22 12 22A10 10 0 0 1 13 2.05z"/>
+           fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 20c0-8 5-14 16-16C18 12 12 18 4 20z"/>
+        <path d="M4 20C8 14 12 11 17 10"/>
       </svg>
       <span>Ferntree</span>
     </a>
@@ -45,8 +46,9 @@ app.innerHTML = `
     <nav id="sidenav">
       <a href="/workspace" class="nav-logo" data-link data-href="/workspace">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-             fill="currentColor" style="flex-shrink:0">
-          <path d="M11 2.05V13h-1a8 8 0 1 0 8 8h-7.95c-.55 0-1.05-.5-1.05-1.05V2.05zM13 2.05V11h8.95c.55 0 1.05.5 1.05 1.05C23 17.08 18.08 22 12 22A10 10 0 0 1 13 2.05z"/>
+              fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0" aria-hidden="true">
+          <path d="M4 20c0-8 5-14 16-16C18 12 12 18 4 20z"/>
+          <path d="M4 20C8 14 12 11 17 10"/>
         </svg>
         <span class="nav-label">Ferntree</span>
       </a>
@@ -61,8 +63,9 @@ app.innerHTML = `
 
       <a href="/workspace/simulations" class="nav-link" data-link data-href="/workspace/simulations">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-             fill="currentColor" style="flex-shrink:0">
-          <path d="M13 2.05v2.02c3.95.49 7 3.85 7 7.93 0 3.21-1.81 6-4.5 7.54L13 17v5h5l-1.22-1.22C19.91 19.07 22 15.76 22 12c0-5.18-3.95-9.45-9-9.95zM11 2.05C5.95 2.55 2 6.82 2 12c0 3.76 2.09 7.07 5.22 8.78L6 22h5v-5l-2.5 2.47C6.81 18 5 15.21 5 12c0-4.08 3.05-7.44 7-7.93V2.05z"/>
+              fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" style="flex-shrink:0" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4"/>
         </svg>
         <span class="nav-label">Simulations</span>
       </a>
