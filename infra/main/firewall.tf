@@ -1,6 +1,6 @@
 locals {
   allowed_ips = [
-    "31.10.137.169", # Felix
+    "31.10.150.5", # Felix
   ]
 
   firewalls = {
