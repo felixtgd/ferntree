@@ -42,6 +42,24 @@ export const chartTokens = {
   get dangerRed() {
     return cssVar('--danger-red');
   },
+  get pvCost() {
+    return cssVar('--chart-pv-cost');
+  },
+  get batteryCost() {
+    return cssVar('--chart-battery-cost');
+  },
+  get costSavings() {
+    return cssVar('--chart-cost-savings');
+  },
+  get feedIn() {
+    return cssVar('--chart-feed-in');
+  },
+  get operationCost() {
+    return cssVar('--chart-operation-cost');
+  },
+  get loan() {
+    return cssVar('--chart-loan');
+  },
   get borderMetal() {
     return cssVar('--border-metal');
   },

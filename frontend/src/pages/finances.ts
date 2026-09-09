@@ -18,7 +18,7 @@ import { z } from 'zod';
 import { fetchModels, fetchFinFormData, submitFinFormData, fetchFinResults } from '../api';
 import { navigate } from '../router';
 import { showLoadingOverlay, hideLoadingOverlay } from '../overlay';
-import { cssVar, tooltipTheme, scaleTheme, legendLabelTheme } from '../chart-theme';
+import { chartTokens, cssVar, tooltipTheme, scaleTheme, legendLabelTheme } from '../chart-theme';
 import type { ModelData, FinData, FinKPIs, FinResults, FinYearlyData } from '../types';
 
 Chart.register(
@@ -368,31 +368,31 @@ function renderLifetimeChart(kpis: FinKPIs): void {
         {
           label: 'PV cost',
           data: [kpis.investment.pv, 0],
-          backgroundColor: cssVar('--danger-red'),
+          backgroundColor: chartTokens.pvCost,
           stack: 'investment',
         },
         {
           label: 'Battery cost',
           data: [kpis.investment.battery, 0],
-          backgroundColor: cssVar('--danger-red'),
+          backgroundColor: chartTokens.batteryCost,
           stack: 'investment',
         },
         {
           label: 'Cost savings',
           data: [0, kpis.cum_cost_savings],
-          backgroundColor: cssVar('--copper-oxidized'),
+          backgroundColor: chartTokens.costSavings,
           stack: 'revenue',
         },
         {
           label: 'Feed-in revenue',
           data: [0, kpis.cum_feed_in_revenue],
-          backgroundColor: cssVar('--copper-oxidized'),
+          backgroundColor: chartTokens.feedIn,
           stack: 'revenue',
         },
         {
           label: 'Operation costs',
           data: [0, -kpis.cum_operation_costs],
-          backgroundColor: cssVar('--copper-oxidized'),
+          backgroundColor: chartTokens.operationCost,
           stack: 'revenue',
         },
       ],
@@ -465,7 +465,7 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
         {
           label: 'Loan',
           data: yearlyData.map((d) => d.loan),
-          borderColor: cssVar('--copper-hover'),
+          borderColor: chartTokens.loan,
           backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 0,
@@ -476,6 +476,10 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
     options: {
       maintainAspectRatio: false,
       animation: false,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
       plugins: {
         legend: {
           display: true,
@@ -484,6 +488,8 @@ function renderPerformanceChart(yearlyData: FinYearlyData[], investmentTotal: nu
         },
         tooltip: {
           ...tooltipTheme(),
+          mode: 'index',
+          intersect: false,
         },
       },
       scales: {

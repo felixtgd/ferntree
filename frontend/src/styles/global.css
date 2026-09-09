@@ -12,6 +12,12 @@
   --copper-hover: #e88b4f;
   --copper-oxidized: #5e9c88;
   --danger-red: #d25c5c;
+  --chart-pv-cost: #d25c5c;
+  --chart-battery-cost: #bb6b84;
+  --chart-cost-savings: #5e9c88;
+  --chart-feed-in: #4f91b5;
+  --chart-operation-cost: #b38a48;
+  --chart-loan: #8b78b8;
   --overlay-backdrop: rgb(0 0 0 / 0.4);
 
   --spacing-1: 0.25rem;
@@ -246,7 +252,7 @@ input, select, textarea {
   height: 64px;
   border: 6px solid var(--border-metal);
   border-top-color: var(--copper-raw);
-  border-radius: 0;
+  border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
@@ -925,7 +931,7 @@ dialog::backdrop {
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  cursor: help;
+  cursor: default;
 }
 
 .legend-info:hover {

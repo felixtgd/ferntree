@@ -479,6 +479,10 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
       options: {
         maintainAspectRatio: false,
         animation: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         plugins: {
           legend: {
             display: true,
@@ -487,6 +491,8 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
           },
           tooltip: {
             ...tooltipTheme(),
+            mode: 'index',
+            intersect: false,
           },
         },
         scales: {
@@ -528,10 +534,16 @@ function renderTimeseriesCharts(timeseries: SimTimestep[]): void {
       options: {
         maintainAspectRatio: false,
         animation: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
             ...tooltipTheme(),
+            mode: 'index',
+            intersect: false,
           },
         },
         scales: {
