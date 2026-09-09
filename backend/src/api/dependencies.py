@@ -37,12 +37,14 @@ def get_db_client(request: Request) -> DatabaseClient:
         DatabaseClient: The application database client instance.
 
     """
-    return request.app.state.db_client
+    db_client = request.app.state.db_client
+    assert isinstance(db_client, DatabaseClient)
+    return db_client
 
 
 async def check_user_exists(
     user_id: int, db_client: DatabaseClient = Depends(get_db_client)
-):
+) -> bool:
     """Dependency to check if a user exists in the database.
 
     Args:

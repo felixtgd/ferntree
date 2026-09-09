@@ -4,6 +4,7 @@ from typing import Any, Optional
 
 from src.db.async_client.repositories.base import BaseRepository
 from src.db.schemas import (
+    EnergyKPIs,
     SimDataIn,
     SimResultsEval,
 )
@@ -121,18 +122,20 @@ class SimulationRepository(BaseRepository):
         )
         return SimResultsEval(
             model_id=model_id,
-            energy_kpis={
-                key: row[key]
-                for key in (
-                    "annual_consumption",
-                    "pv_generation",
-                    "grid_consumption",
-                    "grid_feed_in",
-                    "self_consumption",
-                    "self_consumption_rate",
-                    "self_sufficiency",
-                )
-            },
+            energy_kpis=EnergyKPIs(
+                **{
+                    key: row[key]
+                    for key in (
+                        "annual_consumption",
+                        "pv_generation",
+                        "grid_consumption",
+                        "grid_feed_in",
+                        "self_consumption",
+                        "self_consumption_rate",
+                        "self_sufficiency",
+                    )
+                }
+            ),
             pv_monthly_gen=monthly,
         )
 

@@ -39,6 +39,7 @@ class LinearRegressionModel:
         self.X_org, self.Y_org = self.get_training_data()
 
         # Expand training data
+        X, Y = self.X_org, self.Y_org
         if self.expand:
             X, Y = self.expand_training_data(self.X_org, self.Y_org)
 
@@ -77,6 +78,7 @@ class LinearRegressionModel:
         Y_train: np.ndarray = np.zeros((len(years), self.outputs))
 
         for i, year in enumerate(years):
+            n = 0
             if year <= 1859:
                 n = 0
             elif year > 1859 and year <= 1918:
@@ -139,7 +141,9 @@ class LinearRegressionModel:
 
         return X, Y
 
-    def feature_scaling(self, X: np.ndarray) -> tuple[np.ndarray, float, float]:
+    def feature_scaling(
+        self, X: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Normalises the input features by subtracting the mean and dividing by the
         standard deviation.
 
@@ -152,9 +156,9 @@ class LinearRegressionModel:
 
         """
         # Get mean of each column
-        means: float = np.mean(X, axis=0)
+        means: np.ndarray = np.mean(X, axis=0)
         # Get standard deviation of each column
-        stds: float = np.std(X, axis=0)
+        stds: np.ndarray = np.std(X, axis=0)
         # Normalise the input features
         X = (X - means) / stds
 
@@ -223,7 +227,7 @@ class LinearRegressionModel:
                 break
 
         if self.log:
-            logger.info(f"Final loss: {loss[i]:.4f}")
+            logger.info(f"Final loss: {loss[-1]:.4f}")
             logger.info("")
 
         self.theta: np.ndarray = theta  # weights and biases

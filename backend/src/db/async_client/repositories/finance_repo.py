@@ -5,6 +5,8 @@ from typing import Optional
 from src.db.async_client.repositories.base import BaseRepository
 from src.db.schemas import (
     FinFormData,
+    FinInvestment,
+    FinKPIs,
     FinResults,
 )
 
@@ -166,12 +168,12 @@ class FinanceRepository(BaseRepository):
         )
         return FinResults(
             model_id=model_id,
-            fin_kpis={
-                "investment": {
-                    "pv": row["investment_pv"],
-                    "battery": row["investment_battery"],
-                    "total": row["investment_total"],
-                },
+            fin_kpis=FinKPIs(
+                investment=FinInvestment(
+                    pv=row["investment_pv"],
+                    battery=row["investment_battery"],
+                    total=row["investment_total"],
+                ),
                 **{
                     key: row[key]
                     for key in (
@@ -186,7 +188,7 @@ class FinanceRepository(BaseRepository):
                         "loan_paid_off",
                     )
                 },
-            },
+            ),
             yearly_data=yearly,
         )
 

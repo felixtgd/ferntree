@@ -25,9 +25,12 @@ def create_season_day_models(data_dir: str, timebase: int) -> None:
 
     # Create pandas time series for one day with only the time
     timesteps_per_day = 24 * 60 * 60 // timebase
-    time = pd.date_range(
-        start="2023-01-01", periods=timesteps_per_day, freq=f"{timebase}s"
-    ).time
+    time = [
+        timestamp.time()
+        for timestamp in pd.date_range(
+            start="2023-01-01", periods=timesteps_per_day, freq=f"{timebase}s"
+        )
+    ]
 
     # Sort data into seasons (spring, summer, autumn, winter) and weekday/weekend
     df_spring_wd = pd.DataFrame(time, columns=["time"])

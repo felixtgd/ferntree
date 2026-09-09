@@ -1,7 +1,7 @@
 from typing import Any, Hashable
 
 import pandas as pd
-from pandas import DataFrame, Series
+from pandas import DataFrame
 
 from src.db.schemas import EnergyKPIs, PVMonthlyGen, SimResultsEval
 from src.domains.energy.ports import TimestepReader
@@ -141,8 +141,8 @@ async def calc_pv_monthly_gen(sim_results: list[dict[str, Any]]) -> list[PVMonth
         raise ValueError("Index is not a datetime index")
 
     # Group by month and sum P_pv values
-    df["month"] = df.index.month
-    monthly_pv_df: Series[float] = df.groupby("month")["P_pv"].sum()
+    df["month"] = df.index.to_series().dt.month
+    monthly_pv_df = df.groupby("month")["P_pv"].sum()
 
     month_mapping: dict[Hashable, str] = {
         1: "Jan",

@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Union
+from typing import Optional, Protocol, Union
 
 from src.domains.ferntree.components.dev.device import Device
 from src.domains.ferntree.components.host.sim_host import SimHost
@@ -7,10 +7,16 @@ from src.domains.ferntree.components.host.sim_host import SimHost
 logger: logging.Logger = logging.getLogger("ferntree")
 
 
-class SmartMeter(Device):  # type: ignore[misc]
+class House(Protocol):
+    """Structural type for a house with named device components."""
+
+    components: dict[str, Device]
+
+
+class SmartMeter(Device):
     """Class for a house smart meter."""
 
-    def __init__(self, host: SimHost, house: Device) -> None:
+    def __init__(self, host: SimHost, house: House) -> None:
         """Initialize a smart meter.
 
         Args:
@@ -21,7 +27,7 @@ class SmartMeter(Device):  # type: ignore[misc]
         super().__init__(host)
 
         # House object being monitored
-        self.house: Device = house
+        self.house: House = house
 
         self.measurements: dict[str, Optional[Union[float, int]]] = {
             "time": 0.0,  # Time of the simulation

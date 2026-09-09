@@ -3,7 +3,7 @@
 from typing import Any
 
 from src.db.async_client.repositories.base import BaseRepository
-from src.db.schemas import ModelDataOut
+from src.db.schemas import Coordinates, ModelDataOut
 
 
 class ModelsRepository(BaseRepository):
@@ -60,11 +60,11 @@ class ModelsRepository(BaseRepository):
         """
         coordinates = None
         if row["coord_lat"] is not None:
-            coordinates = {
-                "lat": row["coord_lat"],
-                "lon": row["coord_lon"],
-                "display_name": row["coord_display_name"],
-            }
+            coordinates = Coordinates(
+                lat=row["coord_lat"],
+                lon=row["coord_lon"],
+                display_name=row["coord_display_name"],
+            )
         return ModelDataOut(
             user_id=row["user_id"],
             model_name=row["model_name"],

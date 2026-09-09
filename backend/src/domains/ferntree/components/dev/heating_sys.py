@@ -9,7 +9,7 @@ from src.domains.ferntree.components.models.thermal_model import ThermalModel
 logger: logging.Logger = logging.getLogger("ferntree")
 
 
-class HeatingSys(Device):  # type: ignore[misc]
+class HeatingSys(Device):
     """Class for a heating system.
     A heating system consists of a thermostat controller, a thermal building model
     and a heating device.

@@ -8,7 +8,7 @@ from src.domains.ferntree.components.host.sim_host import SimHost
 logger = logging.getLogger("ferntree")
 
 
-class SfHouse(Device):  # type: ignore[misc]
+class SfHouse(Device):
     """Class for a single-family house.
     Each house has a baseload, a heating system, and optionally a PV system and battery.
     """
@@ -82,7 +82,7 @@ class SfHouse(Device):  # type: ignore[misc]
             TypeError: If the house has no valid smart meter.
 
         """
-        smart_meter: SmartMeter = self.components.get("smart_meter")
+        smart_meter: Device | None = self.components.get("smart_meter")
         if not isinstance(smart_meter, SmartMeter):
             raise TypeError("Expected 'smart_meter' to be of type 'SmartMeter'")
         results: dict[str, Any] = smart_meter.get_measurements()

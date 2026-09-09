@@ -2,14 +2,26 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Any, Optional, Protocol, Union
 
 from pytz import timezone
 
 from src.db.sync_client.client import PostgresClient
-from src.domains.ferntree.components.core.entity import Entity
 
 logger = logging.getLogger("ferntree")
+
+
+class House(Protocol):
+    """Interface required from the house controlled by a simulation host."""
+
+    def startup(self) -> None:
+        """Initialize the house before simulation begins."""
+
+    def shutdown(self) -> None:
+        """Release house resources after simulation ends."""
+
+    def timetick(self) -> dict[str, Any]:
+        """Advance the house and return its timestep results."""
 
 
 class SimHost:
@@ -41,7 +53,7 @@ class SimHost:
         self.current_time: int  # Current time in seconds since epoch
         self.current_timestep: int  # Current timestep
 
-        self.house: Entity  # House object being simulated
+        self.house: House  # House object being simulated
 
         # Current state of simulation environment
         self.env_state: dict[str, Optional[Union[float, int]]] = {
@@ -64,7 +76,7 @@ class SimHost:
         self.db_client.shutdown()
         self.house.shutdown()
 
-    def add_house(self, house: Entity) -> None:
+    def add_house(self, house: House) -> None:
         """Add a house to the simulation host.
 
         Args:
@@ -74,10 +86,7 @@ class SimHost:
             TypeError: If ``house`` is not an ``Entity`` instance.
 
         """
-        if isinstance(house, Entity):
-            self.house = house
-        else:
-            raise TypeError("Can only add objects of class 'House' to simHost.")
+        self.house = house
 
     def run_simulation(self) -> None:
         """Run the simulation from startup through shutdown.

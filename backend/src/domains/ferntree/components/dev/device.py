@@ -1,10 +1,9 @@
 from typing import Any
 
-from src.domains.ferntree.components.core.entity import Entity
 from src.domains.ferntree.components.host.sim_host import SimHost
 
 
-class Device(Entity):  # type: ignore[misc]
+class Device:
     """Base class for all devices."""
 
     def __init__(self, host: SimHost) -> None:
@@ -27,11 +26,11 @@ class Device(Entity):  # type: ignore[misc]
         """
         pass
 
-    def timetick(self) -> Any:
+    def timetick(self) -> dict[str, Any] | None:
         """Advance the device by one simulation timestep.
 
         Returns:
-            Any: The base implementation returns None.
+            dict[str, Any] | None: The base implementation returns None.
 
         """
         pass

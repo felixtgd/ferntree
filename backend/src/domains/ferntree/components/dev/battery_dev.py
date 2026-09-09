@@ -7,7 +7,7 @@ from src.domains.ferntree.components.host.sim_host import SimHost
 logger: logging.Logger = logging.getLogger("ferntree")
 
 
-class BatteryDev(Device):  # type: ignore[misc]
+class BatteryDev(Device):
     """Class for battery energy storage."""
 
     def __init__(self, host: SimHost, dev_specs: dict[str, float]) -> None:

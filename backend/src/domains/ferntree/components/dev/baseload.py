@@ -9,7 +9,7 @@ from src.domains.ferntree.components.host.sim_host import SimHost
 logger: logging.Logger = logging.getLogger("ferntree")
 
 
-class BaseLoad(Device):  # type: ignore[misc]
+class BaseLoad(Device):
     """Class for uncontrollable baseload."""
 
     def __init__(

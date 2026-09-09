@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any, Optional
 
 from psycopg.rows import dict_row
+from psycopg.sql import SQL, Identifier
 
 from src.db.async_client.pool import pool
 
@@ -111,7 +112,9 @@ class BaseRepository:
         """
         async with self._cursor(row_factory=None) as cur:
             await cur.execute(query, params)
-            return cur.rowcount
+            rowcount = cur.rowcount
+            assert isinstance(rowcount, int)
+            return rowcount
 
     @staticmethod
     def _int_id(value: str) -> Optional[int]:
@@ -204,4 +207,8 @@ class BaseRepository:
         if collection not in allowed:
             raise ValueError(f"Unknown table: {collection}")
         async with pool.connection() as conn:
-            await conn.execute(f"TRUNCATE TABLE {collection} RESTART IDENTITY CASCADE")
+            await conn.execute(
+                SQL("TRUNCATE TABLE {} RESTART IDENTITY CASCADE").format(
+                    Identifier(collection)
+                )
+            )

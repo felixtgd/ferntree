@@ -137,7 +137,7 @@ def generate_annual_load_profiles(
 
 
 def generate_daily_profile(
-    mean: float, std: float, lb: float, ub: float
+    mean: pd.Series, std: pd.Series, lb: pd.Series, ub: pd.Series
 ) -> list[float]:
     """Generate a daily load profile for a season-day model.
 
@@ -151,15 +151,16 @@ def generate_daily_profile(
         list[float]: Load profile with n timesteps.
 
     """
-    # Reduce standard deviation to make profiles smoother
-    std = std / 2.0
-    # Generate profile with normal distribution
-    profile: list[float] = np.random.normal(mean, std)
-    # Truncate profile to min and max values
-    lb = np.maximum(lb, 0)
-    profile = np.maximum(np.minimum(profile, ub), lb)
-
-    return profile
+    return [
+        max(
+            float(lower_bound),
+            min(
+                float(np.random.normal(float(average), float(deviation) / 2.0)),
+                float(upper_bound),
+            ),
+        )
+        for average, deviation, lower_bound, upper_bound in zip(mean, std, lb, ub)
+    ]
 
 
 def write_profiles_to_db(df_profiles: pd.DataFrame) -> None:

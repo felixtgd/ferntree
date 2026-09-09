@@ -4,7 +4,7 @@ from src.domains.ferntree.components.dev.device import Device
 from src.domains.ferntree.components.host.sim_host import SimHost
 
 
-class HeatingCtrl(Device):  # type: ignore[misc]
+class HeatingCtrl(Device):
     """Class for a thermostat controller.
     This controller determines the control signal for setting required thermal heating
     power based on the current indoor temperature and the setpoint. Using a variant of
@@ -60,6 +60,6 @@ class HeatingCtrl(Device):  # type: ignore[misc]
             self.integral += proportional
 
             # Set new control signal
-            ctrl_signal = max(0, (1 + proportional + self.integral))
+            ctrl_signal: float = max(0, (1 + proportional + self.integral))
 
         return ctrl_signal

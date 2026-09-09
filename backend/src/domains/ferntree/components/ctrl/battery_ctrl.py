@@ -1,10 +1,9 @@
 import logging
 from typing import Any
 
-# import cvxpy as cp
 import numpy as np
 
-from src.domains.ferntree.components.dev.device import Device
+from src.domains.ferntree.components.dev.smart_meter import SmartMeter
 from src.domains.ferntree.components.host.sim_host import SimHost
 
 logger = logging.getLogger("ferntree")
@@ -14,7 +13,7 @@ class BatteryCtrl:
     """Control class for battery device."""
 
     def __init__(
-        self, host: SimHost, ctrl_specs: dict[str, Any], smart_meter: Device
+        self, host: SimHost, ctrl_specs: dict[str, Any], smart_meter: SmartMeter
     ) -> None:
         """Initializes a new instance of the BatteryCtrl class.
 
@@ -39,7 +38,7 @@ class BatteryCtrl:
         self.opt_fill: bool = ctrl_specs.get("opt_fill", False)
 
         # Smart meter object to get net load of house
-        self.smart_meter: Device = smart_meter
+        self.smart_meter: SmartMeter = smart_meter
 
         # Predcition of net load power profile P_net_load of house
         self.prediction_window: int = self.planning_horizon
@@ -82,7 +81,7 @@ class BatteryCtrl:
             self.Z_charge, self.Z_discharge, p_t, soc_t, bat_max_pwr, bat_cap
         )
 
-        return bat_pwr, soc_t, Z_t, self.P_load_pred[0]
+        return bat_pwr, soc_t, Z_t, float(self.P_load_pred[0])
 
     def update_prediction(self, P_pred: np.ndarray, p_t: float) -> np.ndarray:
         """Update prediction window for optimisation
@@ -98,7 +97,7 @@ class BatteryCtrl:
 
         """
         # update factor/weight for current value in prediction window
-        update_factor = 0.2
+        update_factor: float = 0.2
 
         # Update: Take weighted average of current value and prediction
         p_updated: float = update_factor * p_t + (1 - update_factor) * P_pred[0]
@@ -139,17 +138,17 @@ class BatteryCtrl:
         if p_t >= 0:  # net consumption --> battery discharges
             Z_t: float = Z_discharge
         else:  # net generation --> battery charges
-            Z_t = Z_charge
+            Z_t: float = Z_charge
 
         # Determine battery power using valley filling approach
         x_t: float = (-1) * np.sign(p_t) * max(0, min(abs(p_t) - abs(Z_t), bat_max_pwr))
 
         # Enforce feasibility of battery profile wrt. SoC
         # Additional constraints added with safety margins of 10% of capacity
-        x_t = min(
+        x_t: float = min(
             x_t, 0.9 * bat_cap - soc_t
         )  # battery cannot charge more than capacity - soc_t
-        x_t = max(
+        x_t: float = max(
             x_t, -(soc_t - 0.1 * bat_cap)
         )  # battery cannot discharge more than soc_t
 
@@ -181,7 +180,7 @@ class BatteryCtrl:
         Z_charge: float = (
             np.mean(P_pred[P_pred < 0]) if P_pred[P_pred < 0].size != 0 else 0.5
         )
-        Z_charge = 0.1 * Z_charge  # reduce Z_charge to 10% of mean value
+        Z_charge: float = 0.1 * Z_charge  # reduce Z_charge to 10% of mean value
         # --> better to underestimate Z_charge than overestimate it:
         # if in doubt, better to make battery more "greedy" to increase self-consumption
 
@@ -189,11 +188,13 @@ class BatteryCtrl:
         Z_discharge: float = (
             np.mean(P_pred[P_pred > 0]) if P_pred[P_pred > 0].size != 0 else 0.3
         )
-        Z_discharge = 0.1 * Z_discharge  # reduce Z_discharge to 10% of mean value
+        Z_discharge: float = (
+            0.1 * Z_discharge
+        )  # reduce Z_discharge to 10% of mean value
 
         return Z_charge, Z_discharge
 
-    ### Not used currently, but might be useful later
+    # Not used currently, but might be useful later
     # def get_optimal_profile(
     #     self, P_load: list[float], max_pwr: float, bat_cap: float, bat_soc: float
     # ) -> np.ndarray:

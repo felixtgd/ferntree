@@ -4,7 +4,7 @@ from src.domains.ferntree.components.dev.device import Device
 from src.domains.ferntree.components.host.sim_host import SimHost
 
 
-class HeatingDev(Device):  # type: ignore[misc]
+class HeatingDev(Device):
     """Class for a heating device. E.g. a heat pump.
     A heating device provides thermal heating power to a building and
     specifies electricity demand.
