@@ -67,7 +67,6 @@ class PostgresClient:
             "T_amb": result["t_amb"],
             "G_i": result["g_i"],
             "baseload_annual_consumption": result["baseload_annual_consumption"],
-            "baseload_profile_id": result["baseload_profile_id"],
             "pv_roof_tilt": result["pv_roof_tilt"],
             "pv_roof_azimuth": result["pv_roof_azimuth"],
             "pv_peak_power": result["pv_peak_power"],
@@ -106,6 +105,33 @@ class PostgresClient:
                 f"Load profile with id {profile_id} not found in database."
             )
         return list(row[0])
+
+    def ensure_load_profile(
+        self, profile_id: int, profile_type: str, load_profile: list[float]
+    ) -> None:
+        """Insert or refresh a load profile, overwriting any existing row.
+
+        Args:
+            profile_id: The database identifier of the load profile.
+            profile_type: A human-readable label describing the profile.
+            load_profile: The normalized load profile values to persist.
+
+        Raises:
+            psycopg.Error: If the upsert or commit fails.
+
+        """
+        with self.client.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO loadprofiles (profile_id, type, load_profile)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (profile_id) DO UPDATE SET
+                    type = EXCLUDED.type,
+                    load_profile = EXCLUDED.load_profile
+                """,
+                (profile_id, profile_type, load_profile),
+            )
+        self.client.commit()
 
     def write_timeseries_data_to_db(self, results: dict[str, Any]) -> None:
         """Validate and buffer one timestep, flushing full batches.

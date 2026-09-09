@@ -41,7 +41,6 @@ class BaseLoad(Device):
         - Get load profile from database
         - Scale loadprofile to specified annual consumption.
         """
-        # load_profile = np.array(self.host.get_load_profile(self.profile_id))
         if abs(self.load_profile.sum() - 1.0) > 1e-6:
             logger.warning(
                 f"Load profile not normalized to 1kWh/a: {self.load_profile.sum():.2f} kWh/a"  # noqa: E501

@@ -11,6 +11,11 @@ from src.domains.ferntree.components.dev.pv_sys import PVSys
 from src.domains.ferntree.components.dev.sf_house import SfHouse
 from src.domains.ferntree.components.dev.smart_meter import SmartMeter
 from src.domains.ferntree.components.host.sim_host import SimHost
+from src.domains.loadprofiles.gaussian_profile import (
+    SIMPLE_PROFILE_ID,
+    SIMPLE_PROFILE_TYPE,
+    generate_annual_profile,
+)
 
 logger = logging.getLogger("ferntree")
 
@@ -35,10 +40,14 @@ class SimBuilder:
 
         # Load simulation config from database
         sim_config: dict[str, Any] = self.db_client.load_config()
+        self.db_client.ensure_load_profile(
+            SIMPLE_PROFILE_ID,
+            SIMPLE_PROFILE_TYPE,
+            generate_annual_profile(sim_config["timebase"]),
+        )
         self.system_settings: dict[str, Any] = {
             "baseload": {
                 "annual_consumption": sim_config["baseload_annual_consumption"],
-                "profile_id": sim_config["baseload_profile_id"],
             },
             "pv": {
                 "roof_tilt": sim_config["pv_roof_tilt"],
@@ -82,7 +91,7 @@ class SimBuilder:
             if self.system_settings["baseload"]:
                 # Get load profile for baseload from database
                 load_profile: list[float] = self.db_client.get_load_profile(
-                    int(self.system_settings["baseload"]["profile_id"])
+                    SIMPLE_PROFILE_ID
                 )
                 # Create baseload device
                 bl: BaseLoad = BaseLoad(

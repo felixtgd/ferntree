@@ -1,3 +1,4 @@
+from collections.abc import AsyncIterator
 from datetime import datetime, timezone
 
 import pytest
@@ -24,7 +25,7 @@ from src.db.schemas import (
 
 
 @pytest_asyncio.fixture(scope="module")
-async def database():
+async def database() -> AsyncIterator[DatabaseClient]:
     """Provide one PostgreSQL pool for the module's async tests."""
     await pool.open(wait=True)
     try:
@@ -64,7 +65,7 @@ async def test_database_round_trips_and_cascades(database: DatabaseClient) -> No
             timebase=3600,
             planning_horizon=1,
             system_settings=SystemSettings(
-                baseload=Baseload(annual_consumption=3500, profile_id=1),
+                baseload=Baseload(annual_consumption=3500),
                 pv=PV(roof_tilt=30, roof_azimuth=0, peak_power=5),
                 battery=Battery(
                     capacity=5,

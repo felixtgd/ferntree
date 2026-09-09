@@ -84,7 +84,6 @@ async def def_system_settings(model_data: ModelDataOut) -> SystemSettings:
     """
     baseload: Baseload = Baseload(
         annual_consumption=model_data.electr_cons,
-        profile_id=1,  # TODO: Find better way to set profile_id
     )
 
     pv: PV = PV(

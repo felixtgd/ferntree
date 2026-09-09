@@ -71,12 +71,10 @@ class Baseload(BaseModel):
 
     Attributes:
         annual_consumption (float): Annual electricity consumption in kWh.
-        profile_id (int): Identifier for the consumption profile.
 
     """
 
     annual_consumption: float
-    profile_id: int
 
 
 class PV(BaseModel):

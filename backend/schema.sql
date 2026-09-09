@@ -50,7 +50,6 @@ CREATE TABLE IF NOT EXISTS simulations (
     coord_lon                   TEXT,
     coord_display_name          TEXT,
     baseload_annual_consumption DOUBLE PRECISION,
-    baseload_profile_id         INTEGER,
     pv_roof_tilt                INTEGER,
     pv_roof_azimuth             INTEGER,
     pv_peak_power               DOUBLE PRECISION,
@@ -62,6 +61,8 @@ CREATE TABLE IF NOT EXISTS simulations (
     batctrl_greedy              BOOLEAN,
     batctrl_opt_fill            BOOLEAN
 );
+
+ALTER TABLE simulations DROP COLUMN IF EXISTS baseload_profile_id;
 
 -- =========================================================================
 -- sim_timesteps  (was sim_results_ts.timeseries; 1 row per timestep)
