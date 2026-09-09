@@ -82,8 +82,8 @@ function dispatch(path: string): void {
 
 // ---------------------------------------------------------------------------
 // Active nav highlighting
-// Top navbar: exact-prefix matching for Home (/), Blog (/blog), Ferntree (/workspace).
-// Sidenav: existing startsWith matching for workspace sub-routes.
+// Top navbar: exact matching for Home (/).
+// Sidenav: startsWith matching for workspace sub-routes.
 // ---------------------------------------------------------------------------
 export function updateActiveNav(path: string): void {
   // Top navbar links
@@ -92,10 +92,6 @@ export function updateActiveNav(path: string): void {
     let active = false;
     if (nav === 'home') {
       active = path === '/';
-    } else if (nav === 'blog') {
-      active = path === '/blog' || path.startsWith('/blog/');
-    } else if (nav === 'ferntree') {
-      active = path === '/ferntree' || path === '/workspace' || path.startsWith('/workspace/');
     }
     link.classList.toggle('active', active);
   });

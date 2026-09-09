@@ -4,9 +4,6 @@
 import './styles/global.css';
 import { addRoute, setContentElement, navigate, updateActiveNav, updateShell } from './router';
 import { render as renderLanding } from './pages/landing';
-import { render as renderFerntreeLanding } from './pages/landing-ferntree';
-import { render as renderBlog } from './pages/blog';
-import { render as renderBlogPost } from './pages/blog-post';
 import { render as renderWorkspace } from './pages/workspace';
 import { render as renderModels } from './pages/models';
 import { render as renderSimulations } from './pages/simulations';
@@ -19,9 +16,6 @@ export { showLoadingOverlay, hideLoadingOverlay } from './overlay';
 // Register routes
 // ---------------------------------------------------------------------------
 addRoute('/', renderLanding);
-addRoute('/ferntree', renderFerntreeLanding);
-addRoute('/blog', renderBlog);
-addRoute('/blog/:slug', renderBlogPost);
 addRoute('/workspace', renderWorkspace);
 addRoute('/workspace/models', renderModels);
 addRoute('/workspace/simulations', renderSimulations);
@@ -44,12 +38,6 @@ app.innerHTML = `
       </svg>
       <span>Ferntree</span>
     </a>
-
-    <div class="topnav-links">
-      <a href="/" class="topnav-link" data-link data-nav="home">Home</a>
-      <a href="/blog" class="topnav-link" data-link data-nav="blog">Blog</a>
-      <a href="/ferntree" class="topnav-link" data-link data-nav="ferntree">Ferntree</a>
-    </div>
   </nav>
 
   <!-- Shell: sidenav (workspace only) + main content -->
